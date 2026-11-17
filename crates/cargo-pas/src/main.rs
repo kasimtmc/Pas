@@ -311,9 +311,12 @@ fn plural(kind: dictionary::Kind) -> String {
     }
 }
 
+/// Türkçe kurallarıyla ilk harfi büyütür: `i` → `İ`, `ı` → `I`.
 fn capitalize(text: &str) -> String {
     let mut chars = text.chars();
     match chars.next() {
+        Some('i') => std::iter::once('İ').chain(chars).collect(),
+        Some('ı') => std::iter::once('I').chain(chars).collect(),
         Some(first) => first.to_uppercase().chain(chars).collect(),
         None => String::new(),
     }
@@ -322,6 +325,13 @@ fn capitalize(text: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn turkish_capitalization() {
+        assert_eq!(capitalize("işlevler"), "İşlevler");
+        assert_eq!(capitalize("ılık"), "Ilık");
+        assert_eq!(capitalize("çeşit"), "Çeşit");
+    }
 
     #[test]
     fn package_names() {
