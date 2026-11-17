@@ -77,7 +77,7 @@ class PasEklentiTest : BasePlatformTestCase() {
         val belge = myFixture.editor.document
         val ofset = belge.text.indexOf("x = 1")
         val duzeltme = PasHizliDuzeltme(
-            "bu değişkeni `değişken` yapmayı düşün",
+            "değerini sonradan değiştirebilmek için başına `değişken` ekle",
             listOf(BelgeDegisikligi(TextRange(ofset, ofset), "değişken ")),
             belge.modificationStamp,
             kesin = true,

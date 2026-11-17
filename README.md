@@ -95,7 +95,7 @@ hata[E0384]: `x` değiştirilemez bir değişken; ona ikinci kez değer verileme
 3 |     x = 6;
   |     ^^^^^ değiştirilemez değişkene ikinci kez değer verilemez
   |
-  = yardım: bu değişkeni `değişken` yapmayı düşün
+  = yardım: değerini sonradan değiştirebilmek için başına `değişken` ekle
   |
 2 |     yap değişken x = 5;
   = açıklama: Pas'ta değişkenler kendiliğinden değiştirilemez. …
