@@ -127,8 +127,8 @@ impl Proje {
         };
 
         let modul_yolu = |ad: &str| self.modul_yolu(goreli, ad);
-        let ceviri_sonucu =
-            pas_cekirdek::rusta_cevir_secenekle(&pas_kaynagi, &Secenekler { modul_yolu: Some(&modul_yolu) });
+        let secenekler = Secenekler { modul_yolu: Some(&modul_yolu), destek_ekle: sandik_koku(goreli) };
+        let ceviri_sonucu = pas_cekirdek::rusta_cevir_secenekle(&pas_kaynagi, &secenekler);
 
         degistiyse_yaz(&self.golge.join(&rust_goreli), ceviri_sonucu.rust.as_bytes())?;
         yazilanlar.insert(self.golge.join(&rust_goreli));
@@ -225,7 +225,18 @@ fn rust_yolu_bul(pas: &Path) -> PathBuf {
     ust_dizin.join(format!("{rust_govdesi}.rs"))
 }
 
-/// `src/ikili/x.pas`, `examples/x.pas` gibi dosyalar kendi sandıklarının köküdür.
+/// `ana.pas` ve `kütüphane.pas` gibi, kendi sandığının kökü olan bir dosya mı?
+/// `oku!` gibi makroları sağlayan destek kodu bu dosyalara eklenir.
+fn sandik_koku(pas: &Path) -> bool {
+    let rust = rust_yolu_bul(pas);
+    let ikili_dizininde = rust.parent().and_then(Path::parent).is_some_and(|p| p == Path::new("src/bin"));
+    rust == Path::new("src/main.rs")
+        || rust == Path::new("src/lib.rs")
+        || (ikili_dizininde && rust.file_name().is_some_and(|ad| ad == "main.rs"))
+        || sandik_koku_mu(pas)
+}
+
+/// `src/bin/x.pas`, `examples/x.pas` gibi dosyalar kendi sandıklarının köküdür.
 fn sandik_koku_mu(pas: &Path) -> bool {
     let ust_dizin = pas.parent().unwrap_or(Path::new(""));
     ["src/bin", "examples", "tests", "benches"].iter().any(|dizin| ust_dizin == Path::new(dizin))
@@ -302,6 +313,18 @@ pub fn egik_cizgili_yol(yol: &Path) -> String {
 #[cfg(test)]
 mod testler {
     use super::*;
+
+    #[test]
+    fn sandik_kokleri() {
+        let k = |s: &str| sandik_koku(Path::new(s));
+        assert!(k("src/ana.pas"));
+        assert!(k("src/kütüphane.pas"));
+        assert!(k("src/bin/araç.pas"));
+        assert!(k("src/bin/araç/ana.pas"));
+        assert!(k("examples/deneme.pas"));
+        assert!(!k("src/oyun.pas"));
+        assert!(!k("src/oyun/ana.pas"));
+    }
 
     #[test]
     fn rust_yollari() {

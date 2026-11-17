@@ -49,6 +49,15 @@ impl KaynakHaritasi {
         esle(&self.parcalar, ofset, yon, |s| (s.pas_baslangic, s.pas_uzunluk), |s| (s.rust_baslangic, s.rust_uzunluk))
     }
 
+    /// Rust kodundaki bu konum, çevirmenin Pas'ta karşılığı olmadan eklediği
+    /// bir metnin (destek kodu, `#[path]` niteliği…) içinde mi?
+    pub fn eklenen_metinde_mi(&self, ofset: usize) -> bool {
+        let sira = self.parcalar.partition_point(|p| p.rust_baslangic <= ofset);
+        sira.checked_sub(1)
+            .map(|i| &self.parcalar[i])
+            .is_some_and(|p| p.pas_uzunluk == 0 && ofset < p.rust_baslangic + p.rust_uzunluk)
+    }
+
     /// Rust kodundaki bir aralığı Pas kaynağındaki karşılığına çevirir.
     pub fn rust_araligini_pasa(&self, baslangic: usize, bitis: usize) -> (usize, usize) {
         let baslangic = self.rusttan_pasa(baslangic, Yon::Baslangic);
@@ -164,6 +173,10 @@ mod testler {
         // Eklenen metin, kaynağında sıfır uzunluklu bir noktaya düşer.
         assert_eq!(harita.rust_araligini_pasa(7, 12), (10, 10));
         assert_eq!(harita.rust_araligini_pasa(12, 15), (10, 15));
+        assert!(harita.eklenen_metinde_mi(7));
+        assert!(harita.eklenen_metinde_mi(11));
+        assert!(!harita.eklenen_metinde_mi(12));
+        assert!(!harita.eklenen_metinde_mi(1));
     }
 
     #[test]

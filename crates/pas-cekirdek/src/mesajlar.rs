@@ -71,6 +71,8 @@ const DERLEYICI: &[(&str, &str)] = &[
     ("can't compare `{}` with `{}`", "`{0}` ile `{1}` karşılaştırılamaz"),
     ("`{}` doesn't implement `{}`", "`{0}` türü `{1}` niteliğini uygulamıyor"),
     ("`{}` cannot be formatted with the default formatter", "`{0}` doğrudan `{{}}` ile yazdırılamaz"),
+    ("unsatisfied trait bound", "bu tür istenen niteliği karşılamıyor"),
+    ("expected {} `{}`\n   found {} `{}`", "beklenen: `{1}`, bulunan: `{3}`"),
     ("the trait bound `{}: {}` is not satisfied", "`{0}` türü `{1}` niteliğini karşılamıyor"),
     ("the trait `{}` is not implemented for `{}`", "`{1}` türü `{0}` niteliğini uygulamıyor"),
     // Değiştirilebilirlik ve sahiplik
@@ -92,7 +94,10 @@ const DERLEYICI: &[(&str, &str)] = &[
     ("cannot borrow as mutable", "değiştirilebilir olarak ödünç alınamaz"),
     ("consider changing this to be mutable", "değiştirebilmek için başına `değişken` ekle"),
     ("consider making this binding mutable", "değerini sonradan değiştirebilmek için başına `değişken` ekle"),
-    ("consider making this binding mutable: `{}`", "değerini sonradan değiştirebilmek için başına `değişken` ekle: `{0}`"),
+    (
+        "consider making this binding mutable: `{}`",
+        "değerini sonradan değiştirebilmek için başına `değişken` ekle: `{0}`",
+    ),
     ("to modify the original value, take a borrow instead", "asıl değeri değiştirmek için onu ödünç al"),
     ("borrow of moved value: `{}`", "`{0}` taşındıktan sonra ödünç alınmaya çalışıldı"),
     ("use of moved value: `{}`", "`{0}` taşındıktan sonra kullanılmaya çalışıldı"),
@@ -342,6 +347,10 @@ pub fn gereksiz_mi(mesaj: &str) -> bool {
         || mesaj.ends_with("warning emitted")
         || mesaj.ends_with("warnings emitted")
         || mesaj.starts_with("requested on the command line with")
+        || mesaj.starts_with("the following other types implement trait")
+        // Destek kodunun (`oku!`) iç ayrıntıları
+        || mesaj.contains("`deger_oku`")
+        || mesaj.contains("`satir_oku`")
 }
 
 fn cevir(kaliplar: &[(&str, &str)], mesaj: &str) -> String {

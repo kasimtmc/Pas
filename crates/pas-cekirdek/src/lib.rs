@@ -7,6 +7,12 @@
 //! assert_eq!(ceviri.rust, "fn main() { println!(\"Merhaba!\"); }");
 //! ```
 
+// Programlara eklenen destek kodu, testlerde gerçek Rust kodu olarak derlenip denenir.
+#[cfg(test)]
+include!("destek.rs");
+#[cfg(test)]
+mod destek_testleri;
+
 pub mod ceviri;
 pub mod kaynak_haritasi;
 pub mod mesajlar;

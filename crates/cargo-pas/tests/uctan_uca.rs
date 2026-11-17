@@ -133,3 +133,55 @@ fn json_tanilamalari_ide_icin_okunabilir() {
     assert_eq!(oneri["degisiklikler"][0]["aralik"]["sutun"], 9);
     assert_eq!(oneri["degisiklikler"][0]["aralik"]["bitis_sutunu"], 9);
 }
+
+/// `cargo pas çalıştır` komutunu verilen standart girdiyle çalıştırır.
+fn girdiyle_calistir(dizin: &Path, girdi: &str) -> Output {
+    let mut surec = Command::new(env!("CARGO_BIN_EXE_cargo-pas"))
+        .arg("çalıştır")
+        .current_dir(dizin)
+        .env("NO_COLOR", "1")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    std::io::Write::write_all(&mut surec.stdin.take().unwrap(), girdi.as_bytes()).unwrap();
+    surec.wait_with_output().unwrap()
+}
+
+#[test]
+fn oku_makrosu_girdi_okur() {
+    let dizin = proje(
+        "okuyan",
+        &[
+            (
+                "src/ana.pas",
+                "modül selam;\n\nişlev ana() {\n    yap ad = oku!(\"Adın ne? \");\n    \
+                 yap yaş = oku!(\"Kaç yaşındasın? \", u32);\n    yap boy = oku!(\"Boyun? \", f64);\n    \
+                 yazdır!(\"{} {yaş} yaşında, boyu {boy}.\", selam::selamla(&ad));\n}\n",
+            ),
+            ("src/selam.pas", "genel işlev selamla(ad: &str) -> Metin {\n    biçimle!(\"Merhaba {ad}!\")\n}\n"),
+        ],
+    );
+    let cikti = girdiyle_calistir(&dizin, "  Ayşe \non iki\n12\n1,45\n");
+    assert!(cikti.status.success(), "{}", metin(&cikti.stderr));
+    assert_eq!(
+        metin(&cikti.stdout),
+        "Adın ne? Kaç yaşındasın? `on iki` geçerli bir tam sayı değil, tekrar dene.\n\
+         Kaç yaşındasın? Boyun? Merhaba Ayşe! 12 yaşında, boyu 1.45.\n"
+    );
+}
+
+#[test]
+fn girdi_bitince_oku_turkce_panik_verir() {
+    let dizin = proje(
+        "girdisiz",
+        &[("src/ana.pas", "işlev ana() {\n    yap sayı = oku!(\"Sayı: \", i32);\n    yazdır!(\"{sayı}\");\n}\n")],
+    );
+    let cikti = girdiyle_calistir(&dizin, "");
+    let hata_ciktisi = metin(&cikti.stderr);
+    assert_eq!(cikti.status.code(), Some(101));
+    assert!(hata_ciktisi.contains("girdi bitti"), "{hata_ciktisi}");
+    // Çökme, destek kodunu değil `oku!` satırını göstermeli.
+    assert!(hata_ciktisi.contains("--> src/ana.pas:2:"), "{hata_ciktisi}");
+}

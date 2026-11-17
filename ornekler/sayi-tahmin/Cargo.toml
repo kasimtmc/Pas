@@ -1,0 +1,11 @@
+[package]
+name = "sayi-tahmin"
+version = "0.1.0"
+edition = "2024"
+
+# `cargo pas` bu dosyayı `src/ana.pas` dosyasından üretir.
+[[bin]]
+name = "sayi-tahmin"
+path = "target/pas/src/main.rs"
+
+[dependencies]

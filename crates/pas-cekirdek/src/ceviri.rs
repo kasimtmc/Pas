@@ -11,6 +11,7 @@
 //!   girdi okumadan önce yazılan soru ekranda görünmez.
 
 use std::collections::HashMap;
+use std::sync::OnceLock;
 
 use unicode_normalization::{UnicodeNormalization, is_nfc};
 
@@ -29,6 +30,9 @@ pub struct Secenekler<'a> {
     /// ASCII olmayan ya da sözlükte bulunan bir modül adı için (`mod çalış;`)
     /// `#[path]` niteliğine yazılacak yolu üretir. Verilmezse `ad.rs` kullanılır.
     pub modul_yolu: Option<&'a dyn Fn(&str) -> String>,
+    /// `oku!` gibi Pas'a özgü makroları sağlayan destek kodunu dosyanın başına
+    /// ekler. Yalnızca sandık köklerinde (`ana.pas`, `kütüphane.pas`) kullanılır.
+    pub destek_ekle: bool,
 }
 
 /// Pas kaynağını Rust'a çevirir.
@@ -68,6 +72,20 @@ const BICIM_MAKROLARI: &[(&str, usize)] = &[
     ("debug_assert_eq", 2),
     ("debug_assert_ne", 2),
 ];
+
+/// `destek.rs` dosyasının, satır sayısını değiştirmeden eklenebilmesi için
+/// yorumları atılıp tek satıra indirilmiş hali.
+fn destek_satiri() -> &'static str {
+    static SATIR: OnceLock<String> = OnceLock::new();
+    SATIR.get_or_init(|| {
+        include_str!("destek.rs")
+            .lines()
+            .map(str::trim)
+            .filter(|satir| !satir.is_empty() && !satir.starts_with("//"))
+            .collect::<Vec<_>>()
+            .join(" ")
+    })
+}
 
 const CIKTIYI_BOSALT: &str = ";::std::io::Write::flush(&mut ::std::io::stdout()).ok();}";
 
@@ -111,6 +129,12 @@ impl<'a> Cevirmen<'a> {
             self.modul_yollarini_planla(secenekler, &mut oncesine);
             self.bosaltan_yaziyi_planla(&mut oncesine, &mut sonrasina);
         }
+        let mut destek_eklenecek = self.hedef == Hedef::Rust && secenekler.destek_ekle;
+        if destek_eklenecek && let Some(k) = self.ilk_oge() {
+            let sonrasi = oncesine.remove(&self.anlamlilar[k]).unwrap_or_default();
+            oncesine.insert(self.anlamlilar[k], format!("{} {sonrasi}", destek_satiri()));
+            destek_eklenecek = false;
+        }
 
         let mut bicim = BicimIzleyici::default();
         for k in 0..self.anlamlilar.len() {
@@ -137,8 +161,22 @@ impl<'a> Cevirmen<'a> {
                 self.degistir(sozcuk.bitis..sozcuk.bitis, metin);
             }
         }
+        if destek_eklenecek {
+            // Dosyada hiç öğe yok; destek kodu sona eklenir.
+            self.degistir(self.kaynak.len()..self.kaynak.len(), destek_satiri());
+        }
         self.kopyala(self.kaynak.len());
         (self.cikti, self.harita)
+    }
+
+    /// Dosyanın başındaki iç niteliklerden (`#![…]`) sonraki ilk anlamlı sözcük.
+    /// Öğeler iç niteliklerden önce gelemez.
+    fn ilk_oge(&self) -> Option<usize> {
+        let mut k = 0;
+        while self.anlamli_metin(k) == "#" && self.anlamli_metin(k + 1) == "!" && self.anlamli_metin(k + 2) == "[" {
+            k = self.eslesen_kapanis(k + 2)? + 1;
+        }
+        (k < self.anlamlilar.len()).then_some(k)
     }
 
     fn kopyala(&mut self, konum: usize) {
@@ -490,7 +528,7 @@ mod testler {
         assert_eq!(rusta("modül liste;"), "#[path = \"liste.rs\"] mod vec;");
 
         let modul_yolu = |ad: &str| format!("oyun/{ad}.rs");
-        let secenekler = Secenekler { modul_yolu: Some(&modul_yolu) };
+        let secenekler = Secenekler { modul_yolu: Some(&modul_yolu), ..Default::default() };
         assert_eq!(rusta_cevir_secenekle("mod şekil;", &secenekler).rust, "#[path = \"oyun/şekil.rs\"] mod şekil;");
     }
 
@@ -498,6 +536,33 @@ mod testler {
     fn ayrik_yazilmis_girdi_birlestirilir() {
         // "değilse" with "g" + U+0306 (birleşik breve)
         assert_eq!(rusta("de\u{67}\u{306}ilse"), "else");
+    }
+
+    #[test]
+    fn destek_kodu_satir_eklemeden_eklenir() {
+        let secenekler = Secenekler { destek_ekle: true, ..Default::default() };
+        let kaynak = "// yorum\nişlev ana() {\n    yap ad = oku!(\"Adın? \");\n}\n";
+        let ceviri = rusta_cevir_secenekle(kaynak, &secenekler);
+        assert_eq!(ceviri.rust.lines().count(), kaynak.lines().count());
+        assert!(ceviri.rust.starts_with("// yorum\n#[macro_use]"), "{}", ceviri.rust);
+        assert!(ceviri.rust.contains("mod pas_destek {"));
+        assert!(ceviri.rust.contains("let ad = pas_oku!(\"Adın? \");"));
+        // `oku!` çağrısı Pas kaynağındaki yerine eşlenir.
+        let rust_konumu = ceviri.rust.find("pas_oku!(").unwrap();
+        let (baslangic, _) = ceviri.harita.rust_araligini_pasa(rust_konumu, rust_konumu + 7);
+        assert!(kaynak[baslangic..].starts_with("oku!("));
+    }
+
+    #[test]
+    fn destek_kodu_ic_niteliklerden_sonra_gelir() {
+        let secenekler = Secenekler { destek_ekle: true, ..Default::default() };
+        let ceviri = rusta_cevir_secenekle("#![allow(unused)]\nmodül şekil;\n", &secenekler);
+        assert!(ceviri.rust.starts_with("#![allow(unused)]\n#[macro_use]"), "{}", ceviri.rust);
+        assert!(ceviri.rust.ends_with("#[path = \"şekil.rs\"] mod şekil;\n"), "{}", ceviri.rust);
+        // Boş dosyaya da eklenebilmeli.
+        assert!(rusta_cevir_secenekle("", &secenekler).rust.contains("mod pas_destek"));
+        // Varsayılan olarak eklenmez.
+        assert!(!rusta("işlev ana() {}").contains("pas_destek"));
     }
 
     #[test]
@@ -509,6 +574,7 @@ mod testler {
         assert_eq!(pasa_cevir("let her = 1;"), "yap r#her = 1;");
         assert_eq!(pasa_cevir("`Option<i32>`"), "`Belki<i32>`");
         assert_eq!(pasa_cevir("&'static str"), "&'durağan str");
+        assert_eq!(pasa_cevir("pas_oku!()"), "oku!()");
     }
 
     #[test]

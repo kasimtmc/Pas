@@ -118,6 +118,7 @@ pub static GIRDILER: &[Girdi] = girdiler! {
         "doğrula_farklı" => "assert_ne": "iki değer eşitse programı durdurur",
         "yapılacak" => "todo": "henüz yazılmamış kodu işaretler",
         "ulaşılamaz" => "unreachable": "hiç ulaşılmaması gereken kodu işaretler",
+        "oku" => "pas_oku": "klavyeden bir satır okur: `oku!(\"Adın ne? \")`, sayı için `oku!(\"Yaşın kaç? \", u32)`",
     }
     Tur {
         "Metin" => "String": "değiştirilebilir metin",

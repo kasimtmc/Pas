@@ -73,6 +73,11 @@ pub struct KaynakDosya {
 }
 
 impl KaynakDosya {
+    /// Bu aralık, kullanıcının yazmadığı (çevirmenin eklediği) kodda mı?
+    pub fn eklenen_kodda_mi(&self, baslangic: usize) -> bool {
+        self.harita.as_ref().is_some_and(|harita| harita.eklenen_metinde_mi(baslangic))
+    }
+
     /// Derlenen koddaki bir aralığın kullanıcının metnindeki karşılığı.
     pub fn gosterilene(&self, baslangic: usize, bitis: usize) -> (usize, usize) {
         match &self.harita {
@@ -198,6 +203,9 @@ impl Gosterici {
             if gereksiz_mi(&alt_tani.mesaj) {
                 continue;
             }
+            if self.yalnizca_eklenen_kodu_gosterir(alt_tani) {
+                continue;
+            }
             let kelime = seviye_sozcugu(&alt_tani.seviye);
             let mesaj = self.cevir(&alt_tani.mesaj);
             let oneri = self.oneri(alt_tani);
@@ -223,6 +231,9 @@ impl Gosterici {
             }
         }
 
+        if let Some(ipucu) = vurgular.iter().find(|m| m.birincil).and_then(|m| oku_ipucu(kod, m)) {
+            let _ = writeln!(cikti, "{dolgu} {} {}: {ipucu}", self.gorunum.kenar("="), self.gorunum.kalin("yardım"));
+        }
         if let Some(kod) = kod
             && let Some(metin) = aciklama(kod)
             && self.aciklananlar.insert(kod.to_owned())
@@ -258,6 +269,9 @@ impl Gosterici {
             if gereksiz_mi(&alt_tani.mesaj) {
                 continue;
             }
+            if self.yalnizca_eklenen_kodu_gosterir(alt_tani) {
+                continue;
+            }
             if let Some(degisiklikler) = self.duzeltme(alt_tani, &birincil.dosya) {
                 oneriler.push(serde_json::json!({
                     "mesaj": self.cevir(&alt_tani.mesaj),
@@ -270,6 +284,9 @@ impl Gosterici {
                 not.push_str(&format!("\n    {}", metin.trim()));
             }
             notlar.push(not);
+        }
+        if let Some(ipucu) = oku_ipucu(kod, birincil) {
+            notlar.push(format!("yardım: {ipucu}"));
         }
         let deger = serde_json::json!({
             "seviye": seviye_sozcugu(&tani.seviye),
@@ -287,9 +304,19 @@ impl Gosterici {
 
     /// Bir aralığı kullanıcının dosyasında bulur. Makro içindeyse makronun
     /// çağrıldığı yere çıkar.
+    /// Alt tanılama yalnızca çevirmenin eklediği kodu (ya da standart
+    /// kütüphaneyi) gösteriyorsa çocuklar için anlamsızdır.
+    fn yalnizca_eklenen_kodu_gosterir(&mut self, alt_tani: &Tani) -> bool {
+        !alt_tani.araliklar.is_empty()
+            && alt_tani.araliklar.iter().all(|a| a.onerilen.is_none())
+            && alt_tani.araliklar.iter().all(|a| self.vurgula(a).is_none())
+    }
+
+    /// Destek kodunun (`oku!`) içindeki aralıklar da makronun çağrıldığı yere
+    /// taşınır; çağrı yeri yoksa (örneğin bir işlev tanımı) gösterilmez.
     fn vurgula(&mut self, aralik: &Aralik) -> Option<Vurgu> {
         match self.kaynaklar.al(&aralik.dosya_adi) {
-            Some(dosya) => {
+            Some(dosya) if !dosya.eklenen_kodda_mi(aralik.bayt_baslangici) => {
                 let (baslangic, bitis) = dosya.gosterilene(aralik.bayt_baslangici, aralik.bayt_bitisi);
                 Some(Vurgu {
                     dosya,
@@ -299,7 +326,7 @@ impl Gosterici {
                     etiket: aralik.etiket.as_deref().map(|l| self.cevir(l)),
                 })
             }
-            None => {
+            _ => {
                 let mut vurgu = self.vurgula(&aralik.genisleme.as_ref()?.aralik)?;
                 vurgu.birincil = aralik.birincil;
                 vurgu.etiket = aralik.etiket.as_deref().map(|l| self.cevir(l));
@@ -439,6 +466,26 @@ impl Gosterici {
             metin.replace_range(vurgu.baslangic - satir_basi..vurgu.bitis - satir_basi, yerine);
         }
         Some((satir, metin.replace('\t', " ")))
+    }
+}
+
+/// `oku!` makrosunun sık yapılan yanlış kullanımları için ipucu.
+fn oku_ipucu(kod: Option<&str>, birincil: &Vurgu) -> Option<&'static str> {
+    let dizin = SatirDizini::yeni(&birincil.dosya.metin);
+    let satir = dizin.satir(dizin.satir_sutun(birincil.baslangic).0)?;
+    if !satir.contains("oku!(") {
+        return None;
+    }
+    let etiket = birincil.etiket.as_deref().unwrap_or("");
+    match kod? {
+        "E0308" if etiket.contains("`Metin` bulundu") => {
+            Some("`oku!` metin okur; sayı okumak için türünü de yaz: `oku!(\"Sayı: \", u32)`")
+        }
+        "E0308" if etiket.contains("`&str` bekleniyordu") => {
+            Some("`oku!` içine soruyu tırnak içinde yaz: `oku!(\"Adın ne? \")`")
+        }
+        "E0277" => Some("`oku!` yalnızca sayı, `Metin`, `mantıksal` ve `karakter` gibi türleri okuyabilir"),
+        _ => None,
     }
 }
 

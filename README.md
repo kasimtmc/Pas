@@ -118,6 +118,21 @@ Bu sayede Pas öğrenen biri ileride gerçek Rust'a kolayca geçebilir.
   `Metin` (String), `Liste` (Vec), `Belki`/`Var`/`Yok` (Option/Some/None),
   `Sonuç`/`Tamam`/`Hata` (Result/Ok/Err), `.uzunluk()` (len), `.ekle()` (push) …
 
+### Klavyeden okuma
+
+`oku!` makrosu kullanıcıdan bir satır okur:
+
+```
+yap ad = oku!("Adın ne? ");                // Metin
+yap yaş = oku!("Kaç yaşındasın? ", u32);   // sayı
+yap boy = oku!("Boyun kaç metre? ", f64);  // 1,45 da 1.45 de olur
+yap devam = oku!("Devam mı? ", mantıksal); // evet/hayır, doğru/yanlış
+```
+
+Sayı beklenirken başka bir şey yazılırsa `oku!` "`on iki` geçerli bir
+tam sayı değil, tekrar dene." diyerek yeniden sorar. Örnek bir oyun için
+[`ornekler/sayi-tahmin`](ornekler/sayi-tahmin/src/ana.pas) dizinine bak.
+
 Tam liste için `cargo pas sözlük` komutunu çalıştır ya da
 [`sozluk.rs`](crates/pas-cekirdek/src/sozluk.rs) dosyasına bak.
 
@@ -178,5 +193,5 @@ cd ornekler/tanitim && cargo run --manifest-path ../../Cargo.toml -p cargo-pas -
 - [ ] Eklenti: gerçek sözdizimi ağacı (girinti, katlama, yapı görünümü)
 - [ ] `pas-lsp`: rust-analyzer üzerine kurulu dil sunucusu (tanıma gitme,
       akıllı tamamlama; VS Code desteği)
-- [ ] Klavyeden kolay girdi okumak için yardımcılar
+- [x] Klavyeden kolay girdi okumak için `oku!` makrosu
 - [ ] Daha fazla Türkçe hata mesajı ve açıklama
