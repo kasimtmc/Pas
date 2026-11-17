@@ -63,6 +63,8 @@ Pas desteği ekler:
 - Türkçe sözcükleri ve Rust karşılıklarını gösteren kod tamamlama
 - `işlev ana()` satırının yanında ▶ Çalıştır düğmesi
 - Derleyici hatalarının, dosya kaydedilmeden de editörde Türkçe gösterilmesi
+- Derleyicinin önerdiği düzeltmeleri Alt+Enter ile uygulama (örneğin
+  `yap x` → `yap değişken x`, `isim` → `isim.kopyala()`)
 - Ctrl+/ ile yorum satırı, parantez eşleme
 - Çalıştırma çıktısındaki `--> src/ana.pas:3:5` konumlarına tıklayınca o satıra gitme
 
@@ -172,7 +174,7 @@ cd ornekler/tanitim && cargo run --manifest-path ../../Cargo.toml -p cargo-pas -
 - [x] Çevirici çekirdeği ve `cargo pas` komutu
 - [x] RustRover eklentisi: renklendirme, tamamlama, Çalıştır düğmesi,
       Türkçe hata gösterimi
-- [ ] Eklenti: Türkçe hata önerilerini tek tıkla uygulama (hızlı düzeltme)
+- [x] Eklenti: Türkçe hata önerilerini tek tıkla uygulama (hızlı düzeltme)
 - [ ] Eklenti: gerçek sözdizimi ağacı (girinti, katlama, yapı görünümü)
 - [ ] `pas-lsp`: rust-analyzer üzerine kurulu dil sunucusu (tanıma gitme,
       akıllı tamamlama; VS Code desteği)

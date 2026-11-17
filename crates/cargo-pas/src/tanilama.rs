@@ -48,6 +48,9 @@ pub struct Aralik {
     pub etiket: Option<String>,
     #[serde(rename = "suggested_replacement")]
     pub onerilen: Option<String>,
+    /// `MachineApplicable`, `MaybeIncorrect`, `HasPlaceholders` ya da `Unspecified`
+    #[serde(rename = "suggestion_applicability")]
+    pub oneri_guvenilirligi: Option<String>,
     #[serde(rename = "expansion")]
     pub genisleme: Option<Box<Genisleme>>,
 }
@@ -250,9 +253,17 @@ impl Gosterici {
             })
             .collect();
         let mut notlar = Vec::new();
+        let mut oneriler = Vec::new();
         for alt_tani in &tani.alt_tanilar {
             if gereksiz_mi(&alt_tani.mesaj) {
                 continue;
+            }
+            if let Some(degisiklikler) = self.duzeltme(alt_tani, &birincil.dosya) {
+                oneriler.push(serde_json::json!({
+                    "mesaj": self.cevir(&alt_tani.mesaj),
+                    "kesin": alt_tani.araliklar.iter().all(|a| a.oneri_guvenilirligi.as_deref() == Some("MachineApplicable")),
+                    "degisiklikler": degisiklikler,
+                }));
             }
             let mut not = format!("{}: {}", seviye_sozcugu(&alt_tani.seviye), self.cevir(&alt_tani.mesaj));
             if let Some((_, metin)) = self.oneri(alt_tani) {
@@ -268,6 +279,7 @@ impl Gosterici {
             "aralik": aralik(birincil),
             "etiketler": etiketler,
             "notlar": notlar,
+            "oneriler": oneriler,
             "aciklama": kod.and_then(aciklama),
         });
         println!("{deger}");
@@ -372,6 +384,31 @@ impl Gosterici {
             }
             let _ = writeln!(cikti, "{dolgu} {}", gorunum.kenar("|"));
         }
+    }
+
+    /// Bir yardım mesajındaki kod önerisini, IDE'nin uygulayabileceği
+    /// değişikliklere çevirir. Değişikliklerin hepsi `dosya` içinde olmalı;
+    /// yer tutucu içeren (`/* value */`) öneriler alınmaz.
+    fn duzeltme(&mut self, alt_tani: &Tani, dosya: &Rc<KaynakDosya>) -> Option<Vec<serde_json::Value>> {
+        let mut degisiklikler = Vec::new();
+        for aralik in &alt_tani.araliklar {
+            let yerine = aralik.onerilen.as_ref()?;
+            if aralik.oneri_guvenilirligi.as_deref() == Some("HasPlaceholders") {
+                return None;
+            }
+            let vurgu = self.vurgula(aralik)?;
+            if !Rc::ptr_eq(&vurgu.dosya, dosya) {
+                return None;
+            }
+            let dizin = SatirDizini::yeni(&dosya.metin);
+            let (satir, sutun) = dizin.satir_sutun(vurgu.baslangic);
+            let (bitis_satiri, bitis_sutunu) = dizin.satir_sutun(vurgu.bitis);
+            degisiklikler.push(serde_json::json!({
+                "aralik": { "satir": satir, "sutun": sutun, "bitis_satiri": bitis_satiri, "bitis_sutunu": bitis_sutunu },
+                "metin": pasa_cevir(yerine),
+            }));
+        }
+        (!degisiklikler.is_empty()).then_some(degisiklikler)
     }
 
     /// Bir yardım mesajındaki kod önerisini Pas satırına uygular.

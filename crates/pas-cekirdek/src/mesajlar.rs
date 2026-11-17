@@ -166,6 +166,7 @@ const DERLEYICI: &[(&str, &str)] = &[
     ("attempt to divide `{}` by zero", "`{0}` sıfıra bölünmeye çalışılıyor"),
     // Uyarılar
     ("unused variable: `{}`", "`{0}` değişkeni hiç kullanılmamış"),
+    ("if this is intentional, prefix it with an underscore", "bilerek yaptıysan başına alt çizgi koy"),
     ("if this is intentional, prefix it with an underscore: `{}`", "bilerek yaptıysan başına alt çizgi koy: `{0}`"),
     ("variable does not need to be mutable", "bu değişkenin `değişken` olmasına gerek yok"),
     ("remove this `mut`", "bu `değişken` sözcüğünü kaldır"),

@@ -125,4 +125,11 @@ fn json_tanilamalari_ide_icin_okunabilir() {
     assert!(hata["mesaj"].as_str().unwrap().contains("`ş`"), "{hata}");
     assert!(hata["aciklama"].is_string());
     assert!(hata["notlar"].as_array().unwrap().iter().any(|not| not.as_str().unwrap().contains("yap değişken ş")));
+    // IDE'nin Alt+Enter ile uygulayacağı öneri: `ş`nin önüne `değişken ` ekle.
+    let oneri = &hata["oneriler"][0];
+    assert_eq!(oneri["kesin"], true);
+    assert_eq!(oneri["degisiklikler"][0]["metin"], "değişken ");
+    assert_eq!(oneri["degisiklikler"][0]["aralik"]["satir"], 2);
+    assert_eq!(oneri["degisiklikler"][0]["aralik"]["sutun"], 9);
+    assert_eq!(oneri["degisiklikler"][0]["aralik"]["bitis_sutunu"], 9);
 }

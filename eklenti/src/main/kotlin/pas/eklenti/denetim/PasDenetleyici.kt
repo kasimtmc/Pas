@@ -1,5 +1,6 @@
 package pas.eklenti.denetim
 
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.lang.annotation.AnnotationHolder
@@ -26,13 +27,17 @@ data class Tani(
     val kod: String?,
     val mesaj: String,
     val dosya: String,
-    val satir: Int,
-    val sutun: Int,
-    val bitisSatiri: Int,
-    val bitisSutunu: Int,
+    val konum: Konum,
     val notlar: List<String>,
+    val oneriler: List<Oneri>,
     val aciklama: String?,
 )
+
+/** 1'den başlayan satır ve (karakter olarak) sütun numaralarıyla bir aralık. */
+data class Konum(val satir: Int, val sutun: Int, val bitisSatiri: Int, val bitisSutunu: Int)
+
+/** Derleyicinin önerdiği bir düzeltme: `kesin` ise rustc güvenle uygulanabilir der. */
+data class Oneri(val mesaj: String, val kesin: Boolean, val degisiklikler: List<Pair<Konum, String>>)
 
 /**
  * Pas dosyalarını derleyiciyle denetleyip hataları editörde Türkçe gösterir.
@@ -77,10 +82,14 @@ class PasDenetleyici : ExternalAnnotator<PasDenetleyici.Girdi, List<Tani>>() {
                 "uyarı" -> HighlightSeverity.WARNING
                 else -> HighlightSeverity.WEAK_WARNING
             }
-            holder.newAnnotation(onem, baslik(tani))
-                .range(aralik(belge, tani))
+            var ek = holder.newAnnotation(onem, baslik(tani))
+                .range(isaretlenecekAralik(belge, tani.konum))
                 .tooltip(ipucu(tani))
-                .create()
+            for (oneri in tani.oneriler) {
+                val degisiklikler = oneri.degisiklikler.map { (konum, metin) -> BelgeDegisikligi(aralik(belge, konum), metin) }
+                ek = ek.withFix(PasHizliDuzeltme(oneri.mesaj, degisiklikler, belge.modificationStamp, oneri.kesin))
+            }
+            ek.create()
         }
     }
 
@@ -95,12 +104,15 @@ class PasDenetleyici : ExternalAnnotator<PasDenetleyici.Girdi, List<Tani>>() {
         append("</html>")
     }
 
-    private fun aralik(belge: Document, tani: Tani): TextRange {
-        val baslangic = ofset(belge, tani.satir, tani.sutun)
-        var bitis = ofset(belge, tani.bitisSatiri, tani.bitisSutunu)
-        // Boş aralıklar görünmez; en az bir karakteri işaretle.
-        if (bitis <= baslangic) bitis = minOf(baslangic + 1, belge.textLength)
-        return TextRange(minOf(baslangic, bitis), bitis)
+    private fun aralik(belge: Document, konum: Konum): TextRange {
+        val baslangic = ofset(belge, konum.satir, konum.sutun)
+        return TextRange(baslangic, maxOf(baslangic, ofset(belge, konum.bitisSatiri, konum.bitisSutunu)))
+    }
+
+    /** Boş aralıklar görünmez; en az bir karakteri işaretle. */
+    private fun isaretlenecekAralik(belge: Document, konum: Konum): TextRange {
+        val aralik = aralik(belge, konum)
+        return if (aralik.isEmpty) TextRange(aralik.startOffset, minOf(aralik.startOffset + 1, belge.textLength)) else aralik
     }
 
     /** 1'den başlayan satır ve karakter sütununu belge ofsetine çevirir. */
@@ -124,23 +136,37 @@ class PasDenetleyici : ExternalAnnotator<PasDenetleyici.Girdi, List<Tani>>() {
 
         fun cozumle(satir: String): Tani? = try {
             val json = JsonParser.parseString(satir).asJsonObject
-            val aralik = json.getAsJsonObject("aralik")
             fun istegeBagli(ad: String) = json.get(ad)?.takeUnless { it.isJsonNull }?.asString
             Tani(
                 seviye = json.get("seviye").asString,
                 kod = istegeBagli("kod"),
                 mesaj = json.get("mesaj").asString,
                 dosya = json.get("dosya").asString,
-                satir = aralik.get("satir").asInt,
-                sutun = aralik.get("sutun").asInt,
-                bitisSatiri = aralik.get("bitis_satiri").asInt,
-                bitisSutunu = aralik.get("bitis_sutunu").asInt,
+                konum = konum(json.getAsJsonObject("aralik")),
                 notlar = json.getAsJsonArray("notlar")?.map { it.asString }.orEmpty(),
+                oneriler = json.getAsJsonArray("oneriler")?.map { o ->
+                    val oneri = o.asJsonObject
+                    Oneri(
+                        mesaj = oneri.get("mesaj").asString,
+                        kesin = oneri.get("kesin")?.asBoolean ?: false,
+                        degisiklikler = oneri.getAsJsonArray("degisiklikler").map { d ->
+                            val degisiklik = d.asJsonObject
+                            konum(degisiklik.getAsJsonObject("aralik")) to degisiklik.get("metin").asString
+                        },
+                    )
+                }.orEmpty(),
                 aciklama = istegeBagli("aciklama"),
             )
         } catch (_: Exception) {
             null
         }
+
+        private fun konum(json: JsonObject) = Konum(
+            satir = json.get("satir").asInt,
+            sutun = json.get("sutun").asInt,
+            bitisSatiri = json.get("bitis_satiri").asInt,
+            bitisSutunu = json.get("bitis_sutunu").asInt,
+        )
 
         private fun araciBulamadiysaBildir(project: Project) {
             if (!bildirildi.compareAndSet(false, true)) return
