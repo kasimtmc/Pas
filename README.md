@@ -54,6 +54,34 @@ cargo pas çalıştır
 Komutların İngilizce (`run`, `build`, …) ve ASCII (`calistir`, `cevir`, …)
 adları da çalışır.
 
+## RustRover eklentisi
+
+`eklenti/` dizinindeki eklenti RustRover'a (ve diğer JetBrains IDE'lerine)
+Pas desteği ekler:
+
+- `.pas` dosyaları için renklendirme
+- Türkçe sözcükleri ve Rust karşılıklarını gösteren kod tamamlama
+- `işlev ana()` satırının yanında ▶ Çalıştır düğmesi
+- Derleyici hatalarının, dosya kaydedilmeden de editörde Türkçe gösterilmesi
+- Ctrl+/ ile yorum satırı, parantez eşleme
+- Çalıştırma çıktısındaki `--> src/ana.pas:3:5` konumlarına tıklayınca o satıra gitme
+
+Eklenti `cargo-pas` aracını kullanır, önce onu kur (yukarıya bak).
+Eklentiyi derlemek için JDK 21 ya da daha yenisi gerekir:
+
+```bash
+cd eklenti && ./gradlew buildPlugin
+```
+
+Oluşan `eklenti/build/distributions/pas-eklenti-0.1.0.zip` dosyasını
+RustRover'da **Ayarlar → Eklentiler → ⚙ → Diskten eklenti yükle**
+(Settings → Plugins → ⚙ → Install Plugin from Disk) ile kurabilirsin.
+Eklentiyi kurmadan, ayrı bir deneme RustRover'ında açmak için:
+
+```bash
+cd eklenti && ./gradlew runIde
+```
+
 ## Hata mesajları
 
 ```
@@ -113,6 +141,7 @@ crates/
   pas-cekirdek/   Çevirici: sözcük çözümleyici, sözlük, Pas ⇄ Rust çevirisi,
                   kaynak eşlemesi, Türkçe derleyici ve panik mesajları
   cargo-pas/      `cargo pas` komutu
+eklenti/          RustRover eklentisi (Kotlin)
 ornekler/         Örnek Pas projeleri
 ```
 
@@ -128,6 +157,10 @@ kaynak eşlemesi kullanılarak Pas dosyasındaki konumlara geri çevrilir.
 cargo test
 ```
 
+```bash
+cd eklenti && ./gradlew test
+```
+
 Örnek projeyi çalıştırmak için:
 
 ```bash
@@ -137,8 +170,10 @@ cd ornekler/tanitim && cargo run --manifest-path ../../Cargo.toml -p cargo-pas -
 ## Yol haritası
 
 - [x] Çevirici çekirdeği ve `cargo pas` komutu
-- [ ] RustRover eklentisi: renklendirme, tamamlama, Çalıştır düğmesi,
+- [x] RustRover eklentisi: renklendirme, tamamlama, Çalıştır düğmesi,
       Türkçe hata gösterimi
+- [ ] Eklenti: Türkçe hata önerilerini tek tıkla uygulama (hızlı düzeltme)
+- [ ] Eklenti: gerçek sözdizimi ağacı (girinti, katlama, yapı görünümü)
 - [ ] `pas-lsp`: rust-analyzer üzerine kurulu dil sunucusu (tanıma gitme,
       akıllı tamamlama; VS Code desteği)
 - [ ] Klavyeden kolay girdi okumak için yardımcılar

@@ -1,0 +1,38 @@
+<idea-plugin>
+    <id>pas.eklenti</id>
+    <name>Pas (Türkçe Rust)</name>
+    <vendor>Pas</vendor>
+
+    <description><![CDATA[
+    <p><b>Pas</b>, Rust programlama dilini Türkçe anahtar sözcüklerle yazmayı sağlar.
+    Henüz İngilizce bilmeyen çocuklar ve gençler için hazırlandı.</p>
+    <ul>
+        <li><code>.pas</code> dosyaları için renklendirme</li>
+        <li>Türkçe sözcükleri ve karşılıklarını gösteren kod tamamlama</li>
+        <li><code>işlev ana()</code> yanında Çalıştır düğmesi</li>
+        <li>Derleyici hatalarının editörde Türkçe gösterilmesi</li>
+    </ul>
+    <p><code>cargo-pas</code> aracının kurulu olması gerekir.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="Pas" implementationClass="pas.eklenti.PasDosyaTuru" fieldName="INSTANCE"
+                  language="Pas" extensions="pas"/>
+        <lang.parserDefinition language="Pas" implementationClass="pas.eklenti.PasAyristiriciTanimi"/>
+        <lang.syntaxHighlighterFactory language="Pas" implementationClass="pas.eklenti.PasRenklendiriciFabrikasi"/>
+        <colorSettingsPage implementation="pas.eklenti.PasRenkAyarlari"/>
+        <lang.commenter language="Pas" implementationClass="pas.eklenti.PasYorumlayici"/>
+        <lang.braceMatcher language="Pas" implementationClass="pas.eklenti.PasParantezEsleyici"/>
+        <lang.quoteHandler language="Pas" implementationClass="pas.eklenti.PasTirnakIsleyici"/>
+        <completion.contributor language="Pas" implementationClass="pas.eklenti.PasTamamlayici"/>
+
+        <configurationType implementation="pas.eklenti.calistir.PasCalistirmaTuru"/>
+        <runConfigurationProducer implementation="pas.eklenti.calistir.PasCalistirmaUreticisi"/>
+        <runLineMarkerContributor language="Pas" implementationClass="pas.eklenti.calistir.PasCalistirmaIsareti"/>
+
+        <externalAnnotator language="Pas" implementationClass="pas.eklenti.denetim.PasDenetleyici"/>
+        <notificationGroup id="Pas" displayType="BALLOON"/>
+    </extensions>
+</idea-plugin>
