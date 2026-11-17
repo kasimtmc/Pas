@@ -64,7 +64,7 @@ pub fn calistir(
     })
 }
 
-/// `thread 'main' (1234) panicked at kaynak/main.rs:5:34:`
+/// `thread 'main' (1234) panicked at src/main.rs:5:34:`
 fn panik_basligi(satir: &str, kaynaklar: &mut Kaynaklar, gorunum: Gorunum) -> Option<String> {
     let kalan = satir.strip_prefix("thread '")?;
     let is_parcacigi = &kalan[..kalan.find('\'')?];

@@ -214,7 +214,7 @@ fn yeni_proje(argumanlar: &[String], gorunum: Gorunum) -> Result<ExitCode, Strin
         return Err(format!("`{ad}` proje adı olarak kullanılamaz; harflerle başlayan bir ad seç"));
     }
 
-    // `[[ikili]]` bölümü programın Rust'a çevrilmiş halini gösterir; IDE'ler
+    // `[[bin]]` bölümü programın Rust'a çevrilmiş halini gösterir; IDE'ler
     // (`cargo metadata`) `.rs` dosyası olmayan projeyi bu sayede tanır.
     let bildirim = format!(
         "[package]\nname = \"{paket}\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n\

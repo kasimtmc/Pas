@@ -140,30 +140,30 @@ mod testler {
 
     fn ornek() -> KaynakHaritasi {
         // "yap x" (pas) -> "let x" (rust); "#[p] " eklemesi ve ardından "genel" -> "pub"
-        let mut esle = KaynakHaritasi::default();
-        esle.ekle(Parca { pas_baslangic: 0, pas_uzunluk: 6, rust_baslangic: 0, rust_uzunluk: 3 });
-        esle.ekle(Parca { pas_baslangic: 10, pas_uzunluk: 0, rust_baslangic: 7, rust_uzunluk: 5 });
-        esle.ekle(Parca { pas_baslangic: 10, pas_uzunluk: 5, rust_baslangic: 12, rust_uzunluk: 3 });
-        esle
+        let mut harita = KaynakHaritasi::default();
+        harita.ekle(Parca { pas_baslangic: 0, pas_uzunluk: 6, rust_baslangic: 0, rust_uzunluk: 3 });
+        harita.ekle(Parca { pas_baslangic: 10, pas_uzunluk: 0, rust_baslangic: 7, rust_uzunluk: 5 });
+        harita.ekle(Parca { pas_baslangic: 10, pas_uzunluk: 5, rust_baslangic: 12, rust_uzunluk: 3 });
+        harita
     }
 
     #[test]
     fn degismeyen_metni_esler() {
-        let esle = ornek();
-        assert_eq!(esle.rusttan_pasa(4, Yon::Baslangic), 7);
-        assert_eq!(esle.pastan_rusta(7, Yon::Baslangic), 4);
-        assert_eq!(esle.rusttan_pasa(16, Yon::Baslangic), 16);
+        let harita = ornek();
+        assert_eq!(harita.rusttan_pasa(4, Yon::Baslangic), 7);
+        assert_eq!(harita.pastan_rusta(7, Yon::Baslangic), 4);
+        assert_eq!(harita.rusttan_pasa(16, Yon::Baslangic), 16);
     }
 
     #[test]
     fn degisen_sozcukleri_esler() {
-        let esle = ornek();
-        assert_eq!(esle.rust_araligini_pasa(0, 3), (0, 6));
-        assert_eq!(esle.rusttan_pasa(1, Yon::Baslangic), 0);
-        assert_eq!(esle.rusttan_pasa(1, Yon::Bitis), 6);
+        let harita = ornek();
+        assert_eq!(harita.rust_araligini_pasa(0, 3), (0, 6));
+        assert_eq!(harita.rusttan_pasa(1, Yon::Baslangic), 0);
+        assert_eq!(harita.rusttan_pasa(1, Yon::Bitis), 6);
         // Eklenen metin, kaynağında sıfır uzunluklu bir noktaya düşer.
-        assert_eq!(esle.rust_araligini_pasa(7, 12), (10, 10));
-        assert_eq!(esle.rust_araligini_pasa(12, 15), (10, 15));
+        assert_eq!(harita.rust_araligini_pasa(7, 12), (10, 10));
+        assert_eq!(harita.rust_araligini_pasa(12, 15), (10, 15));
     }
 
     #[test]

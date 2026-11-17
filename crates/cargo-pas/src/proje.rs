@@ -1,8 +1,8 @@
 //! Bir Pas projesini, cargo'nun derleyebileceği bir "gölge" projeye çevirir.
 //!
-//! Gölge proje `hedef/pas/` altında durur ve kullanıcının projesinin
+//! Gölge proje `target/pas/` altında durur ve kullanıcının projesinin
 //! aynısıdır; tek farkı `.pas` dosyalarının yerinde çevrilmiş `.rs`
-//! dosyalarının bulunmasıdır (`kaynak/ana.pas` → `kaynak/main.rs`). Dosyalar
+//! dosyalarının bulunmasıdır (`src/ana.pas` → `src/main.rs`). Dosyalar
 //! yalnızca içerikleri değiştiğinde yeniden yazılır; böylece cargo'nun
 //! artımlı derlemesi bozulmaz.
 
@@ -30,9 +30,9 @@ pub struct Proje {
 
 /// Çevrilmiş bir Pas dosyası.
 pub struct UretilenDosya {
-    /// Gölge projeye göre Rust dosyasının yolu, örneğin `kaynak/main.rs`.
+    /// Gölge projeye göre Rust dosyasının yolu, örneğin `src/main.rs`.
     pub rust_yolu: String,
-    /// Projeye göre Pas dosyasının yolu, örneğin `kaynak/ana.pas`.
+    /// Projeye göre Pas dosyasının yolu, örneğin `src/ana.pas`.
     pub pas_yolu: String,
     pub pas_kaynagi: String,
     pub rust_kaynagi: String,
@@ -188,8 +188,8 @@ impl Proje {
                 }
             }
         }
-        // `[[ikili]] path = "kaynak/oyun.pas"` gibi hedef yolları
-        // ve `path = "hedef/pas/kaynak/main.rs"` gibi gölge projeyi gösteren yollar.
+        // `[[bin]] path = "src/oyun.pas"` gibi hedef yolları
+        // ve `path = "target/pas/src/main.rs"` gibi gölge projeyi gösteren yollar.
         // İkincisi, IDE'lerin (`cargo metadata`) `.rs` dosyası olmayan bir
         // projeyi okuyabilmesi için `cargo pas yeni` tarafından yazılır.
         for anahtar in ["lib", "bin", "example", "test", "bench"] {
@@ -225,7 +225,7 @@ fn rust_yolu_bul(pas: &Path) -> PathBuf {
     ust_dizin.join(format!("{rust_govdesi}.rs"))
 }
 
-/// `kaynak/ikili/x.pas`, `examples/x.pas` gibi dosyalar kendi sandıklarının köküdür.
+/// `src/ikili/x.pas`, `examples/x.pas` gibi dosyalar kendi sandıklarının köküdür.
 fn sandik_koku_mu(pas: &Path) -> bool {
     let ust_dizin = pas.parent().unwrap_or(Path::new(""));
     ["src/bin", "examples", "tests", "benches"].iter().any(|dizin| ust_dizin == Path::new(dizin))

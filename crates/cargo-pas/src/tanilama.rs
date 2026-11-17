@@ -63,7 +63,7 @@ pub struct Genisleme {
 
 /// Kullanıcıya gösterilecek bir kaynak dosya.
 pub struct KaynakDosya {
-    /// Kullanıcının gördüğü yol, örneğin `kaynak/ana.pas`.
+    /// Kullanıcının gördüğü yol, örneğin `src/ana.pas`.
     pub gosterilen: String,
     /// Kullanıcının gördüğü metin (Pas kaynağı ya da kopyalanmış `.rs`).
     pub metin: String,
@@ -86,7 +86,7 @@ impl KaynakDosya {
 pub struct Kaynaklar {
     golge: std::path::PathBuf,
     dosyalar: HashMap<String, Option<Rc<KaynakDosya>>>,
-    /// Mesaj metinlerindeki `kaynak/main.rs` → `kaynak/ana.pas` düzeltmeleri.
+    /// Mesaj metinlerindeki `src/main.rs` → `src/ana.pas` düzeltmeleri.
     yeniden_adlar: Vec<(String, String)>,
 }
 

@@ -85,7 +85,7 @@ fn yeni_proje_calisir() {
     assert!(cargo_pas(&ust_dizin, &["yeni", "İlk Oyun"]).status.success());
     let bildirim = fs::read_to_string(ust_dizin.join("İlk Oyun/Cargo.toml")).unwrap();
     assert!(bildirim.contains("name = \"ilk-oyun\""), "{bildirim}");
-    // IDE'ler projeyi `cargo ust_veri` ile okur; `.rs` dosyası olmasa da çalışmalı.
+    // IDE'ler projeyi `cargo metadata` ile okur; `.rs` dosyası olmasa da çalışmalı.
     let ust_veri = Command::new(env!("CARGO"))
         .args(["metadata", "--format-version", "1", "--no-deps"])
         .current_dir(ust_dizin.join("İlk Oyun"))

@@ -392,7 +392,7 @@ fn doldur(sablon: &str, yakalananlar: &[&str]) -> String {
 }
 
 fn yakalanani_pasa_cevir(yakalanan: &str) -> String {
-    // Dosya yolları (`kaynak/main.rs`) çevrilmez; onları çağıran taraf düzeltir.
+    // Dosya yolları (`src/main.rs`) çevrilmez; onları çağıran taraf düzeltir.
     if yakalanan.contains(".rs") {
         return yakalanan.to_owned();
     }
