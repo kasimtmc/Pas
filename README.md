@@ -97,6 +97,8 @@ Bilinmesi gerekenler:
   yazılabilir.
 - Türkçe bir anahtar sözcüğü isim olarak kullanmak için başına `r#` koy:
   `yap r#tür = 3;`
+- `Cargo.toml` içindeki `[[bin]] path = "target/pas/src/main.rs"` satırı
+  IDE'lerin projeyi tanıması içindir; `cargo pas yeni` bunu kendisi yazar.
 - `src/ana.pas` programın başladığı dosyadır (`main.rs`),
   `src/kütüphane.pas` ise kütüphane dosyasıdır (`lib.rs`).
 - Modül adları Türkçe karakter içerebilir: `modül şekiller;` →

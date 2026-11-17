@@ -1,8 +1,9 @@
 [workspace]
 resolver = "3"
 members = ["crates/pas-cekirdek", "crates/cargo-pas"]
-# Örnekler kendi başına birer Pas projesidir, bu çalışma alanına ait değildir.
-exclude = ["ornekler"]
+# Örnekler ve testlerin `target/` altında oluşturduğu projeler kendi başına
+# birer Pas projesidir; bu çalışma alanına ait değildir.
+exclude = ["ornekler", "target"]
 
 [workspace.package]
 version = "0.1.0"

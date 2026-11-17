@@ -133,11 +133,13 @@ pub struct Renderer {
     style: Style,
     pub sources: Sources,
     explained: HashSet<String>,
+    /// Tanılamaları IDE'ler için JSON satırları olarak standart çıktıya yaz.
+    json: bool,
 }
 
 impl Renderer {
-    pub fn new(style: Style, sources: Sources) -> Self {
-        Renderer { style, sources, explained: HashSet::new() }
+    pub fn new(style: Style, sources: Sources, json: bool) -> Self {
+        Renderer { style, sources, explained: HashSet::new(), json }
     }
 
     fn translate(&self, message: &str) -> String {
@@ -166,6 +168,10 @@ impl Renderer {
         let _ = writeln!(out, "{}{}", paint(&self.style, &header), self.style.bold(&format!(": {message}")));
 
         let marks: Vec<Mark> = diag.spans.iter().filter_map(|span| self.mark(span)).collect();
+        if self.json {
+            self.render_json(diag, code, &message, &marks);
+            return;
+        }
         let width = self.gutter_width(diag, &marks);
         let pad = " ".repeat(width);
         self.snippet(&mut out, &marks, width, paint);
@@ -202,6 +208,50 @@ impl Renderer {
             let _ = writeln!(out, "{pad} {} {}: {text}", self.style.gutter("="), self.style.note("açıklama"));
         }
         eprintln!("{out}");
+    }
+
+    /// Bir tanılamayı tek satırlık JSON olarak yazar. Konumlar 1'den başlayan
+    /// satır ve (karakter olarak) sütun numaralarıdır.
+    fn render_json(&mut self, diag: &Diagnostic, code: Option<&str>, message: &str, marks: &[Mark]) {
+        let Some(primary) = marks.iter().find(|m| m.primary).or(marks.first()) else { return };
+        let span = |mark: &Mark| {
+            let index = LineIndex::new(&mark.file.text);
+            let (line, column) = index.line_col(mark.start);
+            let (end_line, end_column) = index.line_col(mark.end);
+            serde_json::json!({ "line": line, "column": column, "end_line": end_line, "end_column": end_column })
+        };
+        let labels: Vec<serde_json::Value> = marks
+            .iter()
+            .filter(|m| Rc::ptr_eq(&m.file, &primary.file))
+            .filter_map(|m| {
+                let mut value = span(m);
+                value["message"] = m.label.clone()?.into();
+                value["primary"] = m.primary.into();
+                Some(value)
+            })
+            .collect();
+        let mut notes = Vec::new();
+        for child in &diag.children {
+            if is_noise(&child.message) {
+                continue;
+            }
+            let mut note = format!("{}: {}", level_word(&child.level), self.translate(&child.message));
+            if let Some((_, text)) = self.suggestion(child) {
+                note.push_str(&format!("\n    {}", text.trim()));
+            }
+            notes.push(note);
+        }
+        let value = serde_json::json!({
+            "level": diag.level,
+            "code": code,
+            "message": message,
+            "file": primary.file.display,
+            "span": span(primary),
+            "labels": labels,
+            "notes": notes,
+            "explanation": code.and_then(explanation),
+        });
+        println!("{value}");
     }
 
     /// Bir aralığı kullanıcının dosyasında bulur. Makro içindeyse makronun

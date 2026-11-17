@@ -169,6 +169,9 @@ const COMPILER: &[(&str, &str)] = &[
     ("if this is intentional, prefix it with an underscore: `{}`", "bilerek yaptıysan başına alt çizgi koy: `{0}`"),
     ("variable does not need to be mutable", "bu değişkenin `değişken` olmasına gerek yok"),
     ("remove this `mut`", "bu `değişken` sözcüğünü kaldır"),
+    ("variable `{}` is assigned to, but never used", "`{0}` değişkenine değer veriliyor ama hiç kullanılmıyor"),
+    ("consider using `{}` instead", "bunun yerine `{0}` yazabilirsin"),
+    ("maybe it is overwritten before being read?", "değeri okunmadan önce üzerine yeni bir değer yazılıyor olabilir"),
     ("value assigned to `{}` is never read", "`{0}` değişkenine verilen değer hiç okunmamış"),
     ("this value is reassigned later and never used", "bu değer sonradan değiştiriliyor ve hiç kullanılmıyor"),
     (

@@ -14,7 +14,7 @@ use std::process::ExitCode;
 use pas_cekirdek::dictionary::{self, ENTRIES};
 
 use crate::diagnostics::{Renderer, Sources};
-use crate::project::Project;
+use crate::project::{Project, SHADOW_PREFIX};
 use crate::style::Style;
 
 const HELP: &str = "\
@@ -38,6 +38,8 @@ Derleme seçenekleri (çalıştır, derle, denetle):
     --yayın          Hızlı çalışan (yayın) sürümü derler
     --ikili <ad>     Birden fazla program varsa hangisinin çalışacağı
     -- <argümanlar>  Bundan sonrası programa verilir
+    --json           Hataları JSON satırları olarak yazar (IDE'ler için)
+    --stdin <dosya>  Bu dosyanın içeriğini diskten değil standart girdiden okur
 
 Komutların İngilizce adları da çalışır: new, run, build, check,
 translate, dictionary, help, version.";
@@ -94,6 +96,8 @@ struct BuildOptions {
     release: bool,
     bin: Option<String>,
     program_args: Vec<String>,
+    json: bool,
+    stdin_file: Option<String>,
 }
 
 impl BuildOptions {
@@ -105,6 +109,11 @@ impl BuildOptions {
                 "--yayın" | "--yayin" | "--release" => options.release = true,
                 "--ikili" | "--bin" => {
                     options.bin = Some(args.next().ok_or("`--ikili` seçeneğinden sonra bir ad yaz")?.clone());
+                }
+                "--json" => options.json = true,
+                "--stdin" => {
+                    options.stdin_file =
+                        Some(args.next().ok_or("`--stdin` seçeneğinden sonra bir dosya yolu yaz")?.clone());
                 }
                 "--" => {
                     options.program_args = args.cloned().collect();
@@ -122,8 +131,16 @@ fn build(args: &[String], mode: Mode, style: Style) -> Result<ExitCode, String> 
     if mode != Mode::Run && !options.program_args.is_empty() {
         return Err("programa argüman yalnızca `çalıştır` ile verilebilir".into());
     }
+    if mode == Mode::Run && options.json {
+        return Err("`--json` yalnızca `derle` ve `denetle` ile kullanılabilir".into());
+    }
     let cwd = std::env::current_dir().map_err(|e| format!("bulunulan dizin okunamadı: {e}"))?;
-    let project = Project::find(&cwd)?;
+    let mut project = Project::find(&cwd)?;
+    if let Some(path) = &options.stdin_file {
+        let mut contents = String::new();
+        std::io::stdin().read_to_string(&mut contents).map_err(|e| format!("girdi okunamadı: {e}"))?;
+        project.unsaved = Some((path.replace('\\', "/"), contents));
+    }
     let prepared = project.prepare()?;
     if prepared.files.is_empty() {
         eprintln!(
@@ -149,7 +166,7 @@ fn build(args: &[String], mode: Mode, style: Style) -> Result<ExitCode, String> 
         cargo_args.extend(["--bin", bin]);
     }
 
-    let mut renderer = Renderer::new(style, Sources::new(&project.shadow, &prepared));
+    let mut renderer = Renderer::new(style, Sources::new(&project.shadow, &prepared), options.json);
     let outcome = cargo::run(&cargo_args, &mut renderer, style)?;
     if !outcome.success {
         return Ok(ExitCode::from(101));
@@ -196,8 +213,13 @@ fn new_project(args: &[String], style: Style) -> Result<ExitCode, String> {
         return Err(format!("`{name}` proje adı olarak kullanılamaz; harflerle başlayan bir ad seç"));
     }
 
-    let manifest =
-        format!("[package]\nname = \"{package}\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[dependencies]\n");
+    // `[[bin]]` bölümü programın Rust'a çevrilmiş halini gösterir; IDE'ler
+    // (`cargo metadata`) `.rs` dosyası olmayan projeyi bu sayede tanır.
+    let manifest = format!(
+        "[package]\nname = \"{package}\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n\
+         # `cargo pas` bu dosyayı `src/ana.pas` dosyasından üretir.\n\
+         [[bin]]\nname = \"{package}\"\npath = \"{SHADOW_PREFIX}src/main.rs\"\n\n[dependencies]\n"
+    );
     let main = "işlev ana() {\n    yazdır!(\"Merhaba dünya!\");\n}\n";
     let write = |path: &Path, contents: &str| {
         fs::write(path, contents).map_err(|e| format!("`{}` yazılamadı: {e}", path.display()))

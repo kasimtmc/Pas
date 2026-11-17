@@ -12,6 +12,9 @@ use std::path::{Path, PathBuf};
 
 use pas_cekirdek::{EXTENSION, Options, SourceMap};
 
+/// Gölge projenin, kullanıcının projesine göre yolu.
+pub const SHADOW_PREFIX: &str = "target/pas/";
+
 /// cargo'nun kendiliğinden kaynak aradığı dizinler.
 const MIRRORED_DIRS: &[&str] = &["src", "examples", "tests", "benches"];
 
@@ -20,6 +23,9 @@ pub struct Project {
     pub shadow: PathBuf,
     pub target_dir: PathBuf,
     pub package_name: Option<String>,
+    /// Diskteki yerine kullanılacak dosya içeriği (göreli yol, içerik). IDE,
+    /// kaydedilmemiş bir dosyayı denetletirken kullanır.
+    pub unsaved: Option<(String, String)>,
 }
 
 /// Çevrilmiş bir Pas dosyası.
@@ -55,7 +61,7 @@ impl Project {
             .ok()
             .and_then(|doc| doc.get("package")?.get("name")?.as_str().map(str::to_owned));
         let target_dir = root.join("target");
-        Ok(Project { shadow: target_dir.join("pas"), target_dir, root, package_name })
+        Ok(Project { shadow: target_dir.join("pas"), target_dir, root, package_name, unsaved: None })
     }
 
     pub fn shadow_manifest(&self) -> PathBuf {
@@ -115,8 +121,10 @@ impl Project {
                 slash_path(&rust_relative)
             ));
         }
-        let pas_source =
-            fs::read_to_string(self.root.join(relative)).map_err(|e| format!("`{pas_path}` okunamadı: {e}"))?;
+        let pas_source = match &self.unsaved {
+            Some((path, contents)) if *path == pas_path => contents.clone(),
+            _ => fs::read_to_string(self.root.join(relative)).map_err(|e| format!("`{pas_path}` okunamadı: {e}"))?,
+        };
 
         let module_path = |name: &str| self.module_path(relative, name);
         let translation = pas_cekirdek::to_rust_with(&pas_source, &Options { module_path: Some(&module_path) });
@@ -181,13 +189,17 @@ impl Project {
             }
         }
         // `[[bin]] path = "src/oyun.pas"` gibi hedef yolları
+        // ve `path = "target/pas/src/main.rs"` gibi gölge projeyi gösteren yollar.
+        // İkincisi, IDE'lerin (`cargo metadata`) `.rs` dosyası olmayan bir
+        // projeyi okuyabilmesi için `cargo pas yeni` tarafından yazılır.
         for key in ["lib", "bin", "example", "test", "bench"] {
             for target in targets(&mut doc, key) {
-                if let Some(path) = target.get_mut("path")
-                    && let Some(text) = path.as_str()
-                    && text.ends_with(&format!(".{EXTENSION}"))
-                {
-                    *path = toml_edit::value(slash_path(&rust_path_for(Path::new(text))));
+                let Some(path) = target.get_mut("path") else { continue };
+                let Some(text) = path.as_str().map(|t| t.replace('\\', "/")) else { continue };
+                if let Some(inside) = text.strip_prefix(SHADOW_PREFIX) {
+                    *path = toml_edit::value(inside);
+                } else if text.ends_with(&format!(".{EXTENSION}")) {
+                    *path = toml_edit::value(slash_path(&rust_path_for(Path::new(&text))));
                 }
             }
         }

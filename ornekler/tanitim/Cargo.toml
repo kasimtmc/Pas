@@ -3,4 +3,9 @@ name = "tanitim"
 version = "0.1.0"
 edition = "2024"
 
+# `cargo pas` bu dosyayı `src/ana.pas` dosyasından üretir.
+[[bin]]
+name = "tanitim"
+path = "target/pas/src/main.rs"
+
 [dependencies]

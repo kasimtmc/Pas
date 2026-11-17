@@ -85,6 +85,13 @@ fn new_project_runs() {
     assert!(cargo_pas(&parent, &["yeni", "İlk Oyun"]).status.success());
     let manifest = fs::read_to_string(parent.join("İlk Oyun/Cargo.toml")).unwrap();
     assert!(manifest.contains("name = \"ilk-oyun\""), "{manifest}");
+    // IDE'ler projeyi `cargo metadata` ile okur; `.rs` dosyası olmasa da çalışmalı.
+    let metadata = Command::new(env!("CARGO"))
+        .args(["metadata", "--format-version", "1", "--no-deps"])
+        .current_dir(parent.join("İlk Oyun"))
+        .output()
+        .unwrap();
+    assert!(metadata.status.success(), "{}", text(&metadata.stderr));
     let output = cargo_pas(&parent.join("İlk Oyun"), &["çalıştır"]);
     assert_eq!(text(&output.stdout), "Merhaba dünya!\n", "{}", text(&output.stderr));
 }
