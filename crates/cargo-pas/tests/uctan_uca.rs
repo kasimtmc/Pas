@@ -49,16 +49,14 @@ fn runs_a_program_with_turkish_modules() {
 
 #[test]
 fn compile_errors_point_to_pas_source() {
-    let dir = project(
-        "hatali",
-        &[("src/ana.pas", "işlev ana() {\n    olsun x = 5;\n    x = 6;\n    yazdır!(\"{x}\");\n}\n")],
-    );
+    let dir =
+        project("hatali", &[("src/ana.pas", "işlev ana() {\n    yap x = 5;\n    x = 6;\n    yazdır!(\"{x}\");\n}\n")]);
     let output = cargo_pas(&dir, &["derle"]);
     let stderr = text(&output.stderr);
     assert_eq!(output.status.code(), Some(101));
     assert!(stderr.contains("hata[E0384]"), "{stderr}");
     assert!(stderr.contains("--> src/ana.pas:3:5"), "{stderr}");
-    assert!(stderr.contains("olsun değişken x = 5;"), "{stderr}");
+    assert!(stderr.contains("yap değişken x = 5;"), "{stderr}");
     assert!(!stderr.contains("main.rs"), "{stderr}");
 }
 
@@ -68,7 +66,7 @@ fn panics_are_translated() {
         "coken",
         &[(
             "src/ana.pas",
-            "işlev ana() {\n    olsun l = liste![1, 2];\n    olsun i = l.uzunluk() + 1;\n    yazdır!(\"{}\", l[i]);\n}\n",
+            "işlev ana() {\n    yap l = liste![1, 2];\n    yap i = l.uzunluk() + 1;\n    yazdır!(\"{}\", l[i]);\n}\n",
         )],
     );
     let output = cargo_pas(&dir, &["çalıştır"]);

@@ -172,7 +172,7 @@ impl<'a> Translator<'a> {
             Direction::ToRust => dictionary::by_pas(&nfc(word)).map(|e| e.rust.to_owned()),
             Direction::ToPas => match dictionary::by_rust(word) {
                 Some(entry) => Some(entry.pas.to_owned()),
-                // Rust'ta sıradan bir isim olan `için`, Pas'ta ayrılmış bir sözcük.
+                // Rust'ta sıradan bir isim olan `her`, Pas'ta ayrılmış bir sözcük.
                 None => dictionary::by_pas(&nfc(word)).filter(|e| e.kind == Kind::Keyword).map(|_| format!("r#{word}")),
             },
         }
@@ -424,10 +424,10 @@ mod tests {
     #[test]
     fn keywords_and_std_names() {
         assert_eq!(
-            rust("olsun değişken l: Liste<Metin> = liste![]; eğer l.boş_mu() { döndür Yok; } değilse { kır; }"),
+            rust("yap değişken l: Liste<Metin> = liste![]; eğer l.boş_mu() { döndür Yok; } değilse { kır; }"),
             "let mut l: Vec<String> = vec![]; if l.is_empty() { return None; } else { break; }"
         );
-        assert_eq!(rust("için i içinde 0..10 {}"), "for i in 0..10 {}");
+        assert_eq!(rust("her i içinde 0..10 {}"), "for i in 0..10 {}");
     }
 
     #[test]
@@ -439,14 +439,14 @@ mod tests {
     #[test]
     fn strings_and_comments_are_untouched() {
         assert_eq!(
-            rust("olsun s = \"olsun eğer\"; // eğer olsun\n/* işlev */ 'ı'"),
-            "let s = \"olsun eğer\"; // eğer olsun\n/* işlev */ 'ı'"
+            rust("yap s = \"yap eğer\"; // eğer yap\n/* işlev */ 'ı'"),
+            "let s = \"yap eğer\"; // eğer yap\n/* işlev */ 'ı'"
         );
     }
 
     #[test]
     fn raw_identifiers_escape_keywords() {
-        assert_eq!(rust("olsun r#tür = 1;"), "let r#tür = 1;");
+        assert_eq!(rust("yap r#tür = 1;"), "let r#tür = 1;");
     }
 
     #[test]
@@ -457,7 +457,7 @@ mod tests {
         );
         // Biçim dizgisi olmayan dizgilere dokunulmaz.
         assert_eq!(
-            rust("yazdır!(\"{}\", \"{uzunluk}\"); olsun s = \"{uzunluk}\";"),
+            rust("yazdır!(\"{}\", \"{uzunluk}\"); yap s = \"{uzunluk}\";"),
             "println!(\"{}\", \"{uzunluk}\"); let s = \"{uzunluk}\";"
         );
         assert_eq!(rust("doğrula_eşit!(a, \"{ana}\", \"{ana}\");"), "assert_eq!(a, \"{ana}\", \"{main}\");");
@@ -502,22 +502,22 @@ mod tests {
     fn reverse_translation() {
         assert_eq!(
             to_pas("fn main() { let mut v: Vec<String> = vec![]; println!(\"{}\", v.len()); }"),
-            "işlev ana() { olsun değişken v: Liste<Metin> = liste![]; yazdır!(\"{}\", v.uzunluk()); }"
+            "işlev ana() { yap değişken v: Liste<Metin> = liste![]; yazdır!(\"{}\", v.uzunluk()); }"
         );
-        assert_eq!(to_pas("let için = 1;"), "olsun r#için = 1;");
+        assert_eq!(to_pas("let her = 1;"), "yap r#her = 1;");
         assert_eq!(to_pas("`Option<i32>`"), "`Belki<i32>`");
         assert_eq!(to_pas("&'static str"), "&'durağan str");
     }
 
     #[test]
     fn round_trip() {
-        let src = "işlev ana() {\n    olsun değişken sayılar = liste![1, 2];\n    sayılar.ekle(3);\n    yazdır!(\"{}\", sayılar.uzunluk());\n}\n";
+        let src = "işlev ana() {\n    yap değişken sayılar = liste![1, 2];\n    sayılar.ekle(3);\n    yazdır!(\"{}\", sayılar.uzunluk());\n}\n";
         assert_eq!(to_pas(&rust(src)), src);
     }
 
     #[test]
     fn source_map_points_back_to_pas() {
-        let src = "işlev ana() { olsun x = yok_böyle; }";
+        let src = "işlev ana() { yap x = yok_böyle; }";
         let t = to_rust(src);
         let rust_start = t.rust.find("yok_böyle").unwrap();
         let rust_end = rust_start + "yok_böyle".len();

@@ -287,13 +287,13 @@ const EXPLANATIONS: &[(&str, &str)] = &[
     ),
     (
         "E0384",
-        "Pas'ta değişkenler kendiliğinden değiştirilemez. Değerini sonradan değiştirmek istiyorsan değişkeni `olsun değişken x = …;` diye tanımla.",
+        "Pas'ta değişkenler kendiliğinden değiştirilemez. Değerini sonradan değiştirmek istiyorsan değişkeni `yap değişken x = …;` diye tanımla.",
     ),
     ("E0412", "Bu isimde bir tür yok. Yazımını kontrol et ya da türü `kullan` ile kullanıma al."),
     ("E0423", "Bu isim bir değer gibi kullanılmış ama bir değer değil (örneğin bir tür olabilir)."),
     (
         "E0425",
-        "Kullandığın isim burada tanımlı değil. Yazımını kontrol et (büyük-küçük harfler de önemli) ya da kullanmadan önce `olsun` ile tanımla.",
+        "Kullandığın isim burada tanımlı değil. Yazımını kontrol et (büyük-küçük harfler de önemli) ya da kullanmadan önce `yap` ile tanımla.",
     ),
     ("E0432", "`kullan` ile almak istediğin şey bulunamadı. Yolunu ve yazımını kontrol et."),
     ("E0433", "Bu isim bulunamadı. Yazımını kontrol et ya da `kullan` ile kullanıma al."),
@@ -302,7 +302,7 @@ const EXPLANATIONS: &[(&str, &str)] = &[
         "Bir değeri aynı anda yalnızca tek bir yerden değiştirebilirsin. Bu kural, programının beklenmedik biçimde bozulmasını engeller.",
     ),
     ("E0502", "Bir değeri okurken aynı anda değiştiremezsin. Önce okumayı bitir, sonra değiştir."),
-    ("E0596", "Bunu değiştirebilmek için değişkenin `değişken` olarak tanımlanması gerekir: `olsun değişken x = …;`"),
+    ("E0596", "Bunu değiştirebilmek için değişkenin `değişken` olarak tanımlanması gerekir: `yap değişken x = …;`"),
     (
         "E0597",
         "Ödünç aldığın değer, sen onu kullanmayı bitirmeden yok oluyor. Değeri daha dış bir blokta tanımlamayı dene.",

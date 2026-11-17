@@ -138,7 +138,7 @@ mod tests {
     use super::*;
 
     fn sample() -> SourceMap {
-        // "olsun x" (pas) -> "let x" (rust); "#[p] " eklemesi ve ardından "genel" -> "pub"
+        // "yap x" (pas) -> "let x" (rust); "#[p] " eklemesi ve ardından "genel" -> "pub"
         let mut map = SourceMap::default();
         map.push(Segment { pas_start: 0, pas_len: 6, rust_start: 0, rust_len: 3 });
         map.push(Segment { pas_start: 10, pas_len: 0, rust_start: 7, rust_len: 5 });

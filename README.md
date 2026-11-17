@@ -7,10 +7,10 @@ Türkçe gösterilir ve Pas kodundaki doğru satırı işaret eder.
 
 ```
 işlev ana() {
-    olsun değişken sayılar = liste![3, 1, 4];
+    yap değişken sayılar = liste![3, 1, 4];
     sayılar.ekle(1);
 
-    için sayı içinde sayılar.yinele() {
+    her sayı içinde sayılar.yinele() {
         eğer sayı % 2 == 0 {
             yazdır!("{sayı} çift");
         } değilse {
@@ -60,14 +60,14 @@ adları da çalışır.
 hata[E0384]: `x` değiştirilemez bir değişken; ona ikinci kez değer verilemez
  --> src/ana.pas:3:5
   |
-2 |     olsun x = 5;
-  |           - `x` için ilk değer burada verildi
+2 |     yap x = 5;
+  |         - `x` için ilk değer burada verildi
 3 |     x = 6;
   |     ^^^^^ değiştirilemez değişkene ikinci kez değer verilemez
   |
   = yardım: bu değişkeni `değişken` yapmayı düşün
   |
-2 |     olsun değişken x = 5;
+2 |     yap değişken x = 5;
   = açıklama: Pas'ta değişkenler kendiliğinden değiştirilemez. …
 ```
 
@@ -79,8 +79,8 @@ satır işaretlenir.
 Pas, Rust'ın sözdizimini olduğu gibi kullanır. Değişen tek şey sözcüklerdir.
 Bu sayede Pas öğrenen biri ileride gerçek Rust'a kolayca geçebilir.
 
-- **Anahtar sözcükler:** `işlev` (fn), `olsun` (let), `değişken` (mut),
-  `eğer`/`değilse` (if/else), `için … içinde` (for … in), `sürece` (while),
+- **Anahtar sözcükler:** `işlev` (fn), `yap` (let), `değişken` (mut),
+  `eğer`/`değilse` (if/else), `her … içinde` (for … in), `sürece` (while),
   `döngü` (loop), `eşle` (match), `yapı` (struct), `çeşit` (enum),
   `uygula` (impl), `nitelik` (trait), `genel` (pub), `döndür` (return),
   `doğru`/`yanlış` (true/false) …
@@ -96,7 +96,7 @@ Bilinmesi gerekenler:
 - İngilizce Rust sözcükleri de geçerlidir; Pas ve Rust aynı dosyada birlikte
   yazılabilir.
 - Türkçe bir anahtar sözcüğü isim olarak kullanmak için başına `r#` koy:
-  `olsun r#tür = 3;`
+  `yap r#tür = 3;`
 - `src/ana.pas` programın başladığı dosyadır (`main.rs`),
   `src/kütüphane.pas` ise kütüphane dosyasıdır (`lib.rs`).
 - Modül adları Türkçe karakter içerebilir: `modül şekiller;` →

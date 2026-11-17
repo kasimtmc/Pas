@@ -260,7 +260,7 @@ mod tests {
 
     #[test]
     fn covers_every_byte() {
-        let src = "işlev ana() { olsun ş = r#\"a\"#; } // yorum\n/* iç /* içe */ */ 'a' 'b";
+        let src = "işlev ana() { yap ş = r#\"a\"#; } // yorum\n/* iç /* içe */ */ 'a' 'b";
         let tokens = tokenize(src);
         let mut pos = 0;
         for t in &tokens {
@@ -272,13 +272,13 @@ mod tests {
 
     #[test]
     fn turkish_identifiers() {
-        assert_eq!(kinds("olsun sayılar"), [(Ident, "olsun"), (Ident, "sayılar")]);
+        assert_eq!(kinds("yap sayılar"), [(Ident, "yap"), (Ident, "sayılar")]);
         assert_eq!(kinds("ğüşıöç_İ"), [(Ident, "ğüşıöç_İ")]);
     }
 
     #[test]
     fn strings_hide_words() {
-        assert_eq!(kinds(r#""olsun \" eğer""#), [(Str, r#""olsun \" eğer""#)]);
+        assert_eq!(kinds(r#""yap \" eğer""#), [(Str, r#""yap \" eğer""#)]);
         assert_eq!(kinds(r###"r##"a "# b"##"###), [(RawStr, r###"r##"a "# b"##"###)]);
         assert_eq!(kinds(r#"b"x" br"y" c"z""#), [(Str, r#"b"x""#), (RawStr, r#"br"y""#), (Str, r#"c"z""#)]);
     }
@@ -299,7 +299,7 @@ mod tests {
 
     #[test]
     fn comments() {
-        assert_eq!(kinds("// olsun\nx"), [(LineComment, "// olsun"), (Ident, "x")]);
+        assert_eq!(kinds("// yap\nx"), [(LineComment, "// yap"), (Ident, "x")]);
         assert_eq!(kinds("/* a /* b */ c */x"), [(BlockComment, "/* a /* b */ c */"), (Ident, "x")]);
     }
 
