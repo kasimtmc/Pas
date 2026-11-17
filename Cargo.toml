@@ -1,0 +1,13 @@
+[workspace]
+resolver = "3"
+members = ["crates/pas-cekirdek", "crates/cargo-pas"]
+# Örnekler kendi başına birer Pas projesidir, bu çalışma alanına ait değildir.
+exclude = ["ornekler"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+
+[workspace.dependencies]
+pas-cekirdek = { path = "crates/pas-cekirdek" }

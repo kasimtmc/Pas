@@ -1,0 +1,10 @@
+[package]
+name = "pas-cekirdek"
+description = "Pas (Türkçe Rust) çevirici çekirdeği: Pas ⇄ Rust çevirisi, kaynak eşlemesi ve Türkçe derleyici mesajları"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+unicode-ident = "1"
+unicode-normalization = "0.1"
