@@ -3,18 +3,18 @@
 //! mesajlarını Türkçeleştirir.
 //!
 //! ```
-//! let ceviri = pas_cekirdek::to_rust("işlev ana() { yazdır!(\"Merhaba!\"); }");
+//! let ceviri = pas_cekirdek::rusta_cevir("işlev ana() { yazdır!(\"Merhaba!\"); }");
 //! assert_eq!(ceviri.rust, "fn main() { println!(\"Merhaba!\"); }");
 //! ```
 
-pub mod dictionary;
-pub mod lexer;
-pub mod messages;
-pub mod source_map;
-pub mod translate;
+pub mod ceviri;
+pub mod kaynak_haritasi;
+pub mod mesajlar;
+pub mod sozcukler;
+pub mod sozluk;
 
-pub use source_map::{Bias, LineIndex, SourceMap};
-pub use translate::{Options, Translation, to_pas, to_rust, to_rust_with};
+pub use ceviri::{Ceviri, Secenekler, pasa_cevir, rusta_cevir, rusta_cevir_secenekle};
+pub use kaynak_haritasi::{KaynakHaritasi, SatirDizini, Yon};
 
 /// Pas kaynak dosyalarının uzantısı.
-pub const EXTENSION: &str = "pas";
+pub const UZANTI: &str = "pas";

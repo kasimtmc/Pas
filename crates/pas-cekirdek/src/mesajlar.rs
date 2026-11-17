@@ -2,14 +2,14 @@
 //!
 //! Mesajlar kalıplarla eşleştirilir: `{}` herhangi bir metni yakalar ve
 //! Türkçe şablonda `{0}`, `{1}`, … olarak kullanılır. Yakalanan kod
-//! parçaları ([`to_pas`] ile) Pas'a çevrilir; böylece `String` yerine
+//! parçaları ([`pasa_cevir`] ile) Pas'a çevrilir; böylece `String` yerine
 //! `Metin` görünür. Kalıbı olmayan mesajlar İngilizce kalır, ama içlerindeki
 //! `ters tırnaklı` kod parçaları yine Pas'a çevrilir.
 
-use crate::translate::to_pas;
+use crate::ceviri::pasa_cevir;
 
 /// (İngilizce kalıp, Türkçe şablon). Özel kalıplar genel olanlardan önce gelmeli.
-const COMPILER: &[(&str, &str)] = &[
+const DERLEYICI: &[(&str, &str)] = &[
     // İsim çözümleme
     ("cannot find value `{}` in this scope", "`{0}` adında bir değer bulunamadı"),
     ("cannot find function `{}` in this scope", "`{0}` adında bir işlev bulunamadı"),
@@ -208,7 +208,7 @@ const COMPILER: &[(&str, &str)] = &[
 ];
 
 /// Çalışma zamanında (panik) görülen mesajlar.
-const PANIC: &[(&str, &str)] = &[
+const PANIK: &[(&str, &str)] = &[
     (
         "index out of bounds: the len is {} but the index is {}",
         "dizin sınırların dışında: uzunluk {0} ama istenen dizin {1}",
@@ -239,7 +239,7 @@ const PANIC: &[(&str, &str)] = &[
 ];
 
 /// Yakalanan düz metin içinde çevrilen sözcükler.
-const PROSE: &[(&str, &str)] = &[
+const DUZ_METIN: &[(&str, &str)] = &[
     ("ParseIntError { kind: InvalidDigit }", "metin bir tam sayı değil"),
     ("ParseIntError { kind: Empty }", "metin boş, sayıya çevrilemez"),
     ("ParseIntError { kind: PosOverflow }", "sayı bu türe sığmayacak kadar büyük"),
@@ -258,7 +258,7 @@ const PROSE: &[(&str, &str)] = &[
 ];
 
 /// Çocuklar için hata kodu açıklamaları.
-const EXPLANATIONS: &[(&str, &str)] = &[
+const ACIKLAMALAR: &[(&str, &str)] = &[
     (
         "E0004",
         "`eşle` ifadesi olabilecek bütün durumları kapsamalı. Eksik durumları ekle ya da en sona her şeyi yakalayan `_ => …` kolunu koy.",
@@ -318,188 +318,188 @@ const EXPLANATIONS: &[(&str, &str)] = &[
 ];
 
 /// Bir derleyici mesajını Türkçeye çevirir.
-pub fn translate_compiler_message(message: &str) -> String {
-    translate(COMPILER, message)
+pub fn derleyici_mesajini_cevir(mesaj: &str) -> String {
+    cevir(DERLEYICI, mesaj)
 }
 
 /// Bir panik mesajı satırını Türkçeye çevirir.
-pub fn translate_panic_message(message: &str) -> String {
-    translate(PANIC, message)
+pub fn panik_mesajini_cevir(mesaj: &str) -> String {
+    cevir(PANIK, mesaj)
 }
 
 /// Bir hata kodunun çocuklara yönelik açıklaması.
-pub fn explanation(code: &str) -> Option<&'static str> {
-    EXPLANATIONS.iter().find(|(c, _)| *c == code).map(|(_, text)| *text)
+pub fn aciklama(kod: &str) -> Option<&'static str> {
+    ACIKLAMALAR.iter().find(|(c, _)| *c == kod).map(|(_, metin)| *metin)
 }
 
 /// Kullanıcıya gösterilmesine gerek olmayan mesajlar (özetler, lint notları).
-pub fn is_noise(message: &str) -> bool {
-    message.starts_with("aborting due to")
-        || message.starts_with("For more information about")
-        || message.starts_with("Some errors have detailed explanations")
-        || (message.ends_with("on by default") && message.contains("#["))
-        || message.ends_with("warning emitted")
-        || message.ends_with("warnings emitted")
-        || message.starts_with("requested on the command line with")
+pub fn gereksiz_mi(mesaj: &str) -> bool {
+    mesaj.starts_with("aborting due to")
+        || mesaj.starts_with("For more information about")
+        || mesaj.starts_with("Some errors have detailed explanations")
+        || (mesaj.ends_with("on by default") && mesaj.contains("#["))
+        || mesaj.ends_with("warning emitted")
+        || mesaj.ends_with("warnings emitted")
+        || mesaj.starts_with("requested on the command line with")
 }
 
-fn translate(patterns: &[(&str, &str)], message: &str) -> String {
-    for (pattern, template) in patterns {
-        if let Some(captures) = match_pattern(pattern, message) {
-            return fill(template, &captures);
+fn cevir(kaliplar: &[(&str, &str)], mesaj: &str) -> String {
+    for (kalip, sablon) in kaliplar {
+        if let Some(yakalananlar) = kalipla_esle(kalip, mesaj) {
+            return doldur(sablon, &yakalananlar);
         }
     }
-    code_spans_to_pas(message)
+    kod_parcalarini_pasa_cevir(mesaj)
 }
 
-fn match_pattern<'m>(pattern: &str, message: &'m str) -> Option<Vec<&'m str>> {
-    let mut parts = pattern.split("{}");
-    let mut rest = message.strip_prefix(parts.next()?)?;
-    let parts: Vec<&str> = parts.collect();
-    let mut captures = Vec::with_capacity(parts.len());
-    for (i, part) in parts.iter().enumerate() {
-        if i + 1 == parts.len() {
-            captures.push(rest.strip_suffix(part)?);
-            rest = "";
+fn kalipla_esle<'m>(kalip: &str, mesaj: &'m str) -> Option<Vec<&'m str>> {
+    let mut parcalar = kalip.split("{}");
+    let mut kalan = mesaj.strip_prefix(parcalar.next()?)?;
+    let parcalar: Vec<&str> = parcalar.collect();
+    let mut yakalananlar = Vec::with_capacity(parcalar.len());
+    for (i, parca) in parcalar.iter().enumerate() {
+        if i + 1 == parcalar.len() {
+            yakalananlar.push(kalan.strip_suffix(parca)?);
+            kalan = "";
         } else {
-            let at = rest.find(part)?;
-            captures.push(&rest[..at]);
-            rest = &rest[at + part.len()..];
+            let yer = kalan.find(parca)?;
+            yakalananlar.push(&kalan[..yer]);
+            kalan = &kalan[yer + parca.len()..];
         }
     }
-    rest.is_empty().then_some(captures)
+    kalan.is_empty().then_some(yakalananlar)
 }
 
-fn fill(template: &str, captures: &[&str]) -> String {
-    let mut out = String::with_capacity(template.len() + 16);
-    let mut rest = template;
-    while let Some(open) = rest.find('{') {
-        out.push_str(&rest[..open].replace("}}", "}"));
-        let after = &rest[open + 1..];
-        if let Some(stripped) = after.strip_prefix('{') {
-            out.push('{');
-            rest = stripped;
+fn doldur(sablon: &str, yakalananlar: &[&str]) -> String {
+    let mut cikti = String::with_capacity(sablon.len() + 16);
+    let mut kalan = sablon;
+    while let Some(acilis) = kalan.find('{') {
+        cikti.push_str(&kalan[..acilis].replace("}}", "}"));
+        let sonrasi = &kalan[acilis + 1..];
+        if let Some(ayiklanan) = sonrasi.strip_prefix('{') {
+            cikti.push('{');
+            kalan = ayiklanan;
             continue;
         }
-        let close = after.find('}').expect("şablonda kapanmamış `{`");
-        let index: usize = after[..close].parse().expect("şablonda geçersiz yakalama numarası");
-        out.push_str(&capture_to_pas(captures[index]));
-        rest = &after[close + 1..];
+        let kapanis = sonrasi.find('}').expect("şablonda kapanmamış `{`");
+        let dizin: usize = sonrasi[..kapanis].parse().expect("şablonda geçersiz yakalama numarası");
+        cikti.push_str(&yakalanani_pasa_cevir(yakalananlar[dizin]));
+        kalan = &sonrasi[kapanis + 1..];
     }
-    out.push_str(&rest.replace("}}", "}"));
-    out
+    cikti.push_str(&kalan.replace("}}", "}"));
+    cikti
 }
 
-fn capture_to_pas(capture: &str) -> String {
-    // Dosya yolları (`src/main.rs`) çevrilmez; onları çağıran taraf düzeltir.
-    if capture.contains(".rs") {
-        return capture.to_owned();
+fn yakalanani_pasa_cevir(yakalanan: &str) -> String {
+    // Dosya yolları (`kaynak/main.rs`) çevrilmez; onları çağıran taraf düzeltir.
+    if yakalanan.contains(".rs") {
+        return yakalanan.to_owned();
     }
-    let mut text = to_pas(capture);
+    let mut metin = pasa_cevir(yakalanan);
     // Kod parçalarının içine dokunmadan yalnızca düz metni çevir.
-    if !text.contains('`') && text.chars().any(char::is_alphabetic) {
-        for (english, turkish) in PROSE {
-            text = text.replace(english, turkish);
+    if !metin.contains('`') && metin.chars().any(char::is_alphabetic) {
+        for (ingilizce, turkce) in DUZ_METIN {
+            metin = metin.replace(ingilizce, turkce);
         }
     } else {
-        let mut out = String::new();
-        for (i, piece) in text.split('`').enumerate() {
+        let mut cikti = String::new();
+        for (i, parca_) in metin.split('`').enumerate() {
             if i > 0 {
-                out.push('`');
+                cikti.push('`');
             }
             if i % 2 == 0 {
-                let mut piece = piece.to_owned();
-                for (english, turkish) in PROSE {
-                    piece = piece.replace(english, turkish);
+                let mut parca_ = parca_.to_owned();
+                for (ingilizce, turkce) in DUZ_METIN {
+                    parca_ = parca_.replace(ingilizce, turkce);
                 }
-                out.push_str(&piece);
+                cikti.push_str(&parca_);
             } else {
-                out.push_str(piece);
+                cikti.push_str(parca_);
             }
         }
-        text = out;
+        metin = cikti;
     }
-    text
+    metin
 }
 
 /// İngilizce bir mesajdaki `kod` parçalarını Pas'a çevirir.
-fn code_spans_to_pas(message: &str) -> String {
-    message
+fn kod_parcalarini_pasa_cevir(mesaj: &str) -> String {
+    mesaj
         .split('`')
         .enumerate()
-        .map(|(i, piece)| if i % 2 == 1 { to_pas(piece) } else { piece.to_owned() })
+        .map(|(i, parca_)| if i % 2 == 1 { pasa_cevir(parca_) } else { parca_.to_owned() })
         .collect::<Vec<_>>()
         .join("`")
 }
 
 #[cfg(test)]
-mod tests {
+mod testler {
     use super::*;
 
     #[test]
-    fn templates_are_well_formed() {
-        for (pattern, template) in COMPILER.iter().chain(PANIC) {
-            let holes = pattern.matches("{}").count();
-            let captures: Vec<&str> = (0..holes).map(|_| "x").collect();
-            // Şablon geçersizse `fill` panikler.
-            fill(template, &captures);
-            assert!(!pattern.contains("{}{}"), "yan yana yakalamalar belirsiz: {pattern}");
+    fn sablonlar_dogru_bicimde() {
+        for (kalip, sablon) in DERLEYICI.iter().chain(PANIK) {
+            let bosluk_sayisi = kalip.matches("{}").count();
+            let yakalananlar: Vec<&str> = (0..bosluk_sayisi).map(|_| "x").collect();
+            // Şablon geçersizse `doldur` panikler.
+            doldur(sablon, &yakalananlar);
+            assert!(!kalip.contains("{}{}"), "yan yana yakalamalar belirsiz: {kalip}");
         }
     }
 
     #[test]
-    fn compiler_messages() {
+    fn derleyici_mesajlari() {
         assert_eq!(
-            translate_compiler_message("cannot find value `sayi` in this scope"),
+            derleyici_mesajini_cevir("cannot find value `sayi` in this scope"),
             "`sayi` adında bir değer bulunamadı"
         );
         assert_eq!(
-            translate_compiler_message("expected `String`, found `Option<i32>`"),
+            derleyici_mesajini_cevir("expected `String`, found `Option<i32>`"),
             "`Metin` bekleniyordu ama `Belki<i32>` bulundu"
         );
         assert_eq!(
-            translate_compiler_message("this function takes 1 argument but 2 arguments were supplied"),
+            derleyici_mesajini_cevir("this function takes 1 argument but 2 arguments were supplied"),
             "bu işlev 1 argüman alıyor ama 2 argüman verildi"
         );
         assert_eq!(
-            translate_compiler_message("expected one of `,`, `.`, or `;`, found `x`"),
+            derleyici_mesajini_cevir("expected one of `,`, `.`, or `;`, found `x`"),
             "şunlardan biri bekleniyordu: `,`, `.` veya `;`; ama `x` bulundu"
         );
         assert_eq!(
-            translate_compiler_message("expected integer, found `&str`"),
+            derleyici_mesajini_cevir("expected integer, found `&str`"),
             "tam sayı bekleniyordu ama `&str` bulundu"
         );
         assert_eq!(
-            translate_compiler_message("consider adding a `main` function to `src/main.rs`"),
+            derleyici_mesajini_cevir("consider adding a `main` function to `src/main.rs`"),
             "`src/main.rs` dosyasına bir `işlev ana() { … }` eklemelisin"
         );
     }
 
     #[test]
-    fn unknown_messages_keep_code_in_pas() {
+    fn bilinmeyen_mesajlardaki_kod_pasa_cevrilir() {
         assert_eq!(
-            translate_compiler_message("some new message about `Vec<String>`"),
+            derleyici_mesajini_cevir("some new message about `Vec<String>`"),
             "some new message about `Liste<Metin>`"
         );
     }
 
     #[test]
-    fn panic_messages() {
+    fn panik_mesajlari() {
         assert_eq!(
-            translate_panic_message("called `Option::unwrap()` on a `None` value"),
+            panik_mesajini_cevir("called `Option::unwrap()` on a `None` value"),
             "`Yok` değeri üzerinde `Belki::sarmalaç()` çağrıldı (içinde değer yoktu)"
         );
         assert_eq!(
-            translate_panic_message("index out of bounds: the len is 3 but the index is 10"),
+            panik_mesajini_cevir("index out of bounds: the len is 3 but the index is 10"),
             "dizin sınırların dışında: uzunluk 3 ama istenen dizin 10"
         );
-        assert_eq!(translate_panic_message("Kendi mesajım"), "Kendi mesajım");
+        assert_eq!(panik_mesajini_cevir("Kendi mesajım"), "Kendi mesajım");
     }
 
     #[test]
-    fn noise() {
-        assert!(is_noise("aborting due to 2 previous errors"));
-        assert!(is_noise("`#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default"));
-        assert!(!is_noise("mismatched types"));
+    fn gereksiz_mesajlar() {
+        assert!(gereksiz_mi("aborting due to 2 previous errors"));
+        assert!(gereksiz_mi("`#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default"));
+        assert!(!gereksiz_mi("mismatched types"));
     }
 }

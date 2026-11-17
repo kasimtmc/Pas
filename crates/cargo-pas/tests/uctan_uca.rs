@@ -4,94 +4,125 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-fn project(name: &str, files: &[(&str, &str)]) -> PathBuf {
-    let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join(name);
-    let _ = fs::remove_dir_all(&dir);
-    fs::create_dir_all(dir.join("src")).unwrap();
+fn proje(ad: &str, dosyalar: &[(&str, &str)]) -> PathBuf {
+    let dizin = Path::new(env!("CARGO_TARGET_TMPDIR")).join(ad);
+    let _ = fs::remove_dir_all(&dizin);
+    fs::create_dir_all(dizin.join("src")).unwrap();
     fs::write(
-        dir.join("Cargo.toml"),
-        format!("[package]\nname = \"{name}\"\nversion = \"0.1.0\"\nedition = \"2024\"\n"),
+        dizin.join("Cargo.toml"),
+        format!("[package]\nname = \"{ad}\"\nversion = \"0.1.0\"\nedition = \"2024\"\n"),
     )
     .unwrap();
-    for (path, contents) in files {
-        fs::write(dir.join(path), contents).unwrap();
+    for (yol, icerik) in dosyalar {
+        fs::write(dizin.join(yol), icerik).unwrap();
     }
-    dir
+    dizin
 }
 
-fn cargo_pas(dir: &Path, args: &[&str]) -> Output {
+fn cargo_pas(dizin: &Path, argumanlar: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_cargo-pas"))
-        .args(args)
-        .current_dir(dir)
+        .args(argumanlar)
+        .current_dir(dizin)
         .env("NO_COLOR", "1")
         .env_remove("CARGO_TERM_COLOR")
         .output()
         .unwrap()
 }
 
-fn text(bytes: &[u8]) -> String {
-    String::from_utf8_lossy(bytes).into_owned()
+fn metin(baytlar: &[u8]) -> String {
+    String::from_utf8_lossy(baytlar).into_owned()
 }
 
 #[test]
-fn runs_a_program_with_turkish_modules() {
-    let dir = project(
+fn turkce_modullu_program_calisir() {
+    let dizin = proje(
         "calisan",
         &[
             ("src/ana.pas", "modül hesap;\n\nişlev ana() {\n    yazdır!(\"{}\", hesap::topla(2, 3));\n}\n"),
             ("src/hesap.pas", "genel işlev topla(a: i32, b: i32) -> i32 {\n    a + b\n}\n"),
         ],
     );
-    let output = cargo_pas(&dir, &["pas", "çalıştır"]);
-    assert!(output.status.success(), "{}", text(&output.stderr));
-    assert_eq!(text(&output.stdout), "5\n");
+    let cikti = cargo_pas(&dizin, &["pas", "çalıştır"]);
+    assert!(cikti.status.success(), "{}", metin(&cikti.stderr));
+    assert_eq!(metin(&cikti.stdout), "5\n");
 }
 
 #[test]
-fn compile_errors_point_to_pas_source() {
-    let dir =
-        project("hatali", &[("src/ana.pas", "işlev ana() {\n    yap x = 5;\n    x = 6;\n    yazdır!(\"{x}\");\n}\n")]);
-    let output = cargo_pas(&dir, &["derle"]);
-    let stderr = text(&output.stderr);
-    assert_eq!(output.status.code(), Some(101));
-    assert!(stderr.contains("hata[E0384]"), "{stderr}");
-    assert!(stderr.contains("--> src/ana.pas:3:5"), "{stderr}");
-    assert!(stderr.contains("yap değişken x = 5;"), "{stderr}");
-    assert!(!stderr.contains("main.rs"), "{stderr}");
+fn derleme_hatalari_pas_kaynagini_gosterir() {
+    let dizin =
+        proje("hatali", &[("src/ana.pas", "işlev ana() {\n    yap x = 5;\n    x = 6;\n    yazdır!(\"{x}\");\n}\n")]);
+    let cikti = cargo_pas(&dizin, &["derle"]);
+    let hata_ciktisi = metin(&cikti.stderr);
+    assert_eq!(cikti.status.code(), Some(101));
+    assert!(hata_ciktisi.contains("hata[E0384]"), "{hata_ciktisi}");
+    assert!(hata_ciktisi.contains("--> src/ana.pas:3:5"), "{hata_ciktisi}");
+    assert!(hata_ciktisi.contains("yap değişken x = 5;"), "{hata_ciktisi}");
+    assert!(!hata_ciktisi.contains("main.rs"), "{hata_ciktisi}");
 }
 
 #[test]
-fn panics_are_translated() {
-    let dir = project(
+fn panikler_cevrilir() {
+    let dizin = proje(
         "coken",
         &[(
             "src/ana.pas",
             "işlev ana() {\n    yap l = liste![1, 2];\n    yap i = l.uzunluk() + 1;\n    yazdır!(\"{}\", l[i]);\n}\n",
         )],
     );
-    let output = cargo_pas(&dir, &["çalıştır"]);
-    let stderr = text(&output.stderr);
-    assert_eq!(output.status.code(), Some(101));
-    assert!(stderr.contains("program çöktü"), "{stderr}");
-    assert!(stderr.contains("--> src/ana.pas:4:"), "{stderr}");
-    assert!(stderr.contains("uzunluk 2 ama istenen dizin 3"), "{stderr}");
+    let cikti = cargo_pas(&dizin, &["çalıştır"]);
+    let hata_ciktisi = metin(&cikti.stderr);
+    assert_eq!(cikti.status.code(), Some(101));
+    assert!(hata_ciktisi.contains("program çöktü"), "{hata_ciktisi}");
+    assert!(hata_ciktisi.contains("--> src/ana.pas:4:"), "{hata_ciktisi}");
+    assert!(hata_ciktisi.contains("uzunluk 2 ama istenen dizin 3"), "{hata_ciktisi}");
 }
 
 #[test]
-fn new_project_runs() {
-    let parent = Path::new(env!("CARGO_TARGET_TMPDIR")).join("yeni");
-    let _ = fs::remove_dir_all(&parent);
-    fs::create_dir_all(&parent).unwrap();
-    assert!(cargo_pas(&parent, &["yeni", "İlk Oyun"]).status.success());
-    let manifest = fs::read_to_string(parent.join("İlk Oyun/Cargo.toml")).unwrap();
-    assert!(manifest.contains("name = \"ilk-oyun\""), "{manifest}");
-    // IDE'ler projeyi `cargo metadata` ile okur; `.rs` dosyası olmasa da çalışmalı.
-    let metadata = Command::new(env!("CARGO"))
+fn yeni_proje_calisir() {
+    let ust_dizin = Path::new(env!("CARGO_TARGET_TMPDIR")).join("yeni");
+    let _ = fs::remove_dir_all(&ust_dizin);
+    fs::create_dir_all(&ust_dizin).unwrap();
+    assert!(cargo_pas(&ust_dizin, &["yeni", "İlk Oyun"]).status.success());
+    let bildirim = fs::read_to_string(ust_dizin.join("İlk Oyun/Cargo.toml")).unwrap();
+    assert!(bildirim.contains("name = \"ilk-oyun\""), "{bildirim}");
+    // IDE'ler projeyi `cargo ust_veri` ile okur; `.rs` dosyası olmasa da çalışmalı.
+    let ust_veri = Command::new(env!("CARGO"))
         .args(["metadata", "--format-version", "1", "--no-deps"])
-        .current_dir(parent.join("İlk Oyun"))
+        .current_dir(ust_dizin.join("İlk Oyun"))
         .output()
         .unwrap();
-    assert!(metadata.status.success(), "{}", text(&metadata.stderr));
-    let output = cargo_pas(&parent.join("İlk Oyun"), &["çalıştır"]);
-    assert_eq!(text(&output.stdout), "Merhaba dünya!\n", "{}", text(&output.stderr));
+    assert!(ust_veri.status.success(), "{}", metin(&ust_veri.stderr));
+    let cikti = cargo_pas(&ust_dizin.join("İlk Oyun"), &["çalıştır"]);
+    assert_eq!(metin(&cikti.stdout), "Merhaba dünya!\n", "{}", metin(&cikti.stderr));
+}
+
+#[test]
+fn json_tanilamalari_ide_icin_okunabilir() {
+    let dizin = proje("jsonlu", &[("src/ana.pas", "işlev ana() {\n    yap x = 5;\n    x = 6;\n}\n")]);
+    // Kaydedilmemiş içerik standart girdiden verilir; diskteki dosya farklıdır.
+    let mut surec = Command::new(env!("CARGO_BIN_EXE_cargo-pas"))
+        .args(["denetle", "--json", "--stdin", "src/ana.pas"])
+        .current_dir(&dizin)
+        .env("NO_COLOR", "1")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    use std::io::Write;
+    surec.stdin.take().unwrap().write_all("işlev ana() {\n    yap ş = 5;\n    ş = 6;\n}\n".as_bytes()).unwrap();
+    let cikti = surec.wait_with_output().unwrap();
+    let satirlar = metin(&cikti.stdout);
+    let hata: serde_json::Value = satirlar
+        .lines()
+        .map(|satir| serde_json::from_str::<serde_json::Value>(satir).unwrap())
+        .find(|tani| tani["kod"] == "E0384")
+        .unwrap_or_else(|| panic!("E0384 bulunamadı: {satirlar}"));
+    assert_eq!(hata["seviye"], "hata");
+    assert_eq!(hata["dosya"], "src/ana.pas");
+    assert_eq!(hata["aralik"]["satir"], 3);
+    assert_eq!(hata["aralik"]["sutun"], 5);
+    assert!(hata["mesaj"].as_str().unwrap().contains("`ş`"), "{hata}");
+    assert!(hata["aciklama"].is_string());
+    assert!(hata["notlar"].as_array().unwrap().iter().any(|not| not.as_str().unwrap().contains("yap değişken ş")));
 }

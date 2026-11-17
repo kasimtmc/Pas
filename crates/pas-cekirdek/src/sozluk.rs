@@ -8,64 +8,64 @@
 //! kaynakta her yerde `vec` olur. Bu yüzden anahtar sözcük olmayan
 //! girdiler (`Liste`, `uzunluk`, …) kullanıcı tarafından değişken adı
 //! olarak da kullanılabilir; program yine doğru çalışır. Yalnızca
-//! [`Kind::Keyword`] türündeki sözcükler gerçekten ayrılmıştır.
+//! [`Sinif::AnahtarSozcuk`] türündeki sözcükler gerçekten ayrılmıştır.
 
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Kind {
+pub enum Sinif {
     /// Ayrılmış sözcük; isim olarak ancak `r#` ile kullanılabilir.
-    Keyword,
-    Macro,
-    Type,
-    Value,
-    Function,
-    Method,
+    AnahtarSozcuk,
+    Makro,
+    Tur,
+    Deger,
+    Islev,
+    Yontem,
 }
 
-impl Kind {
+impl Sinif {
     /// Kullanıcıya gösterilecek Türkçe ad.
-    pub fn name(self) -> &'static str {
+    pub fn ad(self) -> &'static str {
         match self {
-            Kind::Keyword => "anahtar sözcük",
-            Kind::Macro => "makro",
-            Kind::Type => "tür",
-            Kind::Value => "değer",
-            Kind::Function => "işlev",
-            Kind::Method => "yöntem",
+            Sinif::AnahtarSozcuk => "anahtar sözcük",
+            Sinif::Makro => "makro",
+            Sinif::Tur => "tür",
+            Sinif::Deger => "değer",
+            Sinif::Islev => "işlev",
+            Sinif::Yontem => "yöntem",
         }
     }
 
     /// Makine tarafından okunacak çıktılar (JSON) için kararlı kimlik.
-    pub fn id(self) -> &'static str {
+    pub fn kimlik(self) -> &'static str {
         match self {
-            Kind::Keyword => "keyword",
-            Kind::Macro => "macro",
-            Kind::Type => "type",
-            Kind::Value => "value",
-            Kind::Function => "function",
-            Kind::Method => "method",
+            Sinif::AnahtarSozcuk => "anahtar_sozcuk",
+            Sinif::Makro => "makro",
+            Sinif::Tur => "tur",
+            Sinif::Deger => "deger",
+            Sinif::Islev => "islev",
+            Sinif::Yontem => "yontem",
         }
     }
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Entry {
+pub struct Girdi {
     pub pas: &'static str,
     pub rust: &'static str,
-    pub kind: Kind,
-    pub description: &'static str,
+    pub tur: Sinif,
+    pub aciklama: &'static str,
 }
 
-macro_rules! entries {
-    ($($kind:ident { $($pas:literal => $rust:literal : $desc:literal,)* })*) => {
-        &[$($(Entry { pas: $pas, rust: $rust, kind: Kind::$kind, description: $desc },)*)*]
+macro_rules! girdiler {
+    ($($tur:ident { $($pas:literal => $rust:literal : $aciklama:literal,)* })*) => {
+        &[$($(Girdi { pas: $pas, rust: $rust, tur: Sinif::$tur, aciklama: $aciklama },)*)*]
     };
 }
 
-pub static ENTRIES: &[Entry] = entries! {
-    Keyword {
+pub static GIRDILER: &[Girdi] = girdiler! {
+    AnahtarSozcuk {
         "olarak" => "as": "tür dönüştürür: `5 olarak f64`",
         "eşzamansız" => "async": "eşzamansız işlev ya da blok",
         "bekle" => "await": "eşzamansız bir işin bitmesini bekler",
@@ -106,7 +106,7 @@ pub static ENTRIES: &[Entry] = entries! {
         "sürece" => "while": "koşul doğru olduğu sürece döner",
         "makro_kuralları" => "macro_rules": "makro tanımlar",
     }
-    Macro {
+    Makro {
         "yazdır" => "println": "ekrana yazar ve alt satıra geçer",
         "yaz" => "print": "ekrana yazar, alt satıra geçmez",
         "hata_yazdır" => "eprintln": "hata çıktısına yazar ve alt satıra geçer",
@@ -119,7 +119,7 @@ pub static ENTRIES: &[Entry] = entries! {
         "yapılacak" => "todo": "henüz yazılmamış kodu işaretler",
         "ulaşılamaz" => "unreachable": "hiç ulaşılmaması gereken kodu işaretler",
     }
-    Type {
+    Tur {
         "Metin" => "String": "değiştirilebilir metin",
         "Liste" => "Vec": "büyüyüp küçülebilen liste",
         "Belki" => "Option": "bir değer olabilir de olmayabilir de: `Var(x)` ya da `Yok`",
@@ -130,17 +130,17 @@ pub static ENTRIES: &[Entry] = entries! {
         "mantıksal" => "bool": "`doğru` ya da `yanlış`",
         "karakter" => "char": "tek bir karakter: 'a'",
     }
-    Value {
+    Deger {
         "Var" => "Some": "`Belki` içinde bir değer var",
         "Yok" => "None": "`Belki` içinde değer yok",
         "Tamam" => "Ok": "`Sonuç` başarılı",
         "Hata" => "Err": "`Sonuç` hatalı",
     }
-    Function {
+    Islev {
         "ana" => "main": "programın başladığı işlev",
         "girdi" => "stdin": "klavyeden okumak için standart girdi",
     }
-    Method {
+    Yontem {
         "uzunluk" => "len": "eleman sayısı",
         "ekle" => "push": "listenin sonuna ekler",
         "çıkar" => "pop": "listenin son elemanını çıkarır",
@@ -156,62 +156,62 @@ pub static ENTRIES: &[Entry] = entries! {
     }
 };
 
-struct Index {
-    by_pas: HashMap<&'static str, &'static Entry>,
-    by_rust: HashMap<&'static str, &'static Entry>,
+struct Dizin {
+    pas_ile: HashMap<&'static str, &'static Girdi>,
+    rust_ile: HashMap<&'static str, &'static Girdi>,
 }
 
-fn index() -> &'static Index {
-    static INDEX: OnceLock<Index> = OnceLock::new();
-    INDEX.get_or_init(|| Index {
-        by_pas: ENTRIES.iter().map(|e| (e.pas, e)).collect(),
-        by_rust: ENTRIES.iter().map(|e| (e.rust, e)).collect(),
+fn dizin() -> &'static Dizin {
+    static DIZIN: OnceLock<Dizin> = OnceLock::new();
+    DIZIN.get_or_init(|| Dizin {
+        pas_ile: GIRDILER.iter().map(|e| (e.pas, e)).collect(),
+        rust_ile: GIRDILER.iter().map(|e| (e.rust, e)).collect(),
     })
 }
 
 /// Türkçe sözcüğün girdisini bulur. Sözcük NFC biçiminde olmalıdır.
-pub fn by_pas(word: &str) -> Option<&'static Entry> {
-    index().by_pas.get(word).copied()
+pub fn pas_ile(kelime: &str) -> Option<&'static Girdi> {
+    dizin().pas_ile.get(kelime).copied()
 }
 
 /// Rust isminin Türkçe girdisini bulur.
-pub fn by_rust(word: &str) -> Option<&'static Entry> {
-    index().by_rust.get(word).copied()
+pub fn rust_ile(kelime: &str) -> Option<&'static Girdi> {
+    dizin().rust_ile.get(kelime).copied()
 }
 
 #[cfg(test)]
-mod tests {
+mod testler {
     use super::*;
-    use crate::lexer::{is_ident_continue, is_ident_start};
+    use crate::sozcukler::{isim_baslangici_mi, isim_devami_mi};
     use std::collections::HashSet;
 
     #[test]
-    fn words_are_unique() {
+    fn sozcukler_benzersiz() {
         let mut pas = HashSet::new();
         let mut rust = HashSet::new();
-        for e in ENTRIES {
+        for e in GIRDILER {
             assert!(pas.insert(e.pas), "`{}` iki kez tanımlanmış", e.pas);
             assert!(rust.insert(e.rust), "`{}` iki kez tanımlanmış", e.rust);
         }
     }
 
     #[test]
-    fn pas_words_are_identifiers() {
+    fn pas_sozcukleri_gecerli_isimler() {
         use unicode_normalization::is_nfc;
-        for e in ENTRIES {
+        for e in GIRDILER {
             let mut chars = e.pas.chars();
-            assert!(chars.next().is_some_and(is_ident_start), "{}", e.pas);
-            assert!(chars.all(is_ident_continue), "{}", e.pas);
+            assert!(chars.next().is_some_and(isim_baslangici_mi), "{}", e.pas);
+            assert!(chars.all(isim_devami_mi), "{}", e.pas);
             assert!(is_nfc(e.pas), "`{}` NFC biçiminde değil", e.pas);
         }
     }
 
     #[test]
-    fn no_pas_word_is_a_rust_word() {
+    fn hicbir_pas_sozcugu_rust_sozcugu_degil() {
         // Bir Türkçe sözcük aynı zamanda başka bir girdinin Rust karşılığı
         // olursa ters çeviri belirsizleşir.
-        for e in ENTRIES {
-            assert!(by_rust(e.pas).is_none(), "`{}` hem Pas hem Rust sözcüğü", e.pas);
+        for e in GIRDILER {
+            assert!(rust_ile(e.pas).is_none(), "`{}` hem Pas hem Rust sözcüğü", e.pas);
         }
     }
 }

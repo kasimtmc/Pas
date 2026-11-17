@@ -52,8 +52,8 @@ class PasEklentiTest : BasePlatformTestCase() {
     }
 
     fun testTaniCozumleme() {
-        val satir = """{"level":"error","code":"E0384","message":"`x` değiştirilemez","file":"src/ana.pas",""" +
-            """"span":{"line":3,"column":5,"end_line":3,"end_column":10},"labels":[],"notes":["yardım: a"],"explanation":null}"""
+        val satir = """{"seviye":"hata","kod":"E0384","mesaj":"`x` değiştirilemez","dosya":"src/ana.pas",""" +
+            """"aralik":{"satir":3,"sutun":5,"bitis_satiri":3,"bitis_sutunu":10},"etiketler":[],"notlar":["yardım: a"],"aciklama":null}"""
         val tani = PasDenetleyici.cozumle(satir)!!
         assertEquals("E0384", tani.kod)
         assertEquals(3, tani.satir)

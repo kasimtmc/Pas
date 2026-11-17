@@ -117,7 +117,7 @@ Bu sayede Pas öğrenen biri ileride gerçek Rust'a kolayca geçebilir.
   `Sonuç`/`Tamam`/`Hata` (Result/Ok/Err), `.uzunluk()` (len), `.ekle()` (push) …
 
 Tam liste için `cargo pas sözlük` komutunu çalıştır ya da
-[`dictionary.rs`](crates/pas-cekirdek/src/dictionary.rs) dosyasına bak.
+[`sozluk.rs`](crates/pas-cekirdek/src/sozluk.rs) dosyasına bak.
 
 Bilinmesi gerekenler:
 

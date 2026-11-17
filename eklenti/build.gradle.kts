@@ -73,7 +73,7 @@ abstract class SozlukUret : DefaultTask() {
         val girdiler = groovy.json.JsonSlurper().parseText(json.toString(Charsets.UTF_8)) as List<Map<String, String>>
         fun kt(s: String?) = "\"" + s!!.replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\\$") + "\""
         val satirlar = girdiler.joinToString("\n") { g ->
-            "    SozlukGirdisi(${kt(g["pas"])}, ${kt(g["rust"])}, Tur.${g["kind"]!!.uppercase()}, ${kt(g["description"])}),"
+            "    SozlukGirdisi(${kt(g["pas"])}, ${kt(g["rust"])}, Sinif.${g["tur"]!!.uppercase()}, ${kt(g["aciklama"])}),"
         }
         val dosya = cikti.get().asFile.resolve("pas/eklenti/SozlukVerisi.kt")
         dosya.parentFile.mkdirs()
@@ -86,7 +86,7 @@ abstract class SozlukUret : DefaultTask() {
 
 val sozlukUret = tasks.register<SozlukUret>("sozlukUret") {
     calismaAlani = layout.projectDirectory.dir("..")
-    sozlukKaynagi = layout.projectDirectory.file("../crates/pas-cekirdek/src/dictionary.rs")
+    sozlukKaynagi = layout.projectDirectory.file("../crates/pas-cekirdek/src/sozluk.rs")
     cikti = layout.buildDirectory.dir("generated/sozluk")
 }
 

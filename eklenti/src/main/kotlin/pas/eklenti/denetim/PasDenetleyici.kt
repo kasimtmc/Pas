@@ -73,8 +73,8 @@ class PasDenetleyici : ExternalAnnotator<PasDenetleyici.Girdi, List<Tani>>() {
         val belge = PsiDocumentManager.getInstance(file.project).getDocument(file) ?: return
         for (tani in tanilar) {
             val onem = when (tani.seviye) {
-                "error" -> HighlightSeverity.ERROR
-                "warning" -> HighlightSeverity.WARNING
+                "hata" -> HighlightSeverity.ERROR
+                "uyarı" -> HighlightSeverity.WARNING
                 else -> HighlightSeverity.WEAK_WARNING
             }
             holder.newAnnotation(onem, baslik(tani))
@@ -124,19 +124,19 @@ class PasDenetleyici : ExternalAnnotator<PasDenetleyici.Girdi, List<Tani>>() {
 
         fun cozumle(satir: String): Tani? = try {
             val json = JsonParser.parseString(satir).asJsonObject
-            val aralik = json.getAsJsonObject("span")
-            fun JsonObjectAlani(ad: String) = json.get(ad)?.takeUnless { it.isJsonNull }?.asString
+            val aralik = json.getAsJsonObject("aralik")
+            fun istegeBagli(ad: String) = json.get(ad)?.takeUnless { it.isJsonNull }?.asString
             Tani(
-                seviye = json.get("level").asString,
-                kod = JsonObjectAlani("code"),
-                mesaj = json.get("message").asString,
-                dosya = json.get("file").asString,
-                satir = aralik.get("line").asInt,
-                sutun = aralik.get("column").asInt,
-                bitisSatiri = aralik.get("end_line").asInt,
-                bitisSutunu = aralik.get("end_column").asInt,
-                notlar = json.getAsJsonArray("notes")?.map { it.asString }.orEmpty(),
-                aciklama = JsonObjectAlani("explanation"),
+                seviye = json.get("seviye").asString,
+                kod = istegeBagli("kod"),
+                mesaj = json.get("mesaj").asString,
+                dosya = json.get("dosya").asString,
+                satir = aralik.get("satir").asInt,
+                sutun = aralik.get("sutun").asInt,
+                bitisSatiri = aralik.get("bitis_satiri").asInt,
+                bitisSutunu = aralik.get("bitis_sutunu").asInt,
+                notlar = json.getAsJsonArray("notlar")?.map { it.asString }.orEmpty(),
+                aciklama = istegeBagli("aciklama"),
             )
         } catch (_: Exception) {
             null

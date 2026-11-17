@@ -39,7 +39,7 @@ object PasSozcukler {
 }
 
 /**
- * Pas kaynak kodunu sözcüklere ayırır. `crates/pas-cekirdek/src/lexer.rs`
+ * Pas kaynak kodunu sözcüklere ayırır. `crates/pas-cekirdek/src/sozcukler.rs`
  * ile aynı kuralları izler; ek olarak renklendirme için isimleri sınıflar.
  *
  * Her sözcük kendi başına tamamlanır (blok yorumlar ve dizgiler tek bir
@@ -91,10 +91,10 @@ class PasLexer : LexerBase() {
         konum += if (konum < son) Character.charCount(kodNoktasi()) else 1
     }
 
-    private fun isimBaslangiciMi(): Boolean = konum < son && isimBaslangici(kodNoktasi())
+    private fun isimBaslangiciMi(): Boolean = konum < son && isimBaslangicKarakteriMi(kodNoktasi())
 
     private fun isimDevami() {
-        while (konum < son && isimDevamı(kodNoktasi())) ilerle()
+        while (konum < son && isimDevamKarakteriMi(kodNoktasi())) ilerle()
     }
 
     private fun sonrakiSozcuk(): IElementType {
@@ -154,9 +154,9 @@ class PasLexer : LexerBase() {
             return PasSozcukler.MAKRO
         }
         if (Sozluk.anahtarSozcukMu(sozcuk)) return PasSozcukler.ANAHTAR_SOZCUK
-        return when (Sozluk.bul(sozcuk)?.tur) {
-            Tur.TYPE -> PasSozcukler.HAZIR_TUR
-            Tur.VALUE -> PasSozcukler.HAZIR_DEGER
+        return when (Sozluk.bul(sozcuk)?.sinif) {
+            Sinif.TUR -> PasSozcukler.HAZIR_TUR
+            Sinif.DEGER -> PasSozcukler.HAZIR_DEGER
             else -> PasSozcukler.ISIM
         }
     }
@@ -272,8 +272,8 @@ class PasLexer : LexerBase() {
     }
 
     companion object {
-        fun isimBaslangici(kod: Int) = kod == '_'.code || Character.isUnicodeIdentifierStart(kod)
+        fun isimBaslangicKarakteriMi(kod: Int) = kod == '_'.code || Character.isUnicodeIdentifierStart(kod)
 
-        fun isimDevamı(kod: Int) = Character.isUnicodeIdentifierPart(kod) && !Character.isIdentifierIgnorable(kod)
+        fun isimDevamKarakteriMi(kod: Int) = Character.isUnicodeIdentifierPart(kod) && !Character.isIdentifierIgnorable(kod)
     }
 }

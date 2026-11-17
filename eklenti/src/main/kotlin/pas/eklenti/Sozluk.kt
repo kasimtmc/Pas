@@ -2,15 +2,15 @@ package pas.eklenti
 
 import java.text.Normalizer
 
-enum class Tur { KEYWORD, MACRO, TYPE, VALUE, FUNCTION, METHOD }
+enum class Sinif { ANAHTAR_SOZCUK, MAKRO, TUR, DEGER, ISLEV, YONTEM }
 
 /** Sözlükteki bir Türkçe sözcük ve Rust karşılığı. */
-data class SozlukGirdisi(val pas: String, val rust: String, val tur: Tur, val aciklama: String)
+data class SozlukGirdisi(val pas: String, val rust: String, val sinif: Sinif, val aciklama: String)
 
 /**
  * Pas sözlüğü. Veriler derleme sırasında `cargo pas sözlük --json`
  * çıktısından üretilir (bkz. `SozlukVerisi.kt`); tek doğruluk kaynağı
- * `crates/pas-cekirdek/src/dictionary.rs` dosyasıdır.
+ * `crates/pas-cekirdek/src/sozluk.rs` dosyasıdır.
  */
 object Sozluk {
     val girdiler: List<SozlukGirdisi> = SOZLUK_VERISI
@@ -28,7 +28,7 @@ object Sozluk {
     fun bul(sozcuk: String): SozlukGirdisi? = pasIle[nfc(sozcuk)]
 
     fun anahtarSozcukMu(sozcuk: String): Boolean =
-        sozcuk in rustAnahtarSozcukleri || bul(sozcuk)?.tur == Tur.KEYWORD
+        sozcuk in rustAnahtarSozcukleri || bul(sozcuk)?.sinif == Sinif.ANAHTAR_SOZCUK
 
     private fun nfc(s: String) =
         if (Normalizer.isNormalized(s, Normalizer.Form.NFC)) s else Normalizer.normalize(s, Normalizer.Form.NFC)

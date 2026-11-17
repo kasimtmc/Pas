@@ -36,19 +36,19 @@ class PasTamamlayici : CompletionContributor() {
         }
 
         private fun oge(girdi: SozlukGirdisi): LookupElement {
-            val makro = girdi.tur == Tur.MACRO
+            val makro = girdi.sinif == Sinif.MAKRO
             var oge = LookupElementBuilder.create(if (makro) "${girdi.pas}!" else girdi.pas)
                 .withTypeText(if (makro) "${girdi.rust}!" else girdi.rust, true)
                 .withTailText("  ${girdi.aciklama}", true)
                 .withIcon(PasSimgeleri.DOSYA)
-            oge = when (girdi.tur) {
-                Tur.KEYWORD -> oge.bold()
-                Tur.MACRO -> oge.withInsertHandler(parantezEkle(if (girdi.rust == "vec") "[]" else "()"))
-                Tur.METHOD, Tur.FUNCTION -> oge.withInsertHandler(parantezEkle("()"))
+            oge = when (girdi.sinif) {
+                Sinif.ANAHTAR_SOZCUK -> oge.bold()
+                Sinif.MAKRO -> oge.withInsertHandler(parantezEkle(if (girdi.rust == "vec") "[]" else "()"))
+                Sinif.YONTEM, Sinif.ISLEV -> oge.withInsertHandler(parantezEkle("()"))
                 else -> oge
             }
             // Anahtar sözcükler dosyadaki isimlerden önce gelsin.
-            return PrioritizedLookupElement.withPriority(oge, if (girdi.tur == Tur.KEYWORD) 2.0 else 1.0)
+            return PrioritizedLookupElement.withPriority(oge, if (girdi.sinif == Sinif.ANAHTAR_SOZCUK) 2.0 else 1.0)
         }
 
         private fun parantezEkle(parantez: String) = InsertHandler<LookupElement> { baglam, _ ->

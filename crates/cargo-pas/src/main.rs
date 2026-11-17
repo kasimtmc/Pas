@@ -1,23 +1,23 @@
 //! `cargo pas`: Pas (Türkçe Rust) projelerini derler ve çalıştırır.
 
 mod cargo;
-mod diagnostics;
-mod project;
-mod run;
-mod style;
+mod gorunum;
+mod program;
+mod proje;
+mod tanilama;
 
 use std::fs;
 use std::io::Read;
 use std::path::Path;
 use std::process::ExitCode;
 
-use pas_cekirdek::dictionary::{self, ENTRIES};
+use pas_cekirdek::sozluk::{self, GIRDILER};
 
-use crate::diagnostics::{Renderer, Sources};
-use crate::project::{Project, SHADOW_PREFIX};
-use crate::style::Style;
+use crate::gorunum::Gorunum;
+use crate::proje::{GOLGE_ONEKI, Proje};
+use crate::tanilama::{Gosterici, Kaynaklar};
 
-const HELP: &str = "\
+const YARDIM: &str = "\
 Pas: Türkçe Rust
 
 Kullanım: cargo pas <komut> [seçenekler]
@@ -45,199 +45,199 @@ Komutların İngilizce adları da çalışır: new, run, build, check,
 translate, dictionary, help, version.";
 
 fn main() -> ExitCode {
-    let mut args: Vec<String> = std::env::args().skip(1).collect();
+    let mut argumanlar: Vec<String> = std::env::args().skip(1).collect();
     // `cargo pas …` olarak çağrılınca ilk argüman `pas` olur.
-    if args.first().is_some_and(|a| a == "pas") {
-        args.remove(0);
+    if argumanlar.first().is_some_and(|a| a == "pas") {
+        argumanlar.remove(0);
     }
-    let style = Style::detect();
-    match run(&args, style) {
-        Ok(code) => code,
-        Err(message) => {
-            eprintln!("{}: {message}", style.error("hata"));
+    let gorunum = Gorunum::algila();
+    match komutu_isle(&argumanlar, gorunum) {
+        Ok(kod) => kod,
+        Err(mesaj) => {
+            eprintln!("{}: {mesaj}", gorunum.hata("hata"));
             ExitCode::FAILURE
         }
     }
 }
 
-fn run(args: &[String], style: Style) -> Result<ExitCode, String> {
-    let Some((command, rest)) = args.split_first() else {
-        println!("{HELP}");
+fn komutu_isle(argumanlar: &[String], gorunum: Gorunum) -> Result<ExitCode, String> {
+    let Some((komut, kalan)) = argumanlar.split_first() else {
+        println!("{YARDIM}");
         return Ok(ExitCode::SUCCESS);
     };
-    match command.as_str() {
-        "yeni" | "new" => new_project(rest, style),
-        "çalıştır" | "calistir" | "run" => build(rest, Mode::Run, style),
-        "derle" | "build" => build(rest, Mode::Build, style),
-        "denetle" | "check" => build(rest, Mode::Check, style),
-        "çevir" | "cevir" | "translate" => translate(rest),
-        "sözlük" | "sozluk" | "dictionary" => print_dictionary(rest),
+    match komut.as_str() {
+        "yeni" | "new" => yeni_proje(kalan, gorunum),
+        "çalıştır" | "calistir" | "run" => derle(kalan, Kip::Calistir, gorunum),
+        "derle" | "build" => derle(kalan, Kip::Derle, gorunum),
+        "denetle" | "check" => derle(kalan, Kip::Denetle, gorunum),
+        "çevir" | "cevir" | "translate" => cevir(kalan),
+        "sözlük" | "sozluk" | "dictionary" => sozlugu_yazdir(kalan),
         "yardım" | "yardim" | "help" | "-h" | "--help" => {
-            println!("{HELP}");
+            println!("{YARDIM}");
             Ok(ExitCode::SUCCESS)
         }
         "sürüm" | "surum" | "version" | "-V" | "--version" => {
             println!("cargo-pas {}", env!("CARGO_PKG_VERSION"));
             Ok(ExitCode::SUCCESS)
         }
-        other => Err(format!("bilinmeyen komut `{other}`. Komutları görmek için: cargo pas yardım")),
+        diger => Err(format!("bilinmeyen komut `{diger}`. Komutları görmek için: cargo pas yardım")),
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Mode {
-    Run,
-    Build,
-    Check,
+enum Kip {
+    Calistir,
+    Derle,
+    Denetle,
 }
 
 #[derive(Default)]
-struct BuildOptions {
-    release: bool,
-    bin: Option<String>,
-    program_args: Vec<String>,
+struct DerlemeSecenekleri {
+    yayin: bool,
+    ikili: Option<String>,
+    program_argumanlari: Vec<String>,
     json: bool,
-    stdin_file: Option<String>,
+    stdin_dosyasi: Option<String>,
 }
 
-impl BuildOptions {
-    fn parse(args: &[String]) -> Result<Self, String> {
-        let mut options = BuildOptions::default();
-        let mut args = args.iter();
-        while let Some(arg) = args.next() {
-            match arg.as_str() {
-                "--yayın" | "--yayin" | "--release" => options.release = true,
+impl DerlemeSecenekleri {
+    fn ayristir(argumanlar: &[String]) -> Result<Self, String> {
+        let mut secenekler = DerlemeSecenekleri::default();
+        let mut argumanlar = argumanlar.iter();
+        while let Some(arguman) = argumanlar.next() {
+            match arguman.as_str() {
+                "--yayın" | "--yayin" | "--release" => secenekler.yayin = true,
                 "--ikili" | "--bin" => {
-                    options.bin = Some(args.next().ok_or("`--ikili` seçeneğinden sonra bir ad yaz")?.clone());
+                    secenekler.ikili =
+                        Some(argumanlar.next().ok_or("`--ikili` seçeneğinden sonra bir ad yaz")?.clone());
                 }
-                "--json" => options.json = true,
+                "--json" => secenekler.json = true,
                 "--stdin" => {
-                    options.stdin_file =
-                        Some(args.next().ok_or("`--stdin` seçeneğinden sonra bir dosya yolu yaz")?.clone());
+                    secenekler.stdin_dosyasi =
+                        Some(argumanlar.next().ok_or("`--stdin` seçeneğinden sonra bir dosya yolu yaz")?.clone());
                 }
                 "--" => {
-                    options.program_args = args.cloned().collect();
+                    secenekler.program_argumanlari = argumanlar.cloned().collect();
                     break;
                 }
-                other => return Err(format!("bilinmeyen seçenek `{other}`")),
+                diger => return Err(format!("bilinmeyen seçenek `{diger}`")),
             }
         }
-        Ok(options)
+        Ok(secenekler)
     }
 }
 
-fn build(args: &[String], mode: Mode, style: Style) -> Result<ExitCode, String> {
-    let options = BuildOptions::parse(args)?;
-    if mode != Mode::Run && !options.program_args.is_empty() {
+fn derle(argumanlar: &[String], kip: Kip, gorunum: Gorunum) -> Result<ExitCode, String> {
+    let secenekler = DerlemeSecenekleri::ayristir(argumanlar)?;
+    if kip != Kip::Calistir && !secenekler.program_argumanlari.is_empty() {
         return Err("programa argüman yalnızca `çalıştır` ile verilebilir".into());
     }
-    if mode == Mode::Run && options.json {
+    if kip == Kip::Calistir && secenekler.json {
         return Err("`--json` yalnızca `derle` ve `denetle` ile kullanılabilir".into());
     }
-    let cwd = std::env::current_dir().map_err(|e| format!("bulunulan dizin okunamadı: {e}"))?;
-    let mut project = Project::find(&cwd)?;
-    if let Some(path) = &options.stdin_file {
-        let mut contents = String::new();
-        std::io::stdin().read_to_string(&mut contents).map_err(|e| format!("girdi okunamadı: {e}"))?;
-        project.unsaved = Some((path.replace('\\', "/"), contents));
+    let calisma_dizini = std::env::current_dir().map_err(|e| format!("bulunulan dizin okunamadı: {e}"))?;
+    let mut proje = Proje::bul(&calisma_dizini)?;
+    if let Some(yol) = &secenekler.stdin_dosyasi {
+        let mut icerik = String::new();
+        std::io::stdin().read_to_string(&mut icerik).map_err(|e| format!("girdi okunamadı: {e}"))?;
+        proje.kaydedilmemis = Some((yol.replace('\\', "/"), icerik));
     }
-    let prepared = project.prepare()?;
-    if prepared.files.is_empty() {
+    let hazirlik = proje.hazirla()?;
+    if hazirlik.dosyalar.is_empty() {
         eprintln!(
             "{}: projede hiç `.pas` dosyası yok; `src/ana.pas` dosyasını oluşturarak başlayabilirsin",
-            style.warning("uyarı")
+            gorunum.uyari("uyarı")
         );
     } else {
-        style.status("Çevrildi", &format!("{} Pas dosyası", prepared.files.len()));
+        gorunum.durum("Çevrildi", &format!("{} Pas dosyası", hazirlik.dosyalar.len()));
     }
 
-    let manifest = project.shadow_manifest();
-    let mut cargo_args = vec![
-        if mode == Mode::Check { "check" } else { "build" },
+    let bildirim = proje.golge_bildirimi();
+    let mut cargo_argumanlari = vec![
+        if kip == Kip::Denetle { "check" } else { "build" },
         "--manifest-path",
-        manifest.to_str().ok_or("proje yolu geçersiz karakterler içeriyor")?,
+        bildirim.to_str().ok_or("proje yolu geçersiz karakterler içeriyor")?,
         "--target-dir",
-        project.target_dir.to_str().ok_or("proje yolu geçersiz karakterler içeriyor")?,
+        proje.hedef_dizini.to_str().ok_or("proje yolu geçersiz karakterler içeriyor")?,
     ];
-    if options.release {
-        cargo_args.push("--release");
+    if secenekler.yayin {
+        cargo_argumanlari.push("--release");
     }
-    if let Some(bin) = &options.bin {
-        cargo_args.extend(["--bin", bin]);
+    if let Some(ikili) = &secenekler.ikili {
+        cargo_argumanlari.extend(["--bin", ikili]);
     }
 
-    let mut renderer = Renderer::new(style, Sources::new(&project.shadow, &prepared), options.json);
-    let outcome = cargo::run(&cargo_args, &mut renderer, style)?;
-    if !outcome.success {
+    let mut gosterici = Gosterici::yeni(gorunum, Kaynaklar::yeni(&proje.golge, &hazirlik), secenekler.json);
+    let sonuc = cargo::calistir(&cargo_argumanlari, &mut gosterici, gorunum)?;
+    if !sonuc.basari {
         return Ok(ExitCode::from(101));
     }
-    if mode != Mode::Run {
+    if kip != Kip::Calistir {
         return Ok(ExitCode::SUCCESS);
     }
 
-    let exe = choose_executable(&outcome.executables, &options, &project)?;
-    let shown = exe.path.strip_prefix(&project.root).unwrap_or(&exe.path);
-    style.status("Çalıştırılıyor", &format!("`{}`", shown.display()));
-    run::run_program(&exe.path, &options.program_args, &mut renderer.sources, style)
+    let program_dosyasi = program_sec(&sonuc.programlar, &secenekler, &proje)?;
+    let gosterilen_yol = program_dosyasi.yol.strip_prefix(&proje.kok).unwrap_or(&program_dosyasi.yol);
+    gorunum.durum("Çalıştırılıyor", &format!("`{}`", gosterilen_yol.display()));
+    program::calistir(&program_dosyasi.yol, &secenekler.program_argumanlari, &mut gosterici.kaynaklar, gorunum)
 }
 
-fn choose_executable<'a>(
-    executables: &'a [cargo::Executable],
-    options: &BuildOptions,
-    project: &Project,
-) -> Result<&'a cargo::Executable, String> {
-    if let Some(bin) = &options.bin {
-        return executables.iter().find(|e| &e.name == bin).ok_or_else(|| format!("`{bin}` adında bir program yok"));
+fn program_sec<'a>(
+    programlar: &'a [cargo::Program],
+    secenekler: &DerlemeSecenekleri,
+    proje: &Proje,
+) -> Result<&'a cargo::Program, String> {
+    if let Some(ikili) = &secenekler.ikili {
+        return programlar.iter().find(|e| &e.ad == ikili).ok_or_else(|| format!("`{ikili}` adında bir program yok"));
     }
-    match executables {
+    match programlar {
         [] => Err("çalıştırılacak bir program bulunamadı; `src/ana.pas` dosyası var mı?".into()),
-        [only] => Ok(only),
-        many => many.iter().find(|e| Some(&e.name) == project.package_name.as_ref()).ok_or_else(|| {
-            let names: Vec<&str> = many.iter().map(|e| e.name.as_str()).collect();
-            format!("birden fazla program var: {}. Hangisini çalıştıracağını `--ikili <ad>` ile seç", names.join(", "))
+        [tek] => Ok(tek),
+        cok => cok.iter().find(|e| Some(&e.ad) == proje.paket_adi.as_ref()).ok_or_else(|| {
+            let adlar: Vec<&str> = cok.iter().map(|e| e.ad.as_str()).collect();
+            format!("birden fazla program var: {}. Hangisini çalıştıracağını `--ikili <ad>` ile seç", adlar.join(", "))
         }),
     }
 }
 
-fn new_project(args: &[String], style: Style) -> Result<ExitCode, String> {
-    let [name] = args else {
+fn yeni_proje(argumanlar: &[String], gorunum: Gorunum) -> Result<ExitCode, String> {
+    let [ad] = argumanlar else {
         return Err("proje adını yaz: cargo pas yeni <ad>".into());
     };
-    let dir = Path::new(name);
-    if dir.exists() {
-        return Err(format!("`{name}` zaten var"));
+    let dizin = Path::new(ad);
+    if dizin.exists() {
+        return Err(format!("`{ad}` zaten var"));
     }
-    let dir_name = dir.file_name().and_then(|n| n.to_str()).unwrap_or(name);
-    let package = package_name(dir_name);
-    if package.is_empty() {
-        return Err(format!("`{name}` proje adı olarak kullanılamaz; harflerle başlayan bir ad seç"));
+    let dizin_adi = dizin.file_name().and_then(|n| n.to_str()).unwrap_or(ad);
+    let paket = paket_adi(dizin_adi);
+    if paket.is_empty() {
+        return Err(format!("`{ad}` proje adı olarak kullanılamaz; harflerle başlayan bir ad seç"));
     }
 
-    // `[[bin]]` bölümü programın Rust'a çevrilmiş halini gösterir; IDE'ler
+    // `[[ikili]]` bölümü programın Rust'a çevrilmiş halini gösterir; IDE'ler
     // (`cargo metadata`) `.rs` dosyası olmayan projeyi bu sayede tanır.
-    let manifest = format!(
-        "[package]\nname = \"{package}\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n\
+    let bildirim = format!(
+        "[package]\nname = \"{paket}\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n\
          # `cargo pas` bu dosyayı `src/ana.pas` dosyasından üretir.\n\
-         [[bin]]\nname = \"{package}\"\npath = \"{SHADOW_PREFIX}src/main.rs\"\n\n[dependencies]\n"
+         [[bin]]\nname = \"{paket}\"\npath = \"{GOLGE_ONEKI}src/main.rs\"\n\n[dependencies]\n"
     );
-    let main = "işlev ana() {\n    yazdır!(\"Merhaba dünya!\");\n}\n";
-    let write = |path: &Path, contents: &str| {
-        fs::write(path, contents).map_err(|e| format!("`{}` yazılamadı: {e}", path.display()))
-    };
-    fs::create_dir_all(dir.join("src")).map_err(|e| format!("`{name}` oluşturulamadı: {e}"))?;
-    write(&dir.join("Cargo.toml"), &manifest)?;
-    write(&dir.join("src/ana.pas"), main)?;
-    write(&dir.join(".gitignore"), "/target\n")?;
+    let ana_dosya = "işlev ana() {\n    yazdır!(\"Merhaba dünya!\");\n}\n";
+    let yaz =
+        |yol: &Path, icerik: &str| fs::write(yol, icerik).map_err(|e| format!("`{}` yazılamadı: {e}", yol.display()));
+    fs::create_dir_all(dizin.join("src")).map_err(|e| format!("`{ad}` oluşturulamadı: {e}"))?;
+    yaz(&dizin.join("Cargo.toml"), &bildirim)?;
+    yaz(&dizin.join("src/ana.pas"), ana_dosya)?;
+    yaz(&dizin.join(".gitignore"), "/target\n")?;
 
-    style.status("Oluşturuldu", &format!("`{name}` projesi"));
-    eprintln!("\nBaşlamak için:\n    cd {name}\n    cargo pas çalıştır");
+    gorunum.durum("Oluşturuldu", &format!("`{ad}` projesi"));
+    eprintln!("\nBaşlamak için:\n    cd {ad}\n    cargo pas çalıştır");
     Ok(ExitCode::SUCCESS)
 }
 
 /// cargo paket adları ASCII olmalı: `Uzay Oyunu` → `uzay-oyunu`.
-fn package_name(name: &str) -> String {
-    let mut out = String::new();
-    for c in name.chars() {
+fn paket_adi(ad: &str) -> String {
+    let mut cikti = String::new();
+    for c in ad.chars() {
         let c = match c {
             'ç' | 'Ç' => 'c',
             'ğ' | 'Ğ' => 'g',
@@ -251,115 +251,115 @@ fn package_name(name: &str) -> String {
             c if c.is_ascii_alphanumeric() || c == '_' => c.to_ascii_lowercase(),
             _ => '-',
         };
-        if !(c == '-' && (out.is_empty() || out.ends_with('-'))) {
-            out.push(c);
+        if !(c == '-' && (cikti.is_empty() || cikti.ends_with('-'))) {
+            cikti.push(c);
         }
     }
-    let trimmed = out.trim_end_matches('-').trim_start_matches(|c: char| c.is_ascii_digit() || c == '-');
-    trimmed.to_owned()
+    let kirpilmis = cikti.trim_end_matches('-').trim_start_matches(|c: char| c.is_ascii_digit() || c == '-');
+    kirpilmis.to_owned()
 }
 
-fn translate(args: &[String]) -> Result<ExitCode, String> {
-    let mut reverse = false;
-    let mut file = None;
-    for arg in args {
-        match arg.as_str() {
-            "--ters" | "--reverse" => reverse = true,
-            other if file.is_none() => file = Some(other),
-            other => return Err(format!("fazladan argüman `{other}`")),
+fn cevir(argumanlar: &[String]) -> Result<ExitCode, String> {
+    let mut ters = false;
+    let mut dosya = None;
+    for arguman in argumanlar {
+        match arguman.as_str() {
+            "--ters" | "--reverse" => ters = true,
+            diger if dosya.is_none() => dosya = Some(diger),
+            diger => return Err(format!("fazladan argüman `{diger}`")),
         }
     }
-    let file = file.ok_or("çevrilecek dosyayı yaz: cargo pas çevir <dosya.pas> (standart girdi için `-`)")?;
-    let source = if file == "-" {
-        let mut text = String::new();
-        std::io::stdin().read_to_string(&mut text).map_err(|e| format!("girdi okunamadı: {e}"))?;
-        text
+    let dosya = dosya.ok_or("çevrilecek dosyayı yaz: cargo pas çevir <dosya.pas> (standart girdi için `-`)")?;
+    let kaynak = if dosya == "-" {
+        let mut metin = String::new();
+        std::io::stdin().read_to_string(&mut metin).map_err(|e| format!("girdi okunamadı: {e}"))?;
+        metin
     } else {
-        fs::read_to_string(file).map_err(|e| format!("`{file}` okunamadı: {e}"))?
+        fs::read_to_string(dosya).map_err(|e| format!("`{dosya}` okunamadı: {e}"))?
     };
-    let output = if reverse { pas_cekirdek::to_pas(&source) } else { pas_cekirdek::to_rust(&source).rust };
-    print!("{output}");
+    let cikti = if ters { pas_cekirdek::pasa_cevir(&kaynak) } else { pas_cekirdek::rusta_cevir(&kaynak).rust };
+    print!("{cikti}");
     Ok(ExitCode::SUCCESS)
 }
 
-fn print_dictionary(args: &[String]) -> Result<ExitCode, String> {
-    match args {
+fn sozlugu_yazdir(argumanlar: &[String]) -> Result<ExitCode, String> {
+    match argumanlar {
         [] => {
-            let mut kind = None;
-            for entry in ENTRIES {
-                if kind != Some(entry.kind) {
-                    kind = Some(entry.kind);
-                    println!("\n{}:", capitalize(&plural(entry.kind)));
+            let mut tur = None;
+            for girdi in GIRDILER {
+                if tur != Some(girdi.tur) {
+                    tur = Some(girdi.tur);
+                    println!("\n{}:", ilk_harfi_buyut(&cogul(girdi.tur)));
                 }
-                let pas = match entry.kind {
-                    dictionary::Kind::Macro => format!("{}!", entry.pas),
-                    _ => entry.pas.to_owned(),
+                let pas = match girdi.tur {
+                    sozluk::Sinif::Makro => format!("{}!", girdi.pas),
+                    _ => girdi.pas.to_owned(),
                 };
-                let rust = match entry.kind {
-                    dictionary::Kind::Macro => format!("{}!", entry.rust),
-                    _ => entry.rust.to_owned(),
+                let rust = match girdi.tur {
+                    sozluk::Sinif::Makro => format!("{}!", girdi.rust),
+                    _ => girdi.rust.to_owned(),
                 };
-                println!("    {pas:<18} {rust:<14} {}", entry.description);
+                println!("    {pas:<18} {rust:<14} {}", girdi.aciklama);
             }
             Ok(ExitCode::SUCCESS)
         }
-        [flag] if flag == "--json" => {
-            let entries: Vec<serde_json::Value> = ENTRIES
+        [bayrak] if bayrak == "--json" => {
+            let girdiler: Vec<serde_json::Value> = GIRDILER
                 .iter()
                 .map(|e| {
                     serde_json::json!({
                         "pas": e.pas,
                         "rust": e.rust,
-                        "kind": e.kind.id(),
-                        "description": e.description,
+                        "tur": e.tur.kimlik(),
+                        "aciklama": e.aciklama,
                     })
                 })
                 .collect();
-            println!("{}", serde_json::to_string_pretty(&entries).expect("JSON"));
+            println!("{}", serde_json::to_string_pretty(&girdiler).expect("JSON"));
             Ok(ExitCode::SUCCESS)
         }
         _ => Err("kullanım: cargo pas sözlük [--json]".into()),
     }
 }
 
-fn plural(kind: dictionary::Kind) -> String {
-    match kind {
-        dictionary::Kind::Keyword => "anahtar sözcükler".into(),
-        dictionary::Kind::Macro => "makrolar".into(),
-        dictionary::Kind::Type => "türler".into(),
-        dictionary::Kind::Value => "değerler".into(),
-        dictionary::Kind::Function => "işlevler".into(),
-        dictionary::Kind::Method => "yöntemler".into(),
+fn cogul(tur: sozluk::Sinif) -> String {
+    match tur {
+        sozluk::Sinif::AnahtarSozcuk => "anahtar sözcükler".into(),
+        sozluk::Sinif::Makro => "makrolar".into(),
+        sozluk::Sinif::Tur => "türler".into(),
+        sozluk::Sinif::Deger => "değerler".into(),
+        sozluk::Sinif::Islev => "işlevler".into(),
+        sozluk::Sinif::Yontem => "yöntemler".into(),
     }
 }
 
 /// Türkçe kurallarıyla ilk harfi büyütür: `i` → `İ`, `ı` → `I`.
-fn capitalize(text: &str) -> String {
-    let mut chars = text.chars();
-    match chars.next() {
-        Some('i') => std::iter::once('İ').chain(chars).collect(),
-        Some('ı') => std::iter::once('I').chain(chars).collect(),
-        Some(first) => first.to_uppercase().chain(chars).collect(),
+fn ilk_harfi_buyut(metin: &str) -> String {
+    let mut karakterler = metin.chars();
+    match karakterler.next() {
+        Some('i') => std::iter::once('İ').chain(karakterler).collect(),
+        Some('ı') => std::iter::once('I').chain(karakterler).collect(),
+        Some(ilk) => ilk.to_uppercase().chain(karakterler).collect(),
         None => String::new(),
     }
 }
 
 #[cfg(test)]
-mod tests {
+mod testler {
     use super::*;
 
     #[test]
-    fn turkish_capitalization() {
-        assert_eq!(capitalize("işlevler"), "İşlevler");
-        assert_eq!(capitalize("ılık"), "Ilık");
-        assert_eq!(capitalize("çeşit"), "Çeşit");
+    fn turkce_buyuk_harf() {
+        assert_eq!(ilk_harfi_buyut("işlevler"), "İşlevler");
+        assert_eq!(ilk_harfi_buyut("ılık"), "Ilık");
+        assert_eq!(ilk_harfi_buyut("çeşit"), "Çeşit");
     }
 
     #[test]
-    fn package_names() {
-        assert_eq!(package_name("Uzay Oyunu"), "uzay-oyunu");
-        assert_eq!(package_name("çılgın_şövalye"), "cilgin_sovalye");
-        assert_eq!(package_name("İlk Program!"), "ilk-program");
-        assert_eq!(package_name("3 kedi"), "kedi");
+    fn paket_adlari() {
+        assert_eq!(paket_adi("Uzay Oyunu"), "uzay-oyunu");
+        assert_eq!(paket_adi("çılgın_şövalye"), "cilgin_sovalye");
+        assert_eq!(paket_adi("İlk Program!"), "ilk-program");
+        assert_eq!(paket_adi("3 kedi"), "kedi");
     }
 }

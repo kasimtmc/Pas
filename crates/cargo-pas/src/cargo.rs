@@ -8,39 +8,47 @@ use std::thread;
 
 use serde::Deserialize;
 
-use crate::diagnostics::{Diagnostic, Renderer};
-use crate::style::Style;
+use crate::gorunum::Gorunum;
+use crate::tanilama::{Gosterici, Tani};
+
+/// cargo'nun `--message-format=json` çıktısındaki bir satır.
+#[derive(Deserialize)]
+struct CargoMesaji {
+    #[serde(rename = "reason")]
+    neden: String,
+    #[serde(rename = "message")]
+    mesaj: Option<Tani>,
+    #[serde(rename = "executable")]
+    calistirilabilir: Option<PathBuf>,
+    #[serde(rename = "target")]
+    hedef: Option<Hedef>,
+    #[serde(rename = "success")]
+    basari: Option<bool>,
+}
 
 #[derive(Deserialize)]
-struct Message {
-    reason: String,
-    message: Option<Diagnostic>,
-    executable: Option<PathBuf>,
-    target: Option<Target>,
-    success: Option<bool>,
+struct Hedef {
+    #[serde(rename = "name")]
+    ad: String,
+    #[serde(rename = "kind")]
+    tur: Vec<String>,
 }
 
-#[derive(Deserialize)]
-struct Target {
-    name: String,
-    kind: Vec<String>,
+pub struct Program {
+    pub ad: String,
+    pub yol: PathBuf,
 }
 
-pub struct Executable {
-    pub name: String,
-    pub path: PathBuf,
+pub struct Sonuc {
+    pub basari: bool,
+    pub programlar: Vec<Program>,
 }
 
-pub struct Outcome {
-    pub success: bool,
-    pub executables: Vec<Executable>,
-}
-
-/// `cargo <alt komut> --message-format=json …` çalıştırır.
-pub fn run(args: &[&str], renderer: &mut Renderer, style: Style) -> Result<Outcome, String> {
-    let cargo = std::env::var_os("CARGO").unwrap_or_else(|| "cargo".into());
-    let mut child = Command::new(cargo)
-        .args(args)
+/// `cargo <alt komut> --mesaj-format=json …` çalıştırır.
+pub fn calistir(argumanlar: &[&str], gosterici: &mut Gosterici, gorunum: Gorunum) -> Result<Sonuc, String> {
+    let cargo_yolu = std::env::var_os("CARGO").unwrap_or_else(|| "cargo".into());
+    let mut surec = Command::new(cargo_yolu)
+        .args(argumanlar)
         .arg("--message-format=json")
         .env("CARGO_TERM_PROGRESS_WHEN", "never")
         .stdin(Stdio::null())
@@ -50,63 +58,64 @@ pub fn run(args: &[&str], renderer: &mut Renderer, style: Style) -> Result<Outco
         .map_err(|e| format!("cargo çalıştırılamadı: {e}"))?;
 
     // Durum satırları geldikçe yazılır; özet satırları tanılamalardan sonra.
-    let stderr = child.stderr.take().expect("hata çıktısı yönlendirildi");
-    let status_lines = thread::spawn(move || {
-        let mut summary = Vec::new();
-        for line in BufReader::new(stderr).lines().map_while(Result::ok) {
-            match translate_status(&line, style) {
-                Status::Now(text) => eprintln!("{text}"),
-                Status::Later(text) => summary.push(text),
-                Status::Hide => {}
+    let hata_ciktisi = surec.stderr.take().expect("hata çıktısı yönlendirildi");
+    let durum_satirlari = thread::spawn(move || {
+        let mut ozet = Vec::new();
+        for satir in BufReader::new(hata_ciktisi).lines().map_while(Result::ok) {
+            match durumu_cevir(&satir, gorunum) {
+                Durum::Simdi(metin) => eprintln!("{metin}"),
+                Durum::Sonra(metin) => ozet.push(metin),
+                Durum::Gizle => {}
             }
         }
-        summary
+        ozet
     });
 
-    let mut outcome = Outcome { success: false, executables: Vec::new() };
-    let stdout = child.stdout.take().expect("standart çıktı yönlendirildi");
-    for line in BufReader::new(stdout).lines().map_while(Result::ok) {
-        let Ok(message) = serde_json::from_str::<Message>(&line) else {
-            println!("{line}");
+    let mut sonuc = Sonuc { basari: false, programlar: Vec::new() };
+    let standart_cikti = surec.stdout.take().expect("standart çıktı yönlendirildi");
+    for satir in BufReader::new(standart_cikti).lines().map_while(Result::ok) {
+        let Ok(mesaj) = serde_json::from_str::<CargoMesaji>(&satir) else {
+            println!("{satir}");
             continue;
         };
-        match message.reason.as_str() {
+        match mesaj.neden.as_str() {
             "compiler-message" => {
-                if let Some(diag) = &message.message {
-                    renderer.render(diag);
+                if let Some(tani) = &mesaj.mesaj {
+                    gosterici.goster(tani);
                 }
             }
             "compiler-artifact" => {
-                if let (Some(path), Some(target)) = (message.executable, message.target)
-                    && target.kind.iter().any(|k| k == "bin")
+                if let (Some(yol), Some(hedef)) = (mesaj.calistirilabilir, mesaj.hedef)
+                    && hedef.tur.iter().any(|k| k == "bin")
                 {
-                    outcome.executables.push(Executable { name: target.name, path });
+                    sonuc.programlar.push(Program { ad: hedef.ad, yol });
                 }
             }
-            "build-finished" => outcome.success = message.success.unwrap_or(false),
+            "build-finished" => sonuc.basari = mesaj.basari.unwrap_or(false),
             _ => {}
         }
     }
 
-    let status = child.wait().map_err(|e| format!("cargo beklenirken hata: {e}"))?;
-    for line in status_lines.join().unwrap_or_default() {
-        eprintln!("{line}");
+    let durum = surec.wait().map_err(|e| format!("cargo beklenirken hata: {e}"))?;
+    for satir in durum_satirlari.join().unwrap_or_default() {
+        eprintln!("{satir}");
     }
-    outcome.success &= status.success();
-    Ok(outcome)
+    sonuc.basari &= durum.success();
+    Ok(sonuc)
 }
 
-enum Status {
-    Now(String),
-    Later(String),
-    Hide,
+enum Durum {
+    Simdi(String),
+    Sonra(String),
+    Gizle,
 }
 
 /// cargo'nun durum satırlarını Türkçeleştirir.
-fn translate_status(line: &str, style: Style) -> Status {
-    let trimmed = line.trim_start();
-    let status = |word: &str, rest: &str| Status::Now(format!("{} {rest}", style.success(&format!("{word:>15}"))));
-    let words: &[(&str, &str)] = &[
+fn durumu_cevir(satir: &str, gorunum: Gorunum) -> Durum {
+    let kirpilmis = satir.trim_start();
+    let durum =
+        |kelime: &str, kalan: &str| Durum::Simdi(format!("{} {kalan}", gorunum.basari(&format!("{kelime:>15}"))));
+    let kelimeler: &[(&str, &str)] = &[
         ("Compiling ", "Derleniyor"),
         ("Checking ", "Denetleniyor"),
         ("Updating ", "Güncelleniyor"),
@@ -117,87 +126,87 @@ fn translate_status(line: &str, style: Style) -> Status {
         ("Documenting ", "Belgeleniyor"),
         ("Fresh ", "Güncel"),
     ];
-    for (english, turkish) in words {
-        if let Some(rest) = trimmed.strip_prefix(english) {
-            return status(turkish, strip_path(rest));
+    for (ingilizce, turkce) in kelimeler {
+        if let Some(kalan) = kirpilmis.strip_prefix(ingilizce) {
+            return durum(turkce, yolu_at(kalan));
         }
     }
-    if let Some(rest) = trimmed.strip_prefix("Finished ") {
-        let profile = if rest.starts_with("`release`") { "hızlı (yayın) derleme, " } else { "" };
-        let time = rest.rsplit(" in ").next().unwrap_or("").trim_end_matches('s');
-        return status("Tamamlandı", &format!("{profile}{time} saniyede"));
+    if let Some(kalan) = kirpilmis.strip_prefix("Finished ") {
+        let profil = if kalan.starts_with("`release`") { "hızlı (yayın) derleme, " } else { "" };
+        let sure = kalan.rsplit(" in ").next().unwrap_or("").trim_end_matches('s');
+        return durum("Tamamlandı", &format!("{profil}{sure} saniyede"));
     }
-    if trimmed.starts_with("Blocking waiting for file lock") {
-        return status("Bekleniyor", "başka bir derlemenin bitmesi bekleniyor");
+    if kirpilmis.starts_with("Blocking waiting for file lock") {
+        return durum("Bekleniyor", "başka bir derlemenin bitmesi bekleniyor");
     }
-    if trimmed.starts_with("Running ") {
-        return Status::Hide;
+    if kirpilmis.starts_with("Running ") {
+        return Durum::Gizle;
     }
-    if let Some(rest) = line.strip_prefix("error: could not compile `") {
-        let name = rest.split('`').next().unwrap_or("");
-        let errors = count_before(rest, "previous error");
-        let warnings = count_before(rest, "warning");
-        let mut text = format!("{}: `{name}` derlenemedi", style.error("hata"));
-        if let Some(n) = errors {
-            let _ = std::fmt::Write::write_fmt(&mut text, format_args!(" ({n} hata"));
-            match warnings {
-                Some(w) => text.push_str(&format!(", {w} uyarı)")),
-                None => text.push(')'),
+    if let Some(kalan) = satir.strip_prefix("error: could not compile `") {
+        let ad = kalan.split('`').next().unwrap_or("");
+        let hatalar = oncesindeki_sayi(kalan, "previous error");
+        let uyarilar = oncesindeki_sayi(kalan, "warning");
+        let mut metin = format!("{}: `{ad}` derlenemedi", gorunum.hata("hata"));
+        if let Some(n) = hatalar {
+            let _ = std::fmt::Write::write_fmt(&mut metin, format_args!(" ({n} hata"));
+            match uyarilar {
+                Some(w) => metin.push_str(&format!(", {w} uyarı)")),
+                None => metin.push(')'),
             }
         }
-        return Status::Later(text);
+        return Durum::Sonra(metin);
     }
-    if let Some(rest) = line.strip_prefix("warning: `")
-        && rest.contains(" generated ")
+    if let Some(kalan) = satir.strip_prefix("warning: `")
+        && kalan.contains(" generated ")
     {
-        let name = rest.split('`').next().unwrap_or("");
-        let n = count_before(rest, "warning").unwrap_or(1);
-        return Status::Later(format!("{}: `{name}` için {n} uyarı", style.warning("uyarı")));
+        let ad = kalan.split('`').next().unwrap_or("");
+        let n = oncesindeki_sayi(kalan, "warning").unwrap_or(1);
+        return Durum::Sonra(format!("{}: `{ad}` için {n} uyarı", gorunum.uyari("uyarı")));
     }
-    if line.starts_with("note: ") && line.contains("cargo fix") {
-        return Status::Hide;
+    if satir.starts_with("note: ") && satir.contains("cargo fix") {
+        return Durum::Gizle;
     }
-    Status::Now(line.to_owned())
+    Durum::Simdi(satir.to_owned())
 }
 
 /// `proje v0.1.0 (/uzun/yol)` → `proje v0.1.0`
-fn strip_path(rest: &str) -> &str {
-    match rest.rfind(" (") {
-        Some(i) if rest[i..].contains('/') || rest[i..].contains('\\') => &rest[..i],
-        _ => rest,
+fn yolu_at(kalan: &str) -> &str {
+    match kalan.rfind(" (") {
+        Some(i) if kalan[i..].contains('/') || kalan[i..].contains('\\') => &kalan[..i],
+        _ => kalan,
     }
 }
 
-/// "… due to 2 previous errors" içinden `word`den önceki sayı.
-fn count_before(text: &str, word: &str) -> Option<usize> {
-    let before = &text[..text.find(word)?];
-    before.split_whitespace().last()?.parse().ok()
+/// "… due to 2 previous errors" içinden `kelime`den önceki sayı.
+fn oncesindeki_sayi(metin: &str, kelime: &str) -> Option<usize> {
+    let oncesi = &metin[..metin.find(kelime)?];
+    oncesi.split_whitespace().last()?.parse().ok()
 }
 
 #[cfg(test)]
-mod tests {
+mod testler {
     use super::*;
 
-    fn text(line: &str) -> String {
-        match translate_status(line, Style::plain()) {
-            Status::Now(t) | Status::Later(t) => t.trim().to_owned(),
-            Status::Hide => String::new(),
+    fn metin(satir: &str) -> String {
+        match durumu_cevir(satir, Gorunum::duz()) {
+            Durum::Simdi(t) | Durum::Sonra(t) => t.trim().to_owned(),
+            Durum::Gizle => String::new(),
         }
     }
 
     #[test]
-    fn status_lines() {
-        assert_eq!(text("   Compiling oyun v0.1.0 (/home/x/oyun/target/pas)"), "Derleniyor oyun v0.1.0");
+    fn durum_satirlari() {
+        assert_eq!(metin("   Compiling oyun v0.1.0 (/home/x/oyun/target/pas)"), "Derleniyor oyun v0.1.0");
         assert_eq!(
-            text("    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.52s"),
+            metin("    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.52s"),
             "Tamamlandı 0.52 saniyede"
         );
         assert_eq!(
-            text("error: could not compile `oyun` (bin \"oyun\") due to 2 previous errors; 1 warning emitted"),
+            metin("error: could not compile `oyun` (bin \"oyun\") due to 2 previous errors; 1 warning emitted"),
             "hata: `oyun` derlenemedi (2 hata, 1 uyarı)"
         );
         assert_eq!(
-            text(
+            metin(
                 "warning: `oyun` (bin \"oyun\") generated 3 warnings (run `cargo fix --bin \"oyun\"` to apply 1 suggestion)"
             ),
             "uyarı: `oyun` için 3 uyarı"
