@@ -80,7 +80,7 @@ Pas, Rust'ın sözdizimini olduğu gibi kullanır. Değişen tek şey sözcükle
 Bu sayede Pas öğrenen biri ileride gerçek Rust'a kolayca geçebilir.
 
 - **Anahtar sözcükler:** `işlev` (fn), `olsun` (let), `değişken` (mut),
-  `eğer`/`değilse` (if/else), `için … içinde` (for … in), `iken` (while),
+  `eğer`/`değilse` (if/else), `için … içinde` (for … in), `sürece` (while),
   `döngü` (loop), `eşle` (match), `yapı` (struct), `çeşit` (enum),
   `uygula` (impl), `nitelik` (trait), `genel` (pub), `döndür` (return),
   `doğru`/`yanlış` (true/false) …

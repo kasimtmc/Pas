@@ -61,7 +61,7 @@ işlev ana() {
     yazdır!("{} sayının toplamı: {toplam}", sayılar.uzunluk());
 
     olsun değişken geri_sayım = 3;
-    iken geri_sayım > 0 {
+    sürece geri_sayım > 0 {
         yaz!("{geri_sayım}... ");
         geri_sayım -= 1;
     }

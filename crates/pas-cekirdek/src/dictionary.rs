@@ -102,8 +102,8 @@ pub static ENTRIES: &[Entry] = entries! {
         "tür" => "type": "tür takma adı tanımlar",
         "güvensiz" => "unsafe": "derleyicinin denetleyemediği kod",
         "kullan" => "use": "başka bir yerdeki ismi kullanıma alır",
-        "öyleki" => "where": "tür koşulları yazar",
-        "iken" => "while": "koşul doğru olduğu sürece döner",
+        "öyleyse" => "where": "tür koşulları yazar",
+        "sürece" => "while": "koşul doğru olduğu sürece döner",
         "makro_kuralları" => "macro_rules": "makro tanımlar",
     }
     Macro {
@@ -149,7 +149,7 @@ pub static ENTRIES: &[Entry] = entries! {
         "metne_çevir" => "to_string": "değeri `Metin`e çevirir",
         "içerir" => "contains": "bir elemanı içerip içermediğini söyler",
         "yinele" => "iter": "elemanlar üzerinde dolaşan yineleyici",
-        "aç" => "unwrap": "`Var`/`Tamam` içindeki değeri alır, yoksa programı durdurur",
+        "sarmalaç" => "unwrap": "`Var`/`Tamam` içindeki değeri alır, yoksa programı durdurur",
         "kırp" => "trim": "baştaki ve sondaki boşlukları atar",
         "ayrıştır" => "parse": "metni sayıya (ya da başka bir türe) çevirir",
         "satır_oku" => "read_line": "girdiden bir satır okur",

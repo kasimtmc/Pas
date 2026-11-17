@@ -484,7 +484,7 @@ mod tests {
     fn panic_messages() {
         assert_eq!(
             translate_panic_message("called `Option::unwrap()` on a `None` value"),
-            "`Yok` değeri üzerinde `Belki::aç()` çağrıldı (içinde değer yoktu)"
+            "`Yok` değeri üzerinde `Belki::sarmalaç()` çağrıldı (içinde değer yoktu)"
         );
         assert_eq!(
             translate_panic_message("index out of bounds: the len is 3 but the index is 10"),
