@@ -38,6 +38,15 @@ impl<'a> Metin<'a> {
         baslangic + metin.len()
     }
 
+    /// 1'den başlayan (satır, karakter sütunu) → bayt ofseti
+    pub fn karakter_ofseti(&self, satir: u64, sutun: u64) -> usize {
+        let (baslangic, metin) = self.satir(satir.saturating_sub(1) as usize);
+        match metin.char_indices().nth(sutun.saturating_sub(1) as usize) {
+            Some((i, _)) => baslangic + i,
+            None => baslangic + metin.len(),
+        }
+    }
+
     /// Bayt ofseti → UTF-16 (satır, sütun)
     pub fn utf16_konumu(&self, ofset: usize) -> (u64, u64) {
         let (satir, baslangic) = self.satir_bul(ofset);

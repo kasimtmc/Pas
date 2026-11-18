@@ -10,14 +10,16 @@
 
 mod iletisim;
 mod konum;
+mod tanilama;
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::io::{BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, Command, ExitCode, Stdio};
 use std::sync::mpsc;
 use std::thread;
+use std::time::{Duration, Instant};
 
 use pas_cekirdek::{Ceviri, KaynakHaritasi, UZANTI, Yon, pasa_cevir};
 use serde_json::{Value, json};
@@ -45,6 +47,7 @@ enum Olay {
     IstemciBitti,
     Ra(Value),
     RaBitti,
+    Denetim(tanilama::DenetimSonucu),
 }
 
 /// rust-analyzer'a gönderilmiş ve cevabı beklenen bir istek.
@@ -99,6 +102,13 @@ impl Eslem {
 
 struct Sunucu {
     istemci: Box<dyn Write>,
+    gonderici: mpsc::Sender<Olay>,
+    /// İstemci Türkçe tanılamaları sunucudan istiyor mu (`tanilamalar: true`)?
+    tanilamalar_acik: bool,
+    /// Denetlenecek dosyalar ve en erken ne zaman denetlenecekleri
+    denetlenecek: HashMap<PathBuf, Instant>,
+    /// Denetimi süren projelerin kökleri
+    denetlenen: HashSet<PathBuf>,
     ra: Option<(Child, ChildStdin)>,
     ra_hazir: bool,
     bekletilenler: Vec<Value>,
@@ -110,7 +120,7 @@ struct Sunucu {
 }
 
 pub fn calistir() -> Result<ExitCode, String> {
-    let (gonderici, alici) = mpsc::channel();
+    let (gonderici, alici) = mpsc::channel::<Olay>();
 
     let istemci_gondericisi = gonderici.clone();
     thread::spawn(move || {
@@ -125,6 +135,10 @@ pub fn calistir() -> Result<ExitCode, String> {
 
     let mut sunucu = Sunucu {
         istemci: Box::new(std::io::stdout()),
+        gonderici,
+        tanilamalar_acik: false,
+        denetlenecek: HashMap::new(),
+        denetlenen: HashSet::new(),
         ra: None,
         ra_hazir: false,
         bekletilenler: Vec::new(),
@@ -135,21 +149,35 @@ pub fn calistir() -> Result<ExitCode, String> {
         acik: HashMap::new(),
     };
 
-    for olay in alici {
+    loop {
+        let olay = match sunucu.siradaki_denetime_kalan() {
+            Some(sure) => match alici.recv_timeout(sure) {
+                Ok(olay) => Some(olay),
+                Err(mpsc::RecvTimeoutError::Timeout) => None,
+                Err(mpsc::RecvTimeoutError::Disconnected) => break,
+            },
+            None => match alici.recv() {
+                Ok(olay) => Some(olay),
+                Err(_) => break,
+            },
+        };
         match olay {
-            Olay::Istemci(mesaj) => {
+            Some(Olay::Istemci(mesaj)) => {
                 if mesaj["method"] == "exit" {
                     break;
                 }
-                sunucu.istemciden(mesaj, &gonderici);
+                sunucu.istemciden(mesaj);
             }
-            Olay::Ra(mesaj) => sunucu.ra_dan(mesaj),
-            Olay::RaBitti => {
+            Some(Olay::Ra(mesaj)) => sunucu.ra_dan(mesaj),
+            Some(Olay::RaBitti) => {
                 sunucu.ra = None;
                 sunucu.ra_hazir = false;
             }
-            Olay::IstemciBitti => break,
+            Some(Olay::Denetim(sonuc)) => sunucu.denetim_bitti(sonuc),
+            Some(Olay::IstemciBitti) => break,
+            None => {}
         }
+        sunucu.zamani_gelenleri_denetle();
     }
     if let Some((mut surec, _)) = sunucu.ra.take() {
         let _ = surec.kill();
@@ -182,10 +210,21 @@ impl Sunucu {
 
     // ---- Editörden gelenler ----
 
-    fn istemciden(&mut self, mesaj: Value, gonderici: &mpsc::Sender<Olay>) {
+    fn istemciden(&mut self, mesaj: Value) {
         let yontem = mesaj["method"].as_str().unwrap_or_default().to_owned();
         match yontem.as_str() {
-            "initialize" => self.baslat(mesaj, gonderici),
+            "initialize" => self.baslat(mesaj),
+            "textDocument/codeAction" => {
+                let parametreler = &mesaj["params"];
+                let eylemler = match (self.tanilamalar_acik, parametreler["textDocument"]["uri"].as_str()) {
+                    (true, Some(uri)) => tanilama::duzeltmeler(
+                        uri,
+                        parametreler["context"]["diagnostics"].as_array().map_or(&[][..], Vec::as_slice),
+                    ),
+                    _ => Vec::new(),
+                };
+                self.cevap(mesaj["id"].clone(), json!(eylemler));
+            }
             "initialized" | "$/cancelRequest" | "$/setTrace" => {}
             "shutdown" => {
                 if self.ra.is_some() {
@@ -217,8 +256,9 @@ impl Sunucu {
         id
     }
 
-    fn baslat(&mut self, mesaj: Value, gonderici: &mpsc::Sender<Olay>) {
+    fn baslat(&mut self, mesaj: Value) {
         let parametreler = &mesaj["params"];
+        self.tanilamalar_acik = parametreler["initializationOptions"]["tanilamalar"] == true;
         let kok_uri = parametreler["rootUri"]
             .as_str()
             .or_else(|| parametreler["workspaceFolders"][0]["uri"].as_str())
@@ -243,12 +283,13 @@ impl Sunucu {
                     "hoverProvider": true,
                     "documentHighlightProvider": true,
                     "completionProvider": { "triggerCharacters": [".", ":"] },
+                    "codeActionProvider": if self.tanilamalar_acik { json!({ "codeActionKinds": ["quickfix"] }) } else { json!(false) },
                 },
                 "serverInfo": { "name": "pas-lsp", "version": env!("CARGO_PKG_VERSION") },
             }),
         );
 
-        match ra_baslat(gonderici) {
+        match ra_baslat(&self.gonderici) {
             Some(ra) => {
                 self.ra = Some(ra);
                 let id = self.yeni_id(Bekleyen::Baslatma);
@@ -330,8 +371,9 @@ impl Sunucu {
                 "text": acik.ceviri.rust,
             }},
         });
-        self.acik.insert(pas_yolu, acik);
+        self.acik.insert(pas_yolu.clone(), acik);
         self.ra_ya(mesaj);
+        self.denetim_planla(pas_yolu, Duration::ZERO);
     }
 
     fn belge_cevir(&self, kok: &Path, pas_yolu: &Path, metin: String) -> Option<AcikBelge> {
@@ -363,12 +405,18 @@ impl Sunucu {
                 "contentChanges": [{ "text": acik.ceviri.rust }],
             },
         });
-        self.acik.insert(pas_yolu, acik);
+        self.acik.insert(pas_yolu.clone(), acik);
         self.ra_ya(mesaj);
+        // Yazarken her harfte değil, yazmaya ara verilince denetlenir.
+        self.denetim_planla(pas_yolu, Duration::from_millis(600));
     }
 
     fn belge_kapandi(&mut self, belge: &Value) {
         let Some(pas_yolu) = belge["uri"].as_str().and_then(uri_yolu) else { return };
+        self.denetlenecek.remove(&pas_yolu);
+        if self.tanilamalar_acik {
+            self.tanilamalari_yayinla(&pas_yolu, Vec::new());
+        }
         if let Some(acik) = self.acik.remove(&pas_yolu) {
             self.ra_ya(json!({
                 "jsonrpc": "2.0",
@@ -388,6 +436,69 @@ impl Sunucu {
         {
             durum.hazirlik = hazirlik;
         }
+        self.denetim_planla(pas_yolu, Duration::ZERO);
+    }
+
+    // ---- Türkçe tanılamalar ----
+
+    fn denetim_planla(&mut self, pas_yolu: PathBuf, gecikme: Duration) {
+        if self.tanilamalar_acik {
+            self.denetlenecek.insert(pas_yolu, Instant::now() + gecikme);
+        }
+    }
+
+    /// Denetimi süren projelerin dosyaları beklemez; o denetim bitince sıraları gelir.
+    fn siradaki_denetime_kalan(&self) -> Option<Duration> {
+        self.denetlenecek
+            .iter()
+            .filter(|(yol, _)| self.acik.get(*yol).is_some_and(|a| !self.denetlenen.contains(&a.kok)))
+            .map(|(_, zaman)| zaman.saturating_duration_since(Instant::now()))
+            .min()
+    }
+
+    fn zamani_gelenleri_denetle(&mut self) {
+        let simdi = Instant::now();
+        let hazirlar: Vec<PathBuf> =
+            self.denetlenecek.iter().filter(|(_, zaman)| **zaman <= simdi).map(|(yol, _)| yol.clone()).collect();
+        for pas_yolu in hazirlar {
+            let Some(acik) = self.acik.get(&pas_yolu) else {
+                self.denetlenecek.remove(&pas_yolu);
+                continue;
+            };
+            if self.denetlenen.contains(&acik.kok) {
+                continue;
+            }
+            self.denetlenecek.remove(&pas_yolu);
+            self.denetlenen.insert(acik.kok.clone());
+            tanilama::denetle(acik.kok.clone(), pas_yolu, acik.metin.clone(), self.gonderici.clone());
+        }
+    }
+
+    fn denetim_bitti(&mut self, sonuc: tanilama::DenetimSonucu) {
+        self.denetlenen.remove(&sonuc.kok);
+        let mut yayinlanacak = Vec::new();
+        for (pas_yolu, acik) in &self.acik {
+            if acik.kok != sonuc.kok {
+                continue;
+            }
+            // Denetim sürerken değişen dosya için yeni bir denetim zaten sırada.
+            if *pas_yolu == sonuc.pas_yolu && acik.metin != sonuc.metin {
+                continue;
+            }
+            let goreli = egik_cizgili_yol(pas_yolu.strip_prefix(&acik.kok).unwrap_or(pas_yolu));
+            yayinlanacak.push((pas_yolu.clone(), tanilama::lsp_tanilamalari(&sonuc.tanilar, &goreli, &acik.metin)));
+        }
+        for (pas_yolu, tanilamalar) in yayinlanacak {
+            self.tanilamalari_yayinla(&pas_yolu, tanilamalar);
+        }
+    }
+
+    fn tanilamalari_yayinla(&mut self, pas_yolu: &Path, tanilamalar: Vec<Value>) {
+        self.istemciye(json!({
+            "jsonrpc": "2.0",
+            "method": "textDocument/publishDiagnostics",
+            "params": { "uri": yol_uri(pas_yolu), "diagnostics": tanilamalar },
+        }));
     }
 
     fn konumlu_istek(&mut self, mut mesaj: Value) {
@@ -445,9 +556,8 @@ impl Sunucu {
             Bekleyen::Baslatma => {
                 self.ra_hazir = true;
                 self.ra_ya(json!({ "jsonrpc": "2.0", "method": "initialized", "params": {} }));
-                let (gonderici, _) = mpsc::channel();
                 for mesaj in std::mem::take(&mut self.bekletilenler) {
-                    self.istemciden(mesaj, &gonderici);
+                    self.istemciden(mesaj);
                 }
             }
             Bekleyen::Kapatma { istemci_id } => self.cevap(istemci_id, Value::Null),

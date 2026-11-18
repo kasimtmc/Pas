@@ -80,6 +80,16 @@ impl Istemci {
         }
     }
 
+    /// Verilen koşulu sağlayan bir bildirim gelene kadar bekler.
+    fn bildirim_bekle(&mut self, yontem: &str, kosul: impl Fn(&Value) -> bool) -> Value {
+        loop {
+            let mesaj = self.gelenler.recv_timeout(Duration::from_secs(120)).expect("beklenen bildirim gelmedi");
+            if mesaj["method"] == yontem && kosul(&mesaj["params"]) {
+                return mesaj["params"].clone();
+            }
+        }
+    }
+
     /// rust-analyzer projeyi dizinlerken boş cevap verebilir; dolu cevap gelene kadar sorar.
     fn dolu_cevap_bekle(&mut self, yontem: &str, parametreler: Value) -> Value {
         let baslangic = Instant::now();
@@ -186,6 +196,52 @@ fn tanima_gitme_hover_ve_tamamlama() {
     assert_eq!(degisen["start"]["character"].as_u64(), Some(imlec["character"].as_u64().unwrap() - 2), "{ekle}");
     assert_eq!(degisen["end"], imlec, "{ekle}");
     assert!(duzenleme["newText"].as_str().unwrap().starts_with("ekle"), "{ekle}");
+
+    istemci.iste("shutdown", Value::Null);
+    istemci.bildir("exit", Value::Null);
+}
+
+#[test]
+fn turkce_tanilama_ve_hizli_duzeltme() {
+    let dizin = Path::new(env!("CARGO_TARGET_TMPDIR")).join("dil-sunucusu-tanilama");
+    let _ = fs::remove_dir_all(&dizin);
+    fs::create_dir_all(dizin.join("src")).unwrap();
+    fs::write(dizin.join("Cargo.toml"), "[package]\nname = \"tanilama\"\nversion = \"0.1.0\"\nedition = \"2024\"\n")
+        .unwrap();
+    // Diskteki dosya hatasız; hatalı hali editörde, kaydedilmemiş.
+    fs::write(dizin.join("src/ana.pas"), "işlev ana() {}\n").unwrap();
+    let ana = "işlev ana() {\n    yap ş = 1;\n    ş = 2;\n    yazdır!(\"{ş}\");\n}\n";
+
+    let mut istemci = Istemci::baslat();
+    let baslatma = istemci.iste(
+        "initialize",
+        json!({ "processId": null, "rootUri": uri(&dizin), "capabilities": {}, "initializationOptions": { "tanilamalar": true } }),
+    );
+    assert_eq!(baslatma["capabilities"]["codeActionProvider"]["codeActionKinds"][0], "quickfix");
+    istemci.bildir("initialized", json!({}));
+    let ana_uri = uri(&dizin.join("src/ana.pas"));
+    istemci.bildir(
+        "textDocument/didOpen",
+        json!({ "textDocument": { "uri": ana_uri, "languageId": "pas", "version": 1, "text": ana } }),
+    );
+
+    let tanilamalar = istemci.bildirim_bekle("textDocument/publishDiagnostics", |p| {
+        p["uri"] == ana_uri && p["diagnostics"].as_array().is_some_and(|d| !d.is_empty())
+    });
+    let hata = tanilamalar["diagnostics"].as_array().unwrap().iter().find(|d| d["code"] == "E0384").cloned().unwrap();
+    assert_eq!(hata["severity"], 1);
+    assert_eq!(hata["range"]["start"], konum(ana, "ş = 2"));
+    assert!(hata["message"].as_str().unwrap().contains("`ş` değiştirilemez"), "{hata}");
+
+    let eylemler = istemci.iste(
+        "textDocument/codeAction",
+        json!({ "textDocument": { "uri": ana_uri }, "range": hata["range"], "context": { "diagnostics": [hata] } }),
+    );
+    let eylem = &eylemler[0];
+    assert_eq!(eylem["title"], "Ekle: değişken", "{eylemler}");
+    let degisiklik = &eylem["edit"]["changes"][ana_uri.as_str()][0];
+    assert_eq!(degisiklik["newText"], "değişken ");
+    assert_eq!(degisiklik["range"]["start"], konum(ana, "ş = 1"));
 
     istemci.iste("shutdown", Value::Null);
     istemci.bildir("exit", Value::Null);
