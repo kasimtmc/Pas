@@ -1,0 +1,11 @@
+[package]
+name = "ders-10-tas-kagit-makas"
+version = "0.1.0"
+edition = "2024"
+
+# `cargo pas` bu dosyayı `src/ana.pas` dosyasından üretir.
+[[bin]]
+name = "ders-10-tas-kagit-makas"
+path = "target/pas/src/main.rs"
+
+[dependencies]

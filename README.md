@@ -20,6 +20,10 @@ işlev ana() {
 }
 ```
 
+Programlamaya yeni başlıyorsan [**dersler**](dersler/README.md) dizinindeki
+adım adım derslerle başlayabilirsin: yazdırmaktan başlayıp bir taş, kâğıt,
+makas oyunu yazmaya kadar on ders.
+
 ## Kurulum
 
 [Rust](https://rustup.rs) kurulu olmalı. Sonra bu depoda:
@@ -161,6 +165,7 @@ crates/
                   kaynak eşlemesi, Türkçe derleyici ve panik mesajları
   cargo-pas/      `cargo pas` komutu
 eklenti/          RustRover eklentisi (Kotlin)
+dersler/          Yeni başlayanlar için adım adım dersler
 ornekler/         Örnek Pas projeleri
 ```
 
@@ -199,6 +204,7 @@ cd ornekler/tanitim && cargo run --manifest-path ../../Cargo.toml -p cargo-pas -
       Türkçe hata gösterimi
 - [x] Eklenti: Türkçe hata önerilerini tek tıkla uygulama (hızlı düzeltme)
 - [x] Eklenti: blok ve öğe yapısı (girinti, katlama, yapı görünümü)
+- [x] Yeni başlayanlar için Türkçe dersler
 - [ ] `pas-lsp`: rust-analyzer üzerine kurulu dil sunucusu (tanıma gitme,
       akıllı tamamlama; VS Code desteği)
 - [x] Klavyeden kolay girdi okumak için `oku!` makrosu
