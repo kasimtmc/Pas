@@ -112,7 +112,7 @@ Eklenti `cargo-pas` aracını kullanır, önce onu kur (yukarıya bak).
 Eklentinin hazır paketi her değişiklikte otomatik olarak üretilir:
 [GitHub Actions](https://github.com/kasimtmc/Pas/actions/workflows/ci.yml)
 sayfasında son başarılı çalışmayı aç ve **pas-eklenti** dosyasını indir.
-İçindeki `pas-eklenti-0.1.0.zip` dosyasını RustRover'da
+İçindeki `pas-eklenti-*.zip` dosyasını RustRover'da
 **Ayarlar → Eklentiler → ⚙ → Diskten eklenti yükle**
 (Settings → Plugins → ⚙ → Install Plugin from Disk) ile kurabilirsin.
 

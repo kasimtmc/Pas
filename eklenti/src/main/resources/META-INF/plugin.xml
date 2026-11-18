@@ -51,6 +51,7 @@ işlev ana() {
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>0.1.1: Installs cargo-pas from the IDE if it is missing / cargo-pas eksikse IDE'den kurulabilir.</p>
     <p>0.1.0: First release / İlk sürüm.</p>
     ]]></change-notes>
 

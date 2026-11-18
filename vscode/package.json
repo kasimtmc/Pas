@@ -2,7 +2,7 @@
   "name": "pas",
   "displayName": "Pas (Turkce Rust)",
   "description": "Rust'ı Türkçe anahtar sözcüklerle yaz: renklendirme, Türkçe hata mesajları, tanıma gitme ve tamamlama.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "plyground",
   "license": "SEE LICENSE IN LICENSE",
   "icon": "simge.png",
