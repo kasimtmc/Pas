@@ -4,6 +4,34 @@
     <vendor url="https://github.com/kasimtmc/Pas">plyGround</vendor>
 
     <description><![CDATA[
+    <p><b>Pas</b> lets you write Rust with Turkish keywords. It is made for people who are new to
+    programming and not yet comfortable with English terms; its main audience is children and
+    teenagers. Pas code is translated to real Rust and compiled with the Rust compiler, and compiler
+    errors are shown in Turkish, pointing at the right line of your Pas code.</p>
+    <pre>
+işlev ana() {
+    yap ad = oku!("Adın ne? ");
+    her i içinde 1..=3 {
+        yazdır!("{i}. Merhaba {ad}!");
+    }
+}</pre>
+    <p>Features:</p>
+    <ul>
+        <li>Syntax highlighting for <code>.pas</code> files</li>
+        <li>Completion of Turkish keywords with their Rust equivalents</li>
+        <li>Run button next to <code>işlev ana()</code></li>
+        <li>Compiler errors in Turkish, right in the editor, with Alt+Enter quick fixes</li>
+        <li>Code folding, automatic indentation and structure view</li>
+        <li>Go to definition, find usages, documentation on hover and smart completion
+            (requires rust-analyzer)</li>
+    </ul>
+    <p>Setup: install <a href="https://rustup.rs">Rust</a>, then
+    <code>cargo install --git https://github.com/kasimtmc/Pas cargo-pas</code> and
+    <code>rustup component add rust-analyzer</code>. Beginner lessons in Turkish are available in the
+    <a href="https://github.com/kasimtmc/Pas">project repository</a>.</p>
+
+    <hr/>
+
     <p><b>Pas</b>, Rust programlama dilini Türkçe anahtar sözcüklerle yazmayı sağlar.
     Programlamaya yeni başlayan, İngilizce terimlere tam hakim olmayan kişiler için hazırlandı.
     Odak aldığı grup çocuklar ve gençlerdir.</p>
@@ -16,8 +44,15 @@
         <li>Tanıma gitme (Ctrl+tık), kullanıldığı yerleri bulma ve belge gösterimi
             (rust-analyzer gerekir: <code>rustup component add rust-analyzer</code>)</li>
     </ul>
-    <p><code>cargo-pas</code> aracının kurulu olması gerekir.</p>
+    <p>Kurulum: <a href="https://rustup.rs">Rust</a>'ı kur, ardından
+    <code>cargo install --git https://github.com/kasimtmc/Pas cargo-pas</code> ve
+    <code>rustup component add rust-analyzer</code> komutlarını çalıştır. Yeni başlayanlar için
+    Türkçe dersler <a href="https://github.com/kasimtmc/Pas">proje deposunda</a>.</p>
     ]]></description>
+
+    <change-notes><![CDATA[
+    <p>0.1.0: First release / İlk sürüm.</p>
+    ]]></change-notes>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lsp</depends>
