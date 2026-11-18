@@ -243,6 +243,16 @@ cargo test
 cd eklenti && ./gradlew test
 ```
 
+Yeni bir sürüm çıkarmak için:
+
+```bash
+betikler/surum.sh 0.2.0 "Yenilikler / What's new"
+```
+
+Betik sürüm numarasını her yerde günceller, testleri çalıştırır ve
+`v0.2.0` etiketini oluşturur. Etiket gönderilince (`git push origin main v0.2.0`)
+yayın iş akışı hazır dosyaları ve eklentileri GitHub Releases'a koyar.
+
 `crates/cargo-pas/tests/hata_derlemi/` dizini, çocukların sık yapacağı
 hataları içeren küçük Pas programlarından oluşur. Testler bunların hepsini
 derleyip mesajların Türkçeye çevrildiğini denetler. Çevirisi olmayan yeni

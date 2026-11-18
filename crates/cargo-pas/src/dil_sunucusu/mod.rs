@@ -53,7 +53,8 @@ enum Olay {
 /// rust-analyzer'a gönderilmiş ve cevabı beklenen bir istek.
 enum Bekleyen {
     Baslatma,
-    Istek { istemci_id: Value, yontem: String, belge: PathBuf },
+    /// `ra_istegi`: yeniden denenebilmesi için rust-analyzer'a gönderilen istek.
+    Istek { istemci_id: Value, yontem: String, belge: PathBuf, ra_istegi: Value, deneme: u32 },
     Kapatma { istemci_id: Value },
 }
 
@@ -109,6 +110,8 @@ struct Sunucu {
     denetlenecek: HashMap<PathBuf, Instant>,
     /// Denetimi süren projelerin kökleri
     denetlenen: HashSet<PathBuf>,
+    /// rust-analyzer'ın "içerik değişti" diye geri çevirdiği, yeniden gönderilecek istekler
+    yeniden_denenecek: Vec<(Instant, Bekleyen)>,
     ra: Option<(Child, ChildStdin)>,
     ra_hazir: bool,
     bekletilenler: Vec<Value>,
@@ -139,6 +142,7 @@ pub fn calistir() -> Result<ExitCode, String> {
         tanilamalar_acik: false,
         denetlenecek: HashMap::new(),
         denetlenen: HashSet::new(),
+        yeniden_denenecek: Vec::new(),
         ra: None,
         ra_hazir: false,
         bekletilenler: Vec::new(),
@@ -178,6 +182,7 @@ pub fn calistir() -> Result<ExitCode, String> {
             None => {}
         }
         sunucu.zamani_gelenleri_denetle();
+        sunucu.zamani_gelenleri_yeniden_dene();
     }
     if let Some((mut surec, _)) = sunucu.ra.take() {
         let _ = surec.kill();
@@ -448,12 +453,15 @@ impl Sunucu {
     }
 
     /// Denetimi süren projelerin dosyaları beklemez; o denetim bitince sıraları gelir.
+    /// Bir sonraki zamanlanmış işe (denetim ya da yeniden deneme) kalan süre.
     fn siradaki_denetime_kalan(&self) -> Option<Duration> {
-        self.denetlenecek
+        let denetimler = self
+            .denetlenecek
             .iter()
             .filter(|(yol, _)| self.acik.get(*yol).is_some_and(|a| !self.denetlenen.contains(&a.kok)))
-            .map(|(_, zaman)| zaman.saturating_duration_since(Instant::now()))
-            .min()
+            .map(|(_, zaman)| *zaman);
+        let denemeler = self.yeniden_denenecek.iter().map(|(zaman, _)| *zaman);
+        denetimler.chain(denemeler).min().map(|zaman| zaman.saturating_duration_since(Instant::now()))
     }
 
     fn zamani_gelenleri_denetle(&mut self) {
@@ -525,9 +533,7 @@ impl Sunucu {
         parametreler["textDocument"]["uri"] = json!(yol_uri(&acik.rust_yolu));
         parametreler["position"] = json!({ "line": satir, "character": sutun });
 
-        let id = self.yeni_id(Bekleyen::Istek { istemci_id, yontem, belge: pas_yolu });
-        mesaj["id"] = json!(id);
-        self.ra_ya(mesaj);
+        self.ra_istegi_gonder(Bekleyen::Istek { istemci_id, yontem, belge: pas_yolu, ra_istegi: mesaj, deneme: 0 });
     }
 
     // ---- rust-analyzer'dan gelenler ----
@@ -550,6 +556,24 @@ impl Sunucu {
         }
     }
 
+    fn ra_istegi_gonder(&mut self, bekleyen: Bekleyen) {
+        let Bekleyen::Istek { ra_istegi, .. } = &bekleyen else { return };
+        let mut mesaj = ra_istegi.clone();
+        let id = self.yeni_id(bekleyen);
+        mesaj["id"] = json!(id);
+        self.ra_ya(mesaj);
+    }
+
+    fn zamani_gelenleri_yeniden_dene(&mut self) {
+        let simdi = Instant::now();
+        let (hazirlar, bekleyenler): (Vec<_>, Vec<_>) =
+            std::mem::take(&mut self.yeniden_denenecek).into_iter().partition(|(zaman, _)| *zaman <= simdi);
+        self.yeniden_denenecek = bekleyenler;
+        for (_, bekleyen) in hazirlar {
+            self.ra_istegi_gonder(bekleyen);
+        }
+    }
+
     fn ra_cevabi(&mut self, id: Value, mut mesaj: Value) {
         let Some(bekleyen) = id.as_i64().and_then(|id| self.bekleyenler.remove(&id)) else { return };
         match bekleyen {
@@ -561,7 +585,14 @@ impl Sunucu {
                 }
             }
             Bekleyen::Kapatma { istemci_id } => self.cevap(istemci_id, Value::Null),
-            Bekleyen::Istek { istemci_id, yontem, belge } => {
+            Bekleyen::Istek { istemci_id, yontem, belge, ra_istegi, deneme } => {
+                // rust-analyzer projeyi yüklerken ya da belge değişirken isteği
+                // "içerik değişti" (-32801) diye geri çevirir; biraz sonra yeniden denenir.
+                if mesaj["error"]["code"] == -32801 && deneme < 10 {
+                    let bekleyen = Bekleyen::Istek { istemci_id, yontem, belge, ra_istegi, deneme: deneme + 1 };
+                    self.yeniden_denenecek.push((Instant::now() + Duration::from_millis(300), bekleyen));
+                    return;
+                }
                 if let Some(hata) = mesaj.get("error").cloned() {
                     self.istemciye(json!({ "jsonrpc": "2.0", "id": istemci_id, "error": hata }));
                     return;
