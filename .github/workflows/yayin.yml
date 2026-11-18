@@ -1,0 +1,93 @@
+# `v0.1.0` gibi bir etiket gönderilince cargo-pas'ı her platform için derler
+# ve eklenti paketiyle birlikte bir GitHub Release oluşturur. Elle
+# çalıştırılırsa (workflow_dispatch) yalnızca derler, yayın oluşturmaz.
+name: Yayın
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cargo-pas:
+    name: cargo-pas (${{ matrix.hedef }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, hedef: x86_64-unknown-linux-musl }
+          - { os: ubuntu-24.04-arm, hedef: aarch64-unknown-linux-musl }
+          - { os: windows-latest, hedef: x86_64-pc-windows-msvc, uzanti: .exe }
+          - { os: macos-latest, hedef: aarch64-apple-darwin }
+          - { os: macos-latest, hedef: x86_64-apple-darwin }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Rust araç zinciri
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+          rustup target add ${{ matrix.hedef }}
+      - name: musl araçları
+        if: contains(matrix.hedef, 'musl')
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - name: Derle
+        run: cargo build --release --locked -p cargo-pas --target ${{ matrix.hedef }}
+      - name: Dosyayı adlandır
+        shell: bash
+        run: |
+          mkdir -p dagitim
+          cp "target/${{ matrix.hedef }}/release/cargo-pas${{ matrix.uzanti }}" \
+             "dagitim/cargo-pas-${{ matrix.hedef }}${{ matrix.uzanti }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cargo-pas-${{ matrix.hedef }}
+          path: dagitim/*
+
+  eklenti:
+    name: RustRover eklentisi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+      - name: Rust araç zinciri
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Eklenti paketi
+        working-directory: eklenti
+        run: ./gradlew buildPlugin verifyPluginStructure
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pas-eklenti
+          path: eklenti/build/distributions/*.zip
+
+  yayin:
+    name: GitHub Release
+    needs: [cargo-pas, eklenti]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          path: dagitim
+          merge-multiple: true
+      - name: Özetler
+        working-directory: dagitim
+        run: sha256sum * > SHA256SUMS && cat SHA256SUMS
+      - name: Yayını oluştur
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dagitim/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Pas $GITHUB_REF_NAME" \
+            --notes-file .github/surum-notlari.md

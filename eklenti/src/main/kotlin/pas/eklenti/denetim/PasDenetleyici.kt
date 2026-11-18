@@ -6,8 +6,6 @@ import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.ExternalAnnotator
 import com.intellij.lang.annotation.HighlightSeverity
-import com.intellij.notification.NotificationGroupManager
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -18,8 +16,8 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import pas.eklenti.PasAraclari
+import pas.eklenti.PasKurulum
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.atomic.AtomicBoolean
 
 /** `cargo pas denetle --json` çıktısındaki bir tanılama. */
 data class Tani(
@@ -59,7 +57,7 @@ class PasDenetleyici : ExternalAnnotator<PasDenetleyici.Girdi, List<Tani>>() {
     override fun doAnnotate(girdi: Girdi): List<Tani>? {
         val komut = PasAraclari.komutSatiri(girdi.kok, listOf("denetle", "--json", "--stdin", girdi.dosya))
         if (komut == null) {
-            araciBulamadiysaBildir(girdi.project)
+            PasKurulum.eksikseBildir(girdi.project)
             return null
         }
         return try {
@@ -132,7 +130,6 @@ class PasDenetleyici : ExternalAnnotator<PasDenetleyici.Girdi, List<Tani>>() {
 
     companion object {
         private const val ZAMAN_ASIMI_MS = 120_000
-        private val bildirildi = AtomicBoolean(false)
 
         fun cozumle(satir: String): Tani? = try {
             val json = JsonParser.parseString(satir).asJsonObject
@@ -167,13 +164,5 @@ class PasDenetleyici : ExternalAnnotator<PasDenetleyici.Girdi, List<Tani>>() {
             bitisSatiri = json.get("bitis_satiri").asInt,
             bitisSutunu = json.get("bitis_sutunu").asInt,
         )
-
-        private fun araciBulamadiysaBildir(project: Project) {
-            if (!bildirildi.compareAndSet(false, true)) return
-            NotificationGroupManager.getInstance()
-                .getNotificationGroup("Pas")
-                .createNotification(PasAraclari.KURULUM_YARDIMI, NotificationType.WARNING)
-                .notify(project)
-        }
     }
 }

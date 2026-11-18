@@ -14,3 +14,8 @@ repository = "https://github.com/kasimtmc/Pas"
 
 [workspace.dependencies]
 pas-cekirdek = { path = "crates/pas-cekirdek" }
+
+[profile.release]
+# Dağıtılan dosyalar küçük olsun.
+strip = true
+lto = "thin"

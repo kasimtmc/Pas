@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.lsp.api.LspIntegrationProvider
 import com.intellij.platform.lsp.api.ProjectWideLspClientDescriptor
 import pas.eklenti.PasAraclari
+import pas.eklenti.PasKurulum
 
 /**
  * Bir `.pas` dosyası açılınca `cargo pas lsp` dil sunucusunu başlatır.
@@ -19,7 +20,10 @@ class PasDilSunucusuSaglayici : LspIntegrationProvider {
         file: VirtualFile,
         clientStarter: LspIntegrationProvider.LspClientStarter,
     ) {
-        if (PasDilSunucusu.destekleniyor(file) && PasAraclari.cargoPas() != null) {
+        if (!PasDilSunucusu.destekleniyor(file)) return
+        if (PasAraclari.cargoPas() == null) {
+            PasKurulum.eksikseBildir(project)
+        } else {
             clientStarter.ensureClientStarted(PasDilSunucusu(project))
         }
     }

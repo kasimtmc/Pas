@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets
 
 /** `cargo-pas` ve `cargo` programlarını bulur, komut satırlarını kurar. */
 object PasAraclari {
-    private val cargoBin = File(System.getProperty("user.home"), ".cargo/bin")
+    val cargoBin: File = System.getenv("CARGO_HOME")?.let { File(it, "bin") } ?: File(System.getProperty("user.home"), ".cargo/bin")
 
     /**
      * IDE masaüstünden açıldığında `PATH` içinde `~/.cargo/bin` olmayabilir;
@@ -26,7 +26,7 @@ object PasAraclari {
     fun cargoPas(): File? = bul("cargo-pas")
 
     const val KURULUM_YARDIMI =
-        "`cargo-pas` bulunamadı. Pas deposunda şu komutla kurabilirsin: cargo install --path crates/cargo-pas"
+        "`cargo-pas` bulunamadı. Kurmak için: cargo install --git https://github.com/kasimtmc/Pas cargo-pas"
 
     /** `cargo-pas <argümanlar>` komut satırı; araç yoksa `null`. */
     fun komutSatiri(calismaDizini: String, argumanlar: List<String>, renkli: Boolean = false): GeneralCommandLine? {

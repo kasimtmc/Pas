@@ -29,7 +29,24 @@ makas oyunu yazmaya kadar on ders.
 
 ## Kurulum
 
-Önce [Rust](https://rustup.rs) kurulu olmalı. Sonra `cargo pas` komutunu kur:
+Önce [Rust](https://rustup.rs) kurulu olmalı. Sonra `cargo pas` komutunu kur.
+
+Linux ve macOS:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kasimtmc/Pas/main/kur.sh | sh
+```
+
+Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/kasimtmc/Pas/main/kur.ps1 | iex
+```
+
+Bu betikler hazır derlenmiş `cargo-pas` dosyasını
+[son yayından](https://github.com/kasimtmc/Pas/releases/latest) indirip
+`~/.cargo/bin` dizinine koyar. RustRover eklentisi de `cargo-pas`'ı
+bulamazsa onu indirip kurmayı önerir. Kendin derlemek istersen:
 
 ```bash
 cargo install --git https://github.com/kasimtmc/Pas cargo-pas

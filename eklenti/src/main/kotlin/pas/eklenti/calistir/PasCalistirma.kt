@@ -16,6 +16,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import com.intellij.util.execution.ParametersListUtil
 import pas.eklenti.PasAraclari
+import pas.eklenti.PasKurulum
 import pas.eklenti.PasSimgeleri
 import java.io.File
 
@@ -105,7 +106,10 @@ class PasCalistirmaDurumu(ortam: ExecutionEnvironment, private val yapilandirma:
             }
         }
         val komut = PasAraclari.komutSatiri(secenekler.calismaDizini, argumanlar, renkli = true)
-            ?: throw ExecutionException(PasAraclari.KURULUM_YARDIMI)
+        if (komut == null) {
+            PasKurulum.eksikseBildir(environment.project)
+            throw ExecutionException(PasAraclari.KURULUM_YARDIMI)
+        }
         val isleyici = ProcessHandlerFactory.getInstance().createColoredProcessHandler(komut)
         ProcessTerminatedListener.attach(isleyici)
         return isleyici
