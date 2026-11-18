@@ -54,6 +54,7 @@ cargo pas çalıştır
 | `cargo pas denetle` | Derlemeden hatalara bakar |
 | `cargo pas çevir dosya.pas` | Rust karşılığını gösterir (`--ters`: Rust → Pas) |
 | `cargo pas sözlük` | Bütün Türkçe sözcükleri listeler (`--json` da var) |
+| `cargo pas lsp` | Editörler için dil sunucusu (LSP); rust-analyzer gerekir |
 
 Komutların İngilizce (`run`, `build`, …) ve ASCII (`calistir`, `cevir`, …)
 adları da çalışır.
@@ -71,6 +72,9 @@ Pas desteği ekler:
   `yap x` → `yap değişken x`, `isim` → `isim.kopyala()`)
 - Kod katlama, otomatik girinti (Ctrl+Alt+L girintiyi düzeltir) ve
   işlevleri, yapıları, `uygula` bloklarını listeleyen yapı görünümü
+- Tanıma gitme (Ctrl+tık), kullanıldığı yerleri bulma (Alt+F7), üzerine
+  gelince belge gösterme ve rust-analyzer destekli akıllı tamamlama; bunlar
+  için rust-analyzer gerekir: `rustup component add rust-analyzer`
 - Ctrl+/ ile yorum satırı, parantez eşleme
 - Çalıştırma çıktısındaki `--> src/ana.pas:3:5` konumlarına tıklayınca o satıra gitme
 
@@ -169,6 +173,11 @@ dersler/          Yeni başlayanlar için adım adım dersler
 ornekler/         Örnek Pas projeleri
 ```
 
+`cargo pas lsp` ise editörle rust-analyzer arasında bir köprüdür: açık
+`.pas` dosyalarını çevirip rust-analyzer'a Rust olarak gösterir, cevaplardaki
+konumları `.pas` dosyalarına, isimleri ve kod parçalarını Pas'a çevirir
+(`push` → `ekle`). LSP destekleyen her editör onu kullanabilir.
+
 `cargo pas`, projeyi `target/pas/` altında bir "gölge" Rust projesine
 çevirir (`src/ana.pas` → `src/main.rs`). Ardından cargo'yu
 `--message-format=json` ile çalıştırır. Derleyicinin bildirdiği konumlar,
@@ -205,7 +214,8 @@ cd ornekler/tanitim && cargo run --manifest-path ../../Cargo.toml -p cargo-pas -
 - [x] Eklenti: Türkçe hata önerilerini tek tıkla uygulama (hızlı düzeltme)
 - [x] Eklenti: blok ve öğe yapısı (girinti, katlama, yapı görünümü)
 - [x] Yeni başlayanlar için Türkçe dersler
-- [ ] `pas-lsp`: rust-analyzer üzerine kurulu dil sunucusu (tanıma gitme,
-      akıllı tamamlama; VS Code desteği)
+- [x] `cargo pas lsp`: rust-analyzer üzerine kurulu dil sunucusu (tanıma
+      gitme, kullanımlar, hover, akıllı tamamlama)
+- [ ] VS Code eklentisi (aynı dil sunucusunu kullanır)
 - [x] Klavyeden kolay girdi okumak için `oku!` makrosu
 - [ ] Daha fazla Türkçe hata mesajı ve açıklama

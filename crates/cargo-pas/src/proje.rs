@@ -10,7 +10,7 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use pas_cekirdek::{KaynakHaritasi, Secenekler, UZANTI};
+use pas_cekirdek::{Ceviri, KaynakHaritasi, Secenekler, UZANTI};
 
 /// Gölge projenin, kullanıcının projesine göre yolu.
 pub const GOLGE_ONEKI: &str = "target/pas/";
@@ -126,9 +126,7 @@ impl Proje {
             _ => fs::read_to_string(self.kok.join(goreli)).map_err(|e| format!("`{pas_yolu}` okunamadı: {e}"))?,
         };
 
-        let modul_yolu = |ad: &str| self.modul_yolu(goreli, ad);
-        let secenekler = Secenekler { modul_yolu: Some(&modul_yolu), destek_ekle: sandik_koku(goreli) };
-        let ceviri_sonucu = pas_cekirdek::rusta_cevir_secenekle(&pas_kaynagi, &secenekler);
+        let ceviri_sonucu = self.cevir(goreli, &pas_kaynagi);
 
         degistiyse_yaz(&self.golge.join(&rust_goreli), ceviri_sonucu.rust.as_bytes())?;
         yazilanlar.insert(self.golge.join(&rust_goreli));
@@ -139,6 +137,14 @@ impl Proje {
             rust_kaynagi: ceviri_sonucu.rust,
             harita: ceviri_sonucu.harita,
         })
+    }
+
+    /// Projedeki bir Pas dosyasının içeriğini, gölge projede derleneceği
+    /// biçimde Rust'a çevirir (modül yolları ve destek kodu dahil).
+    pub fn cevir(&self, goreli: &Path, pas_kaynagi: &str) -> Ceviri {
+        let modul_yolu = |ad: &str| self.modul_yolu(goreli, ad);
+        let secenekler = Secenekler { modul_yolu: Some(&modul_yolu), destek_ekle: sandik_koku(goreli) };
+        pas_cekirdek::rusta_cevir_secenekle(pas_kaynagi, &secenekler)
     }
 
     /// `mod ad;` bildiriminin `#[path]` yolu. rustc bu yolu bildirimi
@@ -212,7 +218,7 @@ impl Proje {
 }
 
 /// Bir Pas dosyasının gölge projedeki Rust karşılığının yolu.
-fn rust_yolu_bul(pas: &Path) -> PathBuf {
+pub fn rust_yolu_bul(pas: &Path) -> PathBuf {
     let govde = pas.file_stem().and_then(|s| s.to_str()).unwrap_or("");
     let ust_dizin = pas.parent().unwrap_or(Path::new(""));
     let src_icinde = ust_dizin == Path::new("src");

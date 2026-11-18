@@ -11,6 +11,7 @@ import pas.eklenti.denetim.Konum
 import pas.eklenti.denetim.Oneri
 import pas.eklenti.denetim.PasDenetleyici
 import pas.eklenti.denetim.PasHizliDuzeltme
+import pas.eklenti.lsp.PasDilSunucusu
 
 class PasEklentiTest : BasePlatformTestCase() {
     /** Tamamlamayı açar ve verilen öneriyi seçer (tek öneri varsa IDE kendisi ekler). */
@@ -105,5 +106,12 @@ class PasEklentiTest : BasePlatformTestCase() {
         assertEquals("Şununla değiştir: _kullanilmayan", duzeltme.text)
         WriteCommandAction.runWriteCommandAction(project) { duzeltme.invoke(project, myFixture.editor, myFixture.file) }
         assertEquals("yap _kullanilmayan = 3;", belge.text)
+    }
+
+    fun testDilSunucusuYalnizcaPasDosyalariniDestekler() {
+        val pas = myFixture.configureByText("ana.pas", "").virtualFile
+        val rust = myFixture.configureByText("main.rs", "").virtualFile
+        assertTrue(PasDilSunucusu.destekleniyor(pas))
+        assertFalse(PasDilSunucusu.destekleniyor(rust))
     }
 }

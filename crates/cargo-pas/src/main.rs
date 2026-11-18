@@ -1,6 +1,7 @@
 //! `cargo pas`: Pas (Türkçe Rust) projelerini derler ve çalıştırır.
 
 mod cargo;
+mod dil_sunucusu;
 mod gorunum;
 mod program;
 mod proje;
@@ -31,6 +32,7 @@ Komutlar:
                      (--ters: Rust dosyasını Pas'a çevirir)
     sözlük           Türkçe sözcükleri ve Rust karşılıklarını listeler
                      (--json: makinenin okuyacağı biçimde)
+    lsp              Editörler için dil sunucusu (rust-analyzer gerekir)
     yardım           Bu yardımı gösterir
     sürüm            Pas sürümünü gösterir
 
@@ -72,6 +74,7 @@ fn komutu_isle(argumanlar: &[String], gorunum: Gorunum) -> Result<ExitCode, Stri
         "denetle" | "check" => derle(kalan, Kip::Denetle, gorunum),
         "çevir" | "cevir" | "translate" => cevir(kalan),
         "sözlük" | "sozluk" | "dictionary" => sozlugu_yazdir(kalan),
+        "lsp" => dil_sunucusu::calistir(),
         "yardım" | "yardim" | "help" | "-h" | "--help" => {
             println!("{YARDIM}");
             Ok(ExitCode::SUCCESS)

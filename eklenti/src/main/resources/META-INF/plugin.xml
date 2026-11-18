@@ -12,11 +12,14 @@
         <li><code>işlev ana()</code> yanında Çalıştır düğmesi</li>
         <li>Derleyici hatalarının editörde Türkçe gösterilmesi ve Alt+Enter ile düzeltilmesi</li>
         <li>Kod katlama, otomatik girinti ve yapı görünümü</li>
+        <li>Tanıma gitme (Ctrl+tık), kullanıldığı yerleri bulma ve belge gösterimi
+            (rust-analyzer gerekir: <code>rustup component add rust-analyzer</code>)</li>
     </ul>
     <p><code>cargo-pas</code> aracının kurulu olması gerekir.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lsp</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Pas" implementationClass="pas.eklenti.PasDosyaTuru" fieldName="INSTANCE"
@@ -38,5 +41,9 @@
 
         <externalAnnotator language="Pas" implementationClass="pas.eklenti.denetim.PasDenetleyici"/>
         <notificationGroup id="Pas" displayType="BALLOON"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij.platform.lsp">
+        <integrationProvider implementation="pas.eklenti.lsp.PasDilSunucusuSaglayici"/>
     </extensions>
 </idea-plugin>
