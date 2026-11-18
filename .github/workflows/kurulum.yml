@@ -1,0 +1,32 @@
+# Kurulum betiklerini (kur.sh, kur.ps1) son yayına karşı her sistemde dener.
+name: Kurulum
+
+on:
+  release:
+    types: [published]
+  push:
+    branches: [main]
+    paths: ["kur.sh", "kur.ps1", ".github/workflows/kurulum.yml"]
+  workflow_dispatch:
+
+jobs:
+  kurulum:
+    name: Kurulum (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: kur.sh
+        if: runner.os != 'Windows'
+        run: |
+          sh kur.sh
+          "$HOME/.cargo/bin/cargo-pas" sürüm
+      - name: kur.ps1
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./kur.ps1
+          & "$env:USERPROFILE\.cargo\bin\cargo-pas.exe" sürüm
