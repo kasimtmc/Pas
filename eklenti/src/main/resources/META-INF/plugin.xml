@@ -1,7 +1,7 @@
 <idea-plugin>
-    <id>pas.eklenti</id>
+    <id>io.github.kasimtmc.pas</id>
     <name>Pas (Türkçe Rust)</name>
-    <vendor>Pas</vendor>
+    <vendor url="https://github.com/kasimtmc/Pas">plyGround</vendor>
 
     <description><![CDATA[
     <p><b>Pas</b>, Rust programlama dilini Türkçe anahtar sözcüklerle yazmayı sağlar.

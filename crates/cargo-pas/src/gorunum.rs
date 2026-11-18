@@ -8,12 +8,16 @@ pub struct Gorunum {
 }
 
 impl Gorunum {
-    /// `NO_COLOR` tanımlı değilse ve hata çıktısı bir terminalse renk kullanır.
+    /// Rengi ortama göre açar: `CARGO_TERM_COLOR`, yoksa hata çıktısı bir terminal mi.
+    /// `NO_COLOR` her zaman önceliklidir (https://no-color.org).
     pub fn algila() -> Self {
+        if std::env::var_os("NO_COLOR").is_some_and(|d| !d.is_empty()) {
+            return Gorunum { renkli: false };
+        }
         let renkli = match std::env::var("CARGO_TERM_COLOR").as_deref() {
             Ok("always") => true,
             Ok("never") => false,
-            _ => std::env::var_os("NO_COLOR").is_none() && std::io::stderr().is_terminal(),
+            _ => std::io::stderr().is_terminal(),
         };
         Gorunum { renkli }
     }
