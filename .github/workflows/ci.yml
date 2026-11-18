@@ -54,3 +54,35 @@ jobs:
         with:
           name: pas-eklenti
           path: eklenti/build/distributions/*.zip
+
+  vscode:
+    name: VS Code eklentisi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Rust araç zinciri
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+          rustup component add rust-analyzer
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo-pas
+        run: |
+          cargo build -p cargo-pas
+          echo "$PWD/target/debug" >> "$GITHUB_PATH"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Bağımlılıklar
+        working-directory: vscode
+        run: npm ci
+      - name: VS Code içinde testler
+        working-directory: vscode
+        run: xvfb-run -a npm test
+      - name: Paket
+        working-directory: vscode
+        run: npm run paketle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pas-vscode
+          path: vscode/pas.vsix

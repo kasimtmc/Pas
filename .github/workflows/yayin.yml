@@ -69,9 +69,32 @@ jobs:
           name: pas-eklenti
           path: eklenti/build/distributions/*.zip
 
+  vscode:
+    name: VS Code eklentisi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Rust araç zinciri
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Paket
+        working-directory: vscode
+        run: |
+          npm ci
+          npm run paketle
+          mv pas.vsix "pas-vscode-${GITHUB_REF_NAME#v}.vsix"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pas-vscode
+          path: vscode/*.vsix
+
   yayin:
     name: GitHub Release
-    needs: [cargo-pas, eklenti]
+    needs: [cargo-pas, eklenti, vscode]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:

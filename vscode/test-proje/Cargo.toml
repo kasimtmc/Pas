@@ -1,0 +1,8 @@
+[package]
+name = "vscode-test"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "vscode-test"
+path = "target/pas/src/main.rs"

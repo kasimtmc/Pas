@@ -127,6 +127,21 @@ Eklentiyi kurmadan, ayrı bir deneme RustRover'ında açmak için:
 cd eklenti && ./gradlew runIde
 ```
 
+## VS Code eklentisi
+
+`vscode/` dizinindeki eklenti aynı dil sunucusunu kullanır: renklendirme,
+Türkçe hatalar ve hızlı düzeltmeler (Ctrl+.), `işlev ana()` üstünde
+**▶ Çalıştır**, tanıma gitme (F12), belge gösterme ve tamamlama.
+`cargo-pas` bulunamazsa onu kuran komutu terminalde çalıştırmayı önerir.
+
+Hazır paket (`pas-vscode-*.vsix`) [son yayında](https://github.com/kasimtmc/Pas/releases/latest);
+VS Code'da **Uzantılar → ⋯ → VSIX'ten yükle** (Install from VSIX) ile
+kurulur. Kendin derlemek için:
+
+```bash
+cd vscode && npm ci && npm run paketle
+```
+
 ## Hata mesajları
 
 ```
@@ -202,6 +217,7 @@ crates/
                   kaynak eşlemesi, Türkçe derleyici ve panik mesajları
   cargo-pas/      `cargo pas` komutu
 eklenti/          RustRover eklentisi (Kotlin)
+vscode/           VS Code eklentisi (TypeScript)
 dersler/          Yeni başlayanlar için adım adım dersler
 ornekler/         Örnek Pas projeleri
 ```
@@ -249,7 +265,7 @@ cd ornekler/tanitim && cargo run --manifest-path ../../Cargo.toml -p cargo-pas -
 - [x] Yeni başlayanlar için Türkçe dersler
 - [x] `cargo pas lsp`: rust-analyzer üzerine kurulu dil sunucusu (tanıma
       gitme, kullanımlar, hover, akıllı tamamlama)
-- [ ] VS Code eklentisi (aynı dil sunucusunu kullanır)
+- [x] VS Code eklentisi (aynı dil sunucusunu kullanır)
 - [x] Klavyeden kolay girdi okumak için `oku!` makrosu
 - [ ] Daha fazla Türkçe hata mesajı ve açıklama
 

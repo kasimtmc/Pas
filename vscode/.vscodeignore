@@ -1,0 +1,11 @@
+src/**
+betikler/**
+node_modules/**
+tsconfig.json
+**/*.map
+**/*.ts
+.gitignore
+.vscode-test/**
+test-proje/**
+out/test/**
+*.vsix
