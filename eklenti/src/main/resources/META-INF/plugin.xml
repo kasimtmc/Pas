@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>io.github.kasimtmc.pas</id>
-    <name>Pas (Türkçe Rust)</name>
+    <name>Pas (Turkce Rust)</name>
     <vendor url="https://github.com/kasimtmc/Pas">plyGround</vendor>
 
     <description><![CDATA[

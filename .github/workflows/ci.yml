@@ -49,7 +49,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Testler ve eklenti paketi
         working-directory: eklenti
-        run: ./gradlew test buildPlugin
+        run: ./gradlew test buildPlugin verifyPluginStructure
       - uses: actions/upload-artifact@v4
         with:
           name: pas-eklenti
