@@ -10,7 +10,8 @@
         <li><code>.pas</code> dosyaları için renklendirme</li>
         <li>Türkçe sözcükleri ve karşılıklarını gösteren kod tamamlama</li>
         <li><code>işlev ana()</code> yanında Çalıştır düğmesi</li>
-        <li>Derleyici hatalarının editörde Türkçe gösterilmesi</li>
+        <li>Derleyici hatalarının editörde Türkçe gösterilmesi ve Alt+Enter ile düzeltilmesi</li>
+        <li>Kod katlama, otomatik girinti ve yapı görünümü</li>
     </ul>
     <p><code>cargo-pas</code> aracının kurulu olması gerekir.</p>
     ]]></description>
@@ -27,6 +28,9 @@
         <lang.braceMatcher language="Pas" implementationClass="pas.eklenti.PasParantezEsleyici"/>
         <lang.quoteHandler language="Pas" implementationClass="pas.eklenti.PasTirnakIsleyici"/>
         <completion.contributor language="Pas" implementationClass="pas.eklenti.PasTamamlayici"/>
+        <lang.foldingBuilder language="Pas" implementationClass="pas.eklenti.PasKatlama"/>
+        <lang.psiStructureViewFactory language="Pas" implementationClass="pas.eklenti.PasYapiGorunumuFabrikasi"/>
+        <lang.formatter language="Pas" implementationClass="pas.eklenti.PasBicimlendirici"/>
 
         <configurationType implementation="pas.eklenti.calistir.PasCalistirmaTuru"/>
         <runConfigurationProducer implementation="pas.eklenti.calistir.PasCalistirmaUreticisi"/>
