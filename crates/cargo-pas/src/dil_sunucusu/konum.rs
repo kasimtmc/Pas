@@ -74,9 +74,12 @@ impl<'a> Metin<'a> {
 /// `file://` URI'sini dosya yoluna çevirir.
 pub fn uri_yolu(uri: &str) -> Option<PathBuf> {
     let yol = yuzde_coz(uri.strip_prefix("file://")?);
-    // Windows: `file:///C:/…`
+    // Windows: `file:///C:/…`; rust-analyzer sürücü harfini küçük gönderir
+    // (`file:///c%3A/…`), editör büyük. Yollar karşılaştırılabilsin diye büyütülür.
     let yol = match yol.as_bytes() {
-        [b'/', harf, b':', ..] if harf.is_ascii_alphabetic() => yol[1..].to_owned(),
+        [b'/', harf, b':', ..] if harf.is_ascii_alphabetic() => {
+            format!("{}{}", (*harf as char).to_ascii_uppercase(), &yol[2..])
+        }
         _ => yol,
     };
     Some(PathBuf::from(yol))
@@ -145,6 +148,7 @@ mod testler {
         assert_eq!(uri_yolu(&uri).unwrap(), yol);
         assert_eq!(uri_yolu("file:///ev/kasım/a.pas").unwrap(), Path::new("/ev/kasım/a.pas"));
         assert_eq!(uri_yolu("file:///C:/Kullanıcılar/a.pas").unwrap(), Path::new("C:/Kullanıcılar/a.pas"));
+        assert_eq!(uri_yolu("file:///c%3A/Kullan%C4%B1c%C4%B1lar/a.pas").unwrap(), Path::new("C:/Kullanıcılar/a.pas"));
         assert_eq!(uri_yolu("https://ornek.com"), None);
     }
 }

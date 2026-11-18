@@ -1,5 +1,7 @@
 # Pas: Türkçe Rust
 
+[![CI](https://github.com/kasimtmc/Pas/actions/workflows/ci.yml/badge.svg)](https://github.com/kasimtmc/Pas/actions/workflows/ci.yml)
+
 Pas, Rust programlama dilini Türkçe anahtar sözcüklerle yazmayı sağlar.
 Henüz İngilizce bilmeyen çocuklar ve gençler için hazırlandı. Yazılan kod
 gerçek Rust'a çevrilip Rust derleyicisiyle derlenir. Hata mesajları da
@@ -26,11 +28,20 @@ makas oyunu yazmaya kadar on ders.
 
 ## Kurulum
 
-[Rust](https://rustup.rs) kurulu olmalı. Sonra bu depoda:
+Önce [Rust](https://rustup.rs) kurulu olmalı. Sonra `cargo pas` komutunu kur:
 
 ```bash
-cargo install --path crates/cargo-pas
+cargo install --git https://github.com/kasimtmc/Pas cargo-pas
 ```
+
+Editörde tanıma gitme, belge gösterme ve akıllı tamamlama için
+rust-analyzer da gerekir:
+
+```bash
+rustup component add rust-analyzer
+```
+
+Depoyu indirdiysen `cargo install --path crates/cargo-pas` da olur.
 
 ## Kullanım
 
@@ -79,15 +90,19 @@ Pas desteği ekler:
 - Çalıştırma çıktısındaki `--> src/ana.pas:3:5` konumlarına tıklayınca o satıra gitme
 
 Eklenti `cargo-pas` aracını kullanır, önce onu kur (yukarıya bak).
-Eklentiyi derlemek için JDK 21 ya da daha yenisi gerekir:
+
+Eklentinin hazır paketi her değişiklikte otomatik olarak üretilir:
+[GitHub Actions](https://github.com/kasimtmc/Pas/actions/workflows/ci.yml)
+sayfasında son başarılı çalışmayı aç ve **pas-eklenti** dosyasını indir.
+İçindeki `pas-eklenti-0.1.0.zip` dosyasını RustRover'da
+**Ayarlar → Eklentiler → ⚙ → Diskten eklenti yükle**
+(Settings → Plugins → ⚙ → Install Plugin from Disk) ile kurabilirsin.
+
+Eklentiyi kendin derlemek istersen JDK 25 gerekir:
 
 ```bash
 cd eklenti && ./gradlew buildPlugin
 ```
-
-Oluşan `eklenti/build/distributions/pas-eklenti-0.1.0.zip` dosyasını
-RustRover'da **Ayarlar → Eklentiler → ⚙ → Diskten eklenti yükle**
-(Settings → Plugins → ⚙ → Install Plugin from Disk) ile kurabilirsin.
 Eklentiyi kurmadan, ayrı bir deneme RustRover'ında açmak için:
 
 ```bash
@@ -219,3 +234,13 @@ cd ornekler/tanitim && cargo run --manifest-path ../../Cargo.toml -p cargo-pas -
 - [ ] VS Code eklentisi (aynı dil sunucusunu kullanır)
 - [x] Klavyeden kolay girdi okumak için `oku!` makrosu
 - [ ] Daha fazla Türkçe hata mesajı ve açıklama
+
+## Lisans
+
+Pas, [MIT](LICENSE-MIT) ya da [Apache-2.0](LICENSE-APACHE) lisanslarından
+biriyle (hangisini istersen) kullanılabilir. Rust'ın kendisi de aynı ikili
+lisansı kullanır.
+
+Aksi açıkça belirtilmedikçe, bu projeye gönderdiğin katkılar Apache-2.0
+lisansında tanımlandığı biçimde, ek koşul olmadan yukarıdaki iki lisansla
+lisanslanmış sayılır.

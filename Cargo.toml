@@ -9,6 +9,8 @@ exclude = ["ornekler", "target"]
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/kasimtmc/Pas"
 
 [workspace.dependencies]
 pas-cekirdek = { path = "crates/pas-cekirdek" }

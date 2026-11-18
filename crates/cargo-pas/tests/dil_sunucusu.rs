@@ -106,7 +106,8 @@ fn rust_analyzer_var() -> bool {
 }
 
 fn uri(yol: &Path) -> String {
-    format!("file://{}", yol.display())
+    let yol = yol.display().to_string().replace('\\', "/");
+    if yol.starts_with('/') { format!("file://{yol}") } else { format!("file:///{yol}") }
 }
 
 /// LSP konumu (UTF-16) → metindeki (satır, sütun) olarak beklenen değer.

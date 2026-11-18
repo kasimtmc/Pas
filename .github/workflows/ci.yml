@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    name: Rust (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust araç zinciri
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+          rustup component add rust-analyzer clippy rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Biçim
+        if: matrix.os == 'ubuntu-latest'
+        run: cargo fmt --all --check
+      - name: Clippy
+        if: matrix.os == 'ubuntu-latest'
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Testler
+        run: cargo test --all
+
+  eklenti:
+    name: RustRover eklentisi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - name: Rust araç zinciri
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Testler ve eklenti paketi
+        working-directory: eklenti
+        run: ./gradlew test buildPlugin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pas-eklenti
+          path: eklenti/build/distributions/*.zip

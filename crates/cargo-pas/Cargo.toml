@@ -4,6 +4,8 @@ description = "Pas (Türkçe Rust) projelerini derleyip çalıştıran cargo alt
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
 
 [dependencies]
 pas-cekirdek.workspace = true

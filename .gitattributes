@@ -1,0 +1,4 @@
+# Satır sonları her işletim sisteminde aynı kalsın (Windows'ta da LF).
+* text=auto eol=lf
+*.bat text eol=crlf
+*.jar binary

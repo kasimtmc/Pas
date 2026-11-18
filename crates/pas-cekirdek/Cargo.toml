@@ -4,6 +4,8 @@ description = "Pas (Türkçe Rust) çevirici çekirdeği: Pas ⇄ Rust çevirisi
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
 
 [dependencies]
 unicode-ident = "1"
