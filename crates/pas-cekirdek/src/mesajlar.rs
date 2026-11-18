@@ -143,6 +143,71 @@ const DERLEYICI: &[(&str, &str)] = &[
     ("non-exhaustive patterns: {} not covered", "`eşle` tüm durumları kapsamıyor: {0} eksik"),
     ("pattern {} not covered", "{0} deseni eksik"),
     ("unreachable pattern", "bu desene hiçbir zaman ulaşılamaz"),
+    // Sözdizimi ve parantezler
+    ("add `;` here", "buraya `;` ekle"),
+    ("closing delimiter possibly meant for this", "bu kapanış işareti belki şunun içindi"),
+    ("this opening brace...", "bu açılış süslü parantezi..."),
+    ("...matches this closing brace", "...bu kapanışla eşleşiyor"),
+    ("you might have meant to compare for equality", "karşılaştırmak istediysen `=` yerine `==` yaz"),
+    ("a macro named `{}` exists in another namespace", "`{0}!` adında bir makro var"),
+    ("use `!` to invoke the macro", "makroyu çağırmak için adının sonuna `!` koy"),
+    // İşlevler, alanlar, desenler
+    ("argument #{} of type `{}` is missing", "{0}. argüman (`{1}` türünde) eksik"),
+    ("provide the argument", "eksik argümanı ver"),
+    ("provide the arguments", "eksik argümanları ver"),
+    ("function defined here", "işlev burada tanımlı"),
+    ("method defined here", "yöntem burada tanımlı"),
+    ("`{}` defined here", "`{0}` burada tanımlı"),
+    ("available field is: `{}`", "kullanılabilen alan: `{0}`"),
+    ("available fields are: {}", "kullanılabilen alanlar: {0}"),
+    ("missing `{}`", "`{0}` eksik"),
+    ("the matched value is of type `{}`", "eşlenen değerin türü `{0}`"),
+    (
+        "ensure that all possible cases are being handled{}",
+        "eksik durumlar için kol ekle ya da en sona her şeyi yakalayan `_ => …` kolunu koy",
+    ),
+    ("convert the identifier to snake case", "adı küçük harflerle yaz"),
+    ("convert the identifier to upper camel case", "adı büyük harfle başlat"),
+    ("remove the whole `{}` item", "bütün `{0}` satırını kaldır"),
+    // Türler ve işlemler
+    ("no implementation for `{}`", "`{0}` işlemi yapılamaz"),
+    (
+        "the literal `{}` does not fit into the type `{}` whose range is `{}`",
+        "`{0}` sayısı `{1}` türüne sığmıyor; bu türün aralığı `{2}`",
+    ),
+    ("type annotations needed for `{}`", "`{0}` için türü açıkça yazman gerekiyor"),
+    ("type must be known at this point", "tür burada bilinmeli"),
+    (
+        "consider giving `{}` an explicit type, where the type for type parameter `{}` is specified",
+        "`{0}` için türü açıkça yaz; `{1}` yerine gelecek türü de belirt",
+    ),
+    (
+        "consider using `{}` to unwrap the `{}` value, panicking if the value is a `{}`",
+        "değeri almak için `{0}` kullanabilirsin; değer `{2}` ise program durur",
+    ),
+    ("`{}` is not an iterator", "`{0}` üzerinde dolaşılamaz"),
+    (
+        "if you want to iterate between `start` until a value `end`, use the exclusive range syntax `start..end` or the inclusive range syntax `start..=end`",
+        "bir aralıkta dolaşmak için `0..10` (10 hariç) ya da `0..=10` (10 dahil) yaz",
+    ),
+    ("required for `{}` to implement `{}`", "`{0}` türünün `{1}` niteliğini uygulaması gerekiyor"),
+    // Yazdırma (biçim dizgileri)
+    ("required by this formatting parameter", "bu yazdırma yeri bunu gerektiriyor"),
+    (
+        "in format strings you may be able to use `{:?}` (or `{:#?}` for pretty-print) instead",
+        "`{{}}` yerine `{{:?}}` (daha okunaklı görünüm için `{{:#?}}`) yazmayı dene; yapının üstüne `#[derive(Debug)]` eklemeyi unutma",
+    ),
+    (
+        "{} positional argument{} in format string, but no arguments were given",
+        "yazdırma dizgisinde {0} tane `{{}}` var ama hiç değer verilmemiş",
+    ),
+    (
+        "{} positional argument{} in format string, but there {} {} argument{}",
+        "yazdırma dizgisinde {0} tane `{{}}` var ama {3} değer verilmiş",
+    ),
+    ("argument never used", "bu değer hiç kullanılmıyor (dizgide onun için `{{}}` yok)"),
+    ("multiple unused formatting arguments", "birden fazla değer hiç kullanılmıyor"),
+    ("formatting specifier missing", "`{{}}` eksik"),
     // Sözdizimi
     ("expected identifier, found keyword `{}`", "bir isim bekleniyordu ama ayrılmış sözcük `{0}` bulundu"),
     ("expected identifier, found reserved keyword `{}`", "bir isim bekleniyordu ama ayrılmış sözcük `{0}` bulundu"),
@@ -348,6 +413,8 @@ pub fn gereksiz_mi(mesaj: &str) -> bool {
         || mesaj.ends_with("warnings emitted")
         || mesaj.starts_with("requested on the command line with")
         || mesaj.starts_with("the following other types implement trait")
+        // Bir niteliği uygulayan türlerin uzun listesi
+        || (mesaj.contains(" implements trait `") && mesaj.contains('\n'))
         // Destek kodunun (`oku!`) iç ayrıntıları
         || mesaj.contains("`deger_oku`")
         || mesaj.contains("`satir_oku`")

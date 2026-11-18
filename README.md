@@ -180,6 +180,12 @@ cargo test
 cd eklenti && ./gradlew test
 ```
 
+`crates/cargo-pas/tests/hata_derlemi/` dizini, çocukların sık yapacağı
+hataları içeren küçük Pas programlarından oluşur. Testler bunların hepsini
+derleyip mesajların Türkçeye çevrildiğini denetler. Çevirisi olmayan yeni
+bir hata gördüğünde buraya bir örnek ekleyip
+[`mesajlar.rs`](crates/pas-cekirdek/src/mesajlar.rs) dosyasına çevirisini yaz.
+
 Örnek projeyi çalıştırmak için:
 
 ```bash

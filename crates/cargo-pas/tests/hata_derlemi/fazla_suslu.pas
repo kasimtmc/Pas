@@ -1,0 +1,4 @@
+işlev ana() {
+    yazdır!("a");
+}
+}

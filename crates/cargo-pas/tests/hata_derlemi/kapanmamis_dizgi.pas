@@ -1,0 +1,3 @@
+işlev ana() {
+    yazdır!("merhaba);
+}
