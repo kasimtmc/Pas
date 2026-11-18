@@ -2,7 +2,7 @@
 // dilbilgisi üretir. Sözlüğün tek doğruluk kaynağı
 // crates/pas-cekirdek/src/sozluk.rs dosyasıdır.
 import { execFileSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -64,5 +64,6 @@ const dilbilgisi = {
   },
 };
 
+mkdirSync(join(kok, "vscode", "sozdizimi"), { recursive: true });
 writeFileSync(join(kok, "vscode", "sozdizimi", "pas.tmLanguage.json"), JSON.stringify(dilbilgisi, null, 2) + "\n");
 console.log(`Dilbilgisi üretildi: ${sozluk.length} sözlük girdisi`);
