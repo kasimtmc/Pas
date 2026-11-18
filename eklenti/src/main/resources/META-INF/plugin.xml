@@ -5,7 +5,8 @@
 
     <description><![CDATA[
     <p><b>Pas</b>, Rust programlama dilini Türkçe anahtar sözcüklerle yazmayı sağlar.
-    Henüz İngilizce bilmeyen çocuklar ve gençler için hazırlandı.</p>
+    Programlamaya yeni başlayan, İngilizce terimlere tam hakim olmayan kişiler için hazırlandı.
+    Odak aldığı grup çocuklar ve gençlerdir.</p>
     <ul>
         <li><code>.pas</code> dosyaları için renklendirme</li>
         <li>Türkçe sözcükleri ve karşılıklarını gösteren kod tamamlama</li>

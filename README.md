@@ -3,7 +3,8 @@
 [![CI](https://github.com/kasimtmc/Pas/actions/workflows/ci.yml/badge.svg)](https://github.com/kasimtmc/Pas/actions/workflows/ci.yml)
 
 Pas, Rust programlama dilini Türkçe anahtar sözcüklerle yazmayı sağlar.
-Henüz İngilizce bilmeyen çocuklar ve gençler için hazırlandı. Yazılan kod
+Programlamaya yeni başlayan, İngilizce terimlere tam hakim olmayan kişiler
+için hazırlandı. Odak aldığı grup çocuklar ve gençlerdir. Yazılan kod
 gerçek Rust'a çevrilip Rust derleyicisiyle derlenir. Hata mesajları da
 Türkçe gösterilir ve Pas kodundaki doğru satırı işaret eder.
 
