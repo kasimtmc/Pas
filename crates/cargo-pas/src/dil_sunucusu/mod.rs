@@ -54,8 +54,16 @@ enum Olay {
 enum Bekleyen {
     Baslatma,
     /// `ra_istegi`: yeniden denenebilmesi için rust-analyzer'a gönderilen istek.
-    Istek { istemci_id: Value, yontem: String, belge: PathBuf, ra_istegi: Value, deneme: u32 },
-    Kapatma { istemci_id: Value },
+    Istek {
+        istemci_id: Value,
+        yontem: String,
+        belge: PathBuf,
+        ra_istegi: Value,
+        deneme: u32,
+    },
+    Kapatma {
+        istemci_id: Value,
+    },
 }
 
 struct ProjeDurumu {
