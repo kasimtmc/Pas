@@ -2,8 +2,11 @@
 name: Kurulum
 
 on:
-  release:
-    types: [published]
+  # Yayını iş akışı oluşturduğu için `release` olayı tetiklenmez; yayın iş
+  # akışı başarıyla bitince çalışılır.
+  workflow_run:
+    workflows: ["Yayın"]
+    types: [completed]
   push:
     branches: [main]
     paths: ["kur.sh", "kur.ps1", ".github/workflows/kurulum.yml"]
@@ -17,6 +20,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     steps:
       - uses: actions/checkout@v5
       - name: kur.sh
