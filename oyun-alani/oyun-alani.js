@@ -127,8 +127,24 @@ function yaz(metin) {
 
 const GIRINTI = "    ";
 
-kod.addEventListener("input", degisti);
+// Öneriyle gelen kapanış parantezinin üzerinden geçilir: `yazdır!(|)` içinde `)` yazınca.
+kod.addEventListener("beforeinput", (olay) => {
+  const { selectionStart: bas, selectionEnd: son, value: metin } = kod;
+  const parantez = olay.data?.indexOf(")") ?? -1;
+  if (olay.inputType === "insertText" && parantez >= 0 && bas === son && metin[bas] === ")") {
+    olay.preventDefault();
+    if (parantez > 0) yaz(olay.data.slice(0, parantez));
+    kod.setSelectionRange(kod.selectionStart + 1, kod.selectionStart + 1);
+    if (parantez < olay.data.length - 1) yaz(olay.data.slice(parantez + 1));
+  }
+});
+
+kod.addEventListener("input", () => {
+  degisti();
+  onerileriGuncelle();
+});
 kod.addEventListener("keydown", (olay) => {
+  if (oneriTusu(olay)) return;
   if (olay.key === "Enter" && (olay.ctrlKey || olay.metaKey)) {
     olay.preventDefault();
     calistir();
@@ -180,6 +196,195 @@ kod.addEventListener("keydown", (olay) => {
     yaz(girinti.slice(0, Math.max(0, girinti.length - GIRINTI.length)) + "}");
   }
 });
+
+// ---- Öneriler ve açıklama balonu ----
+
+/** Sözlük, Pas adıyla (makrolarda `!` olmadan). */
+let sozlukIndeksi = new Map();
+const ISIM = /[\p{L}\p{N}_]/u;
+
+/** Türkçe harfler ASCII karşılıklarıyla da bulunsun: `saga` → `sağa_dön`. */
+const sadelestir = (metin) =>
+  metin.toLocaleLowerCase("tr").replace(/[çğıöşüâîû]/g, (c) => ({ ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u", â: "a", î: "i", û: "u" })[c]);
+
+/** Düzenleyicide bir karakterin genişliği ve satır yüksekliği (piksel). */
+function olculer() {
+  const stil = getComputedStyle(kod);
+  const olcu = document.createElement("span");
+  olcu.textContent = "M".repeat(20);
+  // `font` kısayolu bazı tarayıcılarda boş döner; parçaları tek tek alınır.
+  olcu.style.cssText = `position:absolute;visibility:hidden;white-space:pre;font-family:${stil.fontFamily};font-size:${stil.fontSize};font-weight:${stil.fontWeight};font-variant-ligatures:none`;
+  document.body.append(olcu);
+  const genislik = olcu.getBoundingClientRect().width / 20;
+  olcu.remove();
+  return { genislik, yukseklik: parseFloat(stil.lineHeight) || 22, sol: parseFloat(stil.paddingLeft), ust: parseFloat(stil.paddingTop) };
+}
+
+/** Konumun bulunduğu satır ve sütun (0'dan başlar; sekme dört sütun). */
+function satirSutun(metin, konum) {
+  const satirBasi = metin.lastIndexOf("\n", konum - 1) + 1;
+  const satir = metin.slice(0, satirBasi).split("\n").length - 1;
+  const sutun = [...metin.slice(satirBasi, konum)].reduce((t, c) => t + (c === "\t" ? 4 : 1), 0);
+  return { satir, sutun };
+}
+
+let oneriler = [];
+let seciliOneri = 0;
+/** Önerinin yerini alacağı sözcüğün başı. */
+let oneriBasi = 0;
+
+function onerileriKapat() {
+  oneriler = [];
+  $("oneriler").hidden = true;
+}
+
+function onerileriGuncelle() {
+  const metin = kod.value;
+  const imlec = kod.selectionStart;
+  if (imlec !== kod.selectionEnd || !sozlukIndeksi.size) return onerileriKapat();
+  let bas = imlec;
+  while (bas > 0 && ISIM.test(metin[bas - 1])) bas--;
+  const yazilan = metin.slice(bas, imlec);
+  const once = metin.slice(Math.max(0, bas - 2), bas);
+  const yontem = once.endsWith(".");
+  const islev = once === "::";
+  if (!yontem && !islev && yazilan.length < 2) return onerileriKapat();
+  // Sayı ya da dizgi içinde öneri gösterilmez.
+  const satirBasi = metin.lastIndexOf("\n", bas - 1) + 1;
+  const satirOncesi = metin.slice(satirBasi, bas);
+  if (/^\d/.test(yazilan) || (satirOncesi.split('"').length - 1) % 2 === 1 || satirOncesi.includes("//")) return onerileriKapat();
+
+  const aranan = sadelestir(yazilan);
+  const adaylar = new Map();
+  for (const g of sozluk) {
+    const ad = g.pas.replace(/!$/, "");
+    if (yontem !== (g.tur === "yontem") || (islev && g.tur !== "islev")) continue;
+    if (sadelestir(ad).startsWith(aranan) || g.rust.replace(/!$/, "").toLowerCase().startsWith(aranan)) adaylar.set(ad, g);
+  }
+  // Koddaki adlar (değişkenler, işlevler) da önerilir.
+  if (!yontem && !islev) {
+    for (const [ad] of metin.matchAll(/[\p{L}_][\p{L}\p{N}_]{2,}/gu)) {
+      if (ad !== yazilan && !adaylar.has(ad) && sadelestir(ad).startsWith(aranan) && !sozlukIndeksi.has(ad)) adaylar.set(ad, null);
+    }
+  }
+  oneriler = [...adaylar.entries()]
+    .filter(([ad]) => ad !== yazilan)
+    .sort(([a], [b]) => a.length - b.length || a.localeCompare(b, "tr"))
+    .slice(0, 8);
+  if (!oneriler.length) return onerileriKapat();
+  oneriBasi = bas;
+  seciliOneri = 0;
+  onerileriCiz();
+  const { genislik, yukseklik, sol, ust } = olculer();
+  const { satir, sutun } = satirSutun(metin, bas);
+  const liste = $("oneriler");
+  liste.style.left = `${sol + sutun * genislik}px`;
+  liste.style.top = `${ust + (satir + 1) * yukseklik + 2}px`;
+  liste.hidden = false;
+}
+
+function onerileriCiz() {
+  $("oneriler").innerHTML = oneriler
+    .map(([ad, g], i) => {
+      const gosterilen = g?.tur === "makro" ? `${ad}!` : ad;
+      const tur = g ? `<span class="oneri-turu">${kacis(g.tur_adi)}</span>` : "";
+      return `<li role="option" data-sira="${i}"${i === seciliOneri ? ' aria-selected="true"' : ""}><code>${kacis(gosterilen)}</code>${tur}</li>`;
+    })
+    .join("");
+}
+
+function oneriyiUygula(sira) {
+  const [ad, g] = oneriler[sira];
+  let ek = ad;
+  let geri = 0;
+  if (g?.tur === "makro") {
+    ek = `${ad}!()`;
+    geri = 1;
+  } else if (g?.tur === "yontem" || g?.tur === "islev") {
+    ek = `${ad}()`;
+    geri = 1;
+  } else if (g?.tur === "anahtar_sozcuk") {
+    ek = `${ad} `;
+  }
+  kod.setSelectionRange(oneriBasi, kod.selectionStart);
+  onerileriKapat();
+  yaz(ek);
+  kod.setSelectionRange(kod.selectionStart - geri, kod.selectionStart - geri);
+}
+
+/** Öneri listesi açıkken tuşları o kullanır. */
+function oneriTusu(olay) {
+  if ($("oneriler").hidden || !oneriler.length) return false;
+  if (olay.key === "ArrowDown" || olay.key === "ArrowUp") {
+    seciliOneri = (seciliOneri + (olay.key === "ArrowDown" ? 1 : oneriler.length - 1)) % oneriler.length;
+    onerileriCiz();
+  } else if ((olay.key === "Enter" || olay.key === "Tab") && !olay.ctrlKey && !olay.metaKey && !olay.shiftKey) {
+    oneriyiUygula(seciliOneri);
+  } else if (olay.key === "Escape") {
+    onerileriKapat();
+  } else {
+    if (olay.key === "ArrowLeft" || olay.key === "ArrowRight") onerileriKapat();
+    return false;
+  }
+  olay.preventDefault();
+  return true;
+}
+
+$("oneriler").addEventListener("mousedown", (olay) => {
+  const oge = olay.target.closest("li[data-sira]");
+  if (!oge) return;
+  olay.preventDefault();
+  oneriyiUygula(Number(oge.dataset.sira));
+});
+kod.addEventListener("blur", onerileriKapat);
+kod.addEventListener("click", onerileriKapat);
+
+/** Fare bir sözcüğün ya da hata işaretinin üstündeyken açıklamasını gösterir. */
+let baloncukZamanlayicisi;
+kod.addEventListener("mousemove", (olay) => {
+  clearTimeout(baloncukZamanlayicisi);
+  baloncukZamanlayicisi = setTimeout(() => baloncukGoster(olay.offsetX, olay.offsetY), 120);
+});
+kod.addEventListener("mouseleave", () => {
+  clearTimeout(baloncukZamanlayicisi);
+  $("baloncuk").hidden = true;
+});
+kod.addEventListener("keydown", () => ($("baloncuk").hidden = true));
+
+function baloncukGoster(x, y) {
+  const balon = $("baloncuk");
+  const { genislik, yukseklik, sol, ust } = olculer();
+  const satirNo = Math.floor((y - ust) / yukseklik);
+  const sutun = Math.floor((x - sol) / genislik);
+  const satirlar = kod.value.split("\n");
+  const satir = satirlar[satirNo];
+  if (satir === undefined || sutun < 0) return (balon.hidden = true);
+  const karakterler = [...satir];
+  // Sekmeler dört sütun yer kaplar.
+  let i = 0;
+  for (let s = 0; i < karakterler.length && s + (karakterler[i] === "\t" ? 4 : 1) <= sutun; i++) s += karakterler[i] === "\t" ? 4 : 1;
+  if (i >= karakterler.length) return (balon.hidden = true);
+  const satirBasi = satirlar.slice(0, satirNo).reduce((t, s) => t + s.length + 1, 0);
+  const konum = satirBasi + karakterler.slice(0, i).join("").length;
+
+  let html = null;
+  const isaret = isaretler.find((m) => m.mesaj && konum >= m.bas && konum < Math.max(m.son, m.bas + 1));
+  if (isaret) {
+    html = mesajHtml(isaret.mesaj);
+  } else if (ISIM.test(karakterler[i])) {
+    let bas = i;
+    let son = i;
+    while (bas > 0 && ISIM.test(karakterler[bas - 1])) bas--;
+    while (son < karakterler.length && ISIM.test(karakterler[son])) son++;
+    const g = sozlukIndeksi.get(karakterler.slice(bas, son).join(""));
+    if (g) html = `<b><code>${kacis(g.pas)}</code></b> <span class="rust">Rust'ta <code>${kacis(g.rust)}</code></span><br>${mesajHtml(g.aciklama)}`;
+  }
+  if (!html) return (balon.hidden = true);
+  balon.innerHTML = html;
+  balon.style.left = `${Math.max(0, x - 20)}px`;
+  balon.style.top = `${ust + (satirNo + 1) * yukseklik + 4}px`;
+  balon.hidden = false;
+}
 
 function kaydet() {
   try {
@@ -286,7 +491,7 @@ function sonucuGoster(kaynak, hazirGirdi, tohum, sonuc) {
     cikti.append(taniGoster(tani));
     const tur = tani.seviye === "hata" ? "hata" : "uyari";
     if (tani.aralik) {
-      isaretler.push({ ...tani.aralik, tur: tur === "hata" ? "" : "uyari" });
+      isaretler.push({ ...tani.aralik, tur: tur === "hata" ? "" : "uyari", mesaj: `${tani.seviye}: ${tani.mesaj}` });
       if (hataliSatirlar.get(tani.aralik.satir) !== "hatali") {
         hataliSatirlar.set(tani.aralik.satir, tur === "hata" ? "hatali" : "uyarili");
       }
@@ -319,7 +524,12 @@ function sonucuGoster(kaynak, hazirGirdi, tohum, sonuc) {
     if (cozum.panik.aralik) {
       const { bas } = cozum.panik.aralik;
       const satirSonu = kaynak.indexOf("\n", bas);
-      isaretler.push({ ...cozum.panik.aralik, son: satirSonu === -1 ? kaynak.length : satirSonu, tur: "panik" });
+      isaretler.push({
+        ...cozum.panik.aralik,
+        son: satirSonu === -1 ? kaynak.length : satirSonu,
+        tur: "panik",
+        mesaj: `program burada çöktü: ${cozum.panik.mesaj}`,
+      });
       hataliSatirlar.set(cozum.panik.aralik.satir, "hatali");
     }
     durumuYaz("Program çöktü");
@@ -1068,6 +1278,7 @@ async function basla() {
     return;
   }
   sozluk = pas.sozluk();
+  sozlukIndeksi = new Map(sozluk.map((g) => [g.pas.replace(/!$/, ""), g]));
   sozluguGoster();
   await ornekleriYukle();
   if (bagliDers && dersBul(bagliDers)) {

@@ -287,6 +287,52 @@ button.birincil svg { width: 14px; height: 14px; }
 
 .yazi-alani textarea::selection { background: var(--sec); color: transparent; }
 
+.oneriler {
+  position: absolute;
+  z-index: 5;
+  min-width: 200px;
+  max-width: 340px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  font-family: var(--kod-yazi);
+  font-size: 13.5px;
+  line-height: 1.4;
+  background: var(--yuzey);
+  border: 1px solid var(--cizgi);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / .2);
+}
+.oneriler li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.oneriler li[aria-selected="true"] { background: var(--sec); }
+.oneri-turu { font-family: var(--duz-yazi); font-size: 12px; color: var(--yazi-soluk); }
+
+.baloncuk {
+  position: absolute;
+  z-index: 6;
+  max-width: 360px;
+  padding: 8px 10px;
+  font-family: var(--duz-yazi);
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--yazi);
+  background: var(--yuzey);
+  border: 1px solid var(--cizgi);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / .2);
+  pointer-events: none;
+  white-space: normal;
+}
+.baloncuk .rust { color: var(--yazi-soluk); font-size: 12.5px; }
+.baloncuk code { font-family: var(--kod-yazi); }
+
 .isaretler { color: transparent; }
 .isaretler mark {
   color: transparent;

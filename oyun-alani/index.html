@@ -55,7 +55,10 @@
       <div class="yazi-alani">
         <pre class="renkli" id="renkli" aria-hidden="true"></pre>
         <pre class="isaretler" id="isaretler" aria-hidden="true"></pre>
-        <textarea id="kod" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Pas kodu"></textarea>
+        <textarea id="kod" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Pas kodu"
+          aria-autocomplete="list" aria-controls="oneriler"></textarea>
+        <ul id="oneriler" class="oneriler" role="listbox" hidden></ul>
+        <div id="baloncuk" class="baloncuk" role="tooltip" hidden></div>
       </div>
     </div>
     <details class="girdi-kutusu">
