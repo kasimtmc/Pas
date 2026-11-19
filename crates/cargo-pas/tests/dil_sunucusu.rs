@@ -178,6 +178,14 @@ fn tanima_gitme_hover_ve_tamamlama() {
     assert!(icerik.contains("işlev topla(a: i32, b: i32) -> i32"), "{hover}");
     assert!(icerik.contains("İki sayıyı toplar."), "{hover}");
 
+    // Sözlükteki sözcüklerde önce Türkçe açıklama gelir.
+    let hover = istemci.dolu_cevap_bekle(
+        "textDocument/hover",
+        json!({ "textDocument": { "uri": ana_uri }, "position": konum(ana, "liste![") }),
+    );
+    let icerik = hover["contents"]["value"].as_str().unwrap_or_default();
+    assert!(icerik.starts_with("**`liste!`** (Rust'ta `vec!`): liste oluşturur"), "{hover}");
+
     // Tamamlama: `l.ek` yazılmışken `ekle` önerilir ve yazılmış `ek` değiştirilir.
     let imlec = konum(ana, "l.ek\n");
     let imlec = json!({ "line": imlec["line"], "character": imlec["character"].as_u64().unwrap() + 4 });
@@ -196,6 +204,8 @@ fn tanima_gitme_hover_ve_tamamlama() {
     assert_eq!(degisen["start"]["character"].as_u64(), Some(imlec["character"].as_u64().unwrap() - 2), "{ekle}");
     assert_eq!(degisen["end"], imlec, "{ekle}");
     assert!(duzenleme["newText"].as_str().unwrap().starts_with("ekle"), "{ekle}");
+    let belge = ekle["documentation"]["value"].as_str().unwrap_or_default();
+    assert!(belge.starts_with("**`ekle`** (Rust'ta `push`): listenin sonuna ekler"), "{ekle}");
 
     istemci.iste("shutdown", Value::Null);
     istemci.bildir("exit", Value::Null);

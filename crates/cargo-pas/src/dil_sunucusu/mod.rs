@@ -625,11 +625,18 @@ impl Sunucu {
         };
         match yontem {
             "textDocument/hover" => {
+                let mut kelime = None;
                 if let Some(aralik) = sonuc.get("range").cloned() {
-                    sonuc["range"] = istek_eslemi.aralik(&aralik);
+                    let pas_araligi = istek_eslemi.aralik(&aralik);
+                    kelime = aralik_metni(&istek_eslemi.gosterilen_metin, &pas_araligi);
+                    sonuc["range"] = pas_araligi;
                 }
                 if let Some(icerik) = sonuc.get_mut("contents") {
                     icerigi_cevir(icerik);
+                    // Sözlükteki sözcükler için önce Türkçe açıklama gösterilir.
+                    if let Some(aciklama) = kelime.as_deref().and_then(sozluk_aciklamasi) {
+                        aciklamayi_one_ekle(icerik, &aciklama);
+                    }
                 }
             }
             "textDocument/documentHighlight" => {
@@ -736,7 +743,17 @@ fn tamamlama_ogesini_cevir(oge: &mut Value, istek_eslemi: &Eslem) {
             oge["labelDetails"][anahtar] = json!(pasa_cevir(metin));
         }
     }
-    if let Some(belgeleme) = oge.get_mut("documentation") {
+    // Sözlükteki sözcükler için Türkçe açıklama
+    let ad = oge["label"].as_str().unwrap_or_default().split(['(', '!', ' ']).next().unwrap_or_default().to_owned();
+    if let Some(aciklama) = sozluk_aciklamasi(&ad) {
+        match oge.get_mut("documentation") {
+            Some(belgeleme) => {
+                icerigi_cevir(belgeleme);
+                aciklamayi_one_ekle(belgeleme, &aciklama);
+            }
+            None => oge["documentation"] = json!({ "kind": "markdown", "value": aciklama }),
+        }
+    } else if let Some(belgeleme) = oge.get_mut("documentation") {
         icerigi_cevir(belgeleme);
     }
     if let Some(duzenleme) = oge.get_mut("textEdit") {
@@ -761,6 +778,41 @@ fn duzenlemeyi_cevir(duzenleme: &mut Value, istek_eslemi: &Eslem) {
     if let Some(metin) = duzenleme["newText"].as_str() {
         duzenleme["newText"] = json!(pasa_cevir(metin));
     }
+}
+
+/// Bir sözlük sözcüğünün Türkçe açıklaması (Markdown):
+/// "**`ekle`** (Rust'ta `push`): listenin sonuna ekler"
+fn sozluk_aciklamasi(kelime: &str) -> Option<String> {
+    let girdi = pas_cekirdek::sozluk::pas_ile(kelime)?;
+    let unlem = if girdi.tur == pas_cekirdek::sozluk::Sinif::Makro { "!" } else { "" };
+    Some(format!("**`{}{unlem}`** (Rust'ta `{}{unlem}`): {}", girdi.pas, girdi.rust, girdi.aciklama))
+}
+
+/// Açıklamayı hover/belgeleme içeriğinin en üstüne, bir çizgiyle ayırarak ekler.
+fn aciklamayi_one_ekle(icerik: &mut Value, aciklama: &str) {
+    match icerik {
+        Value::String(metin) => *metin = format!("{aciklama}\n\n---\n\n{metin}"),
+        Value::Object(nesne) => {
+            let duz_metin = nesne.get("kind").and_then(Value::as_str) == Some("plaintext");
+            if let Some(Value::String(metin)) = nesne.get_mut("value") {
+                *metin = if duz_metin {
+                    format!("{}\n\n{metin}", aciklama.replace(['*', '`'], ""))
+                } else {
+                    format!("{aciklama}\n\n---\n\n{metin}")
+                };
+            }
+        }
+        Value::Array(ogeler) => ogeler.insert(0, json!(aciklama)),
+        _ => {}
+    }
+}
+
+/// LSP aralığının (UTF-16) metindeki karşılığı.
+fn aralik_metni(metin: &str, aralik: &Value) -> Option<String> {
+    let satirlar = Metin::yeni(metin);
+    let ofset = |konum: &Value| Some(satirlar.utf16_ofseti(konum["line"].as_u64()?, konum["character"].as_u64()?));
+    let (bas, son) = (ofset(&aralik["start"])?, ofset(&aralik["end"])?);
+    metin.get(bas..son).map(str::to_owned)
 }
 
 /// Hover ve belgeleme içeriği: kod blokları ve `ters tırnaklı` parçalar Pas'a
