@@ -9,11 +9,15 @@ use super::*;
 
 /// Pas kaynağını oyun alanındaki gibi derleyip çalıştırır; (standart çıktı, çözülen sonuç).
 fn calistir(kaynak: &str, girdi: &str) -> (String, Value) {
+    calistir_tohumla(kaynak, girdi, 7)
+}
+
+fn calistir_tohumla(kaynak: &str, girdi: &str, tohum: u64) -> (String, Value) {
     static SAYAC: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     let sira = SAYAC.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let dizin = std::env::temp_dir().join(format!("pas-web-{}-{sira}", std::process::id()));
     std::fs::create_dir_all(dizin.join("src")).unwrap();
-    std::fs::write(dizin.join(ANA_DOSYA), derlenecek_kod(kaynak, girdi)).unwrap();
+    std::fs::write(dizin.join(ANA_DOSYA), derlenecek_kod(kaynak, girdi, tohum)).unwrap();
     let program = format!("program{}", std::env::consts::EXE_SUFFIX);
     let derleme = Command::new("rustc")
         .args(["--edition", "2024", ANA_DOSYA, "-o", &program])
@@ -33,7 +37,7 @@ fn calistir(kaynak: &str, girdi: &str) -> (String, Value) {
     if std::env::var_os("PAS_WEB_SAKLA").is_none() {
         let _ = std::fs::remove_dir_all(&dizin);
     }
-    (cikti, sonucu_coz(kaynak, girdi, &hata_ciktisi))
+    (cikti, sonucu_coz(kaynak, girdi, tohum, &hata_ciktisi))
 }
 
 #[test]
@@ -94,6 +98,30 @@ fn hazir_girdi_bitince_program_durur() {
     assert_eq!(sonuc["girdi_bitti"], true);
     assert_eq!(sonuc["panik"], Value::Null);
     assert_eq!(sonuc["hata_ciktisi"], "");
+}
+
+#[test]
+fn kullan_onerisi() {
+    let (_, sonuc) = calistir("işlev ana() {\n    yap m: Sözlük<i32, i32> = Sözlük::yeni();\n}\n", "");
+    let oneri = sonuc["tanilamalar"][0]["notlar"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find_map(|n| n["oneri"].as_object())
+        .expect("öneri");
+    assert_eq!(oneri["metin"], "kullan std::collections::Sözlük;");
+    assert_eq!(oneri["satir"], 1);
+    assert_eq!(oneri["ekle"], true);
+}
+
+#[test]
+fn ayni_tohumla_ayni_rastgele_sayilar() {
+    let kaynak = "işlev ana() {\n    yazdır!(\"{} {}\", rastgele!(1, 1000000), rastgele!(1, 1000000));\n}\n";
+    let (ilk, _) = calistir_tohumla(kaynak, "", 42);
+    let (ikinci, _) = calistir_tohumla(kaynak, "", 42);
+    let (baska, _) = calistir_tohumla(kaynak, "", 43);
+    assert_eq!(ilk, ikinci);
+    assert_ne!(ilk, baska);
 }
 
 #[test]

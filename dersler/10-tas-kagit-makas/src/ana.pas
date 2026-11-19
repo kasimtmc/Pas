@@ -1,8 +1,6 @@
 // Taş, kâğıt, makas! Bilgisayara karşı oyna.
 // Taş makası, makas kâğıdı, kâğıt taşı yener.
 
-kullan std::time::{SystemTime, UNIX_EPOCH};
-
 çeşit Hamle {
     Taş,
     Kağıt,
@@ -36,10 +34,9 @@ uygula Hamle {
     }
 }
 
-/// Saatin nanosaniyelerinden bir hamle seçer.
+/// Rastgele bir hamle seçer.
 işlev bilgisayarın_hamlesi() -> Hamle {
-    yap nanosaniye = SystemTime::now().duration_since(UNIX_EPOCH).sarmalaç().subsec_nanos();
-    eşle nanosaniye % 3 {
+    eşle rastgele!(0, 2) {
         0 => Hamle::Taş,
         1 => Hamle::Kağıt,
         _ => Hamle::Makas,

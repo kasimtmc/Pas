@@ -207,6 +207,70 @@ mod pas_destek {
         sonuc
     }
 
+    // ---- Rastgele sayılar ----
+    /// Oyun alanı her cevapta programı baştan çalıştırır; rastgele sayılar
+    /// değişmesin diye tohumu o verir. `cargo pas` bunu hep boş bırakır.
+    const HAZIR_TOHUM: Option<u64> = None;
+
+    /// `en_kucuk` ile `en_buyuk` arasında (ikisi de dahil) rastgele bir sayı.
+    pub fn rastgele<T: RastgeleSayi>(en_kucuk: T, en_buyuk: T) -> T {
+        T::aralikta(en_kucuk, en_buyuk, rastgele_u64())
+    }
+
+    /// splitmix64; ilk çağrıda saatten (ya da hazır tohumdan) tohumlanır.
+    fn rastgele_u64() -> u64 {
+        static DURUM: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let mut durum = DURUM.load(std::sync::atomic::Ordering::Relaxed);
+        if durum == 0 {
+            durum = HAZIR_TOHUM.unwrap_or_else(|| {
+                let simdi = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH);
+                simdi.map(|s| s.as_nanos() as u64).unwrap_or(1)
+            });
+        }
+        durum = durum.wrapping_add(0x9E37_79B9_7F4A_7C15);
+        DURUM.store(durum, std::sync::atomic::Ordering::Relaxed);
+        let mut z = durum;
+        z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+        z ^ (z >> 31)
+    }
+
+    /// `rastgele!` ile üretilebilen sayı türleri.
+    pub trait RastgeleSayi: Copy {
+        fn aralikta(en_kucuk: Self, en_buyuk: Self, rastgele: u64) -> Self;
+    }
+
+    macro_rules! pas_rastgele_tam_sayi {
+        ($($tur:ty)*) => {$(
+            impl RastgeleSayi for $tur {
+                fn aralikta(a: Self, b: Self, rastgele: u64) -> Self {
+                    let (a, b) = if a <= b { (a, b) } else { (b, a) };
+                    let genislik = (b as i128 - a as i128 + 1) as u128;
+                    (a as i128 + (rastgele as u128 % genislik) as i128) as $tur
+                }
+            }
+        )*};
+    }
+    pas_rastgele_tam_sayi!(i8 i16 i32 i64 isize u8 u16 u32 u64 usize);
+
+    macro_rules! pas_rastgele_ondalik {
+        ($($tur:ty)*) => {$(
+            impl RastgeleSayi for $tur {
+                fn aralikta(a: Self, b: Self, rastgele: u64) -> Self {
+                    let oran = (rastgele >> 11) as f64 / (1u64 << 53) as f64;
+                    (a as f64 + oran * (b as f64 - a as f64)) as $tur
+                }
+            }
+        )*};
+    }
+    pas_rastgele_ondalik!(f32 f64);
+
+    macro_rules! pas_rastgele {
+        ($en_kucuk:expr, $en_buyuk:expr) => {
+            $crate::pas_destek::rastgele($en_kucuk, $en_buyuk)
+        };
+    }
+
     macro_rules! pas_oku {
         () => {
             $crate::pas_destek::satir_oku("")

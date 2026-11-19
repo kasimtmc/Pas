@@ -198,8 +198,20 @@ yap devam = oku!("Devam mı? ", mantıksal); // evet/hayır, doğru/yanlış
 ```
 
 Sayı beklenirken başka bir şey yazılırsa `oku!` "`on iki` geçerli bir
-tam sayı değil, tekrar dene." diyerek yeniden sorar. Örnek bir oyun için
-[`ornekler/sayi-tahmin`](ornekler/sayi-tahmin/src/ana.pas) dizinine bak.
+tam sayı değil, tekrar dene." diyerek yeniden sorar.
+
+### Rastgele sayılar
+
+`rastgele!` iki sayı arasında (ikisi de dahil) rastgele bir sayı seçer:
+
+```
+yap zar = rastgele!(1, 6);
+yap tutulan: u32 = rastgele!(1, 100);
+yap oran = rastgele!(0.0, 1.0);            // ondalıklı sayılar da olur
+```
+
+Örnek bir oyun için [`ornekler/sayi-tahmin`](ornekler/sayi-tahmin/src/ana.pas)
+dizinine bak.
 
 Tam liste için `cargo pas sözlük` komutunu çalıştır ya da
 [`sozluk.rs`](crates/pas-cekirdek/src/sozluk.rs) dosyasına bak.

@@ -34,8 +34,8 @@ async function pasYukle() {
     return JSON.parse(cozucu.decode(new Uint8Array(x.memory.buffer, x.sonuc_adresi(), uzunluk)));
   };
   pas = {
-    derle: (kaynak, girdi) => cagir("pas_derle", { kaynak, girdi }),
-    coz: (kaynak, girdi, hata_ciktisi) => cagir("pas_coz", { kaynak, girdi, hata_ciktisi }),
+    derle: (kaynak, girdi, tohum) => cagir("pas_derle", { kaynak, girdi, tohum }),
+    coz: (kaynak, girdi, tohum, hata_ciktisi) => cagir("pas_coz", { kaynak, girdi, tohum, hata_ciktisi }),
     rust: (kaynak) => cagir("pas_rust", { kaynak }),
     renklendir: (kaynak) => cagir("pas_renklendir", { kaynak }),
     sozluk: () => cagir("pas_sozluk", {}),
@@ -203,11 +203,18 @@ girdi.addEventListener("input", () => (girdiKonsoldan = false));
 
 let calisiyor = false;
 
+/** `rastgele!` için tohum; cevaplarla yeniden çalıştırırken aynı kalır ki tutulan sayı değişmesin. */
+let tohum = 1;
+const yeniTohum = () => 1 + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+
 async function calistir({ yeniden = false } = {}) {
   if (!pas || calisiyor) return;
-  if (!yeniden && girdiKonsoldan) {
-    girdi.value = "";
-    girdiKonsoldan = false;
+  if (!yeniden) {
+    tohum = yeniTohum();
+    if (girdiKonsoldan) {
+      girdi.value = "";
+      girdiKonsoldan = false;
+    }
   }
   calisiyor = true;
   calistirDugmesi.disabled = true;
@@ -225,12 +232,12 @@ async function calistir({ yeniden = false } = {}) {
         crateType: "bin",
         tests: false,
         backtrace: false,
-        code: pas.derle(kaynak, hazirGirdi),
+        code: pas.derle(kaynak, hazirGirdi, tohum),
       }),
     });
     if (!yanit.ok) throw new Error(`HTTP ${yanit.status}`);
     const sonuc = await yanit.json();
-    sonucuGoster(kaynak, hazirGirdi, sonuc);
+    sonucuGoster(kaynak, hazirGirdi, tohum, sonuc);
   } catch (hata) {
     console.error(hata);
     cikti.innerHTML = "";
@@ -254,8 +261,8 @@ function bilgi(metin) {
   return p;
 }
 
-function sonucuGoster(kaynak, hazirGirdi, sonuc) {
-  const cozum = pas.coz(kaynak, hazirGirdi, sonuc.stderr ?? "");
+function sonucuGoster(kaynak, hazirGirdi, tohum, sonuc) {
+  const cozum = pas.coz(kaynak, hazirGirdi, tohum, sonuc.stderr ?? "");
   cikti.innerHTML = "";
 
   isaretler = [];
@@ -384,7 +391,8 @@ function taniGoster(tani) {
   for (const not of tani.notlar) {
     kutu.append(eleman("p", "tani-notu", `<b>${kacis(not.seviye)}:</b> ${mesajHtml(not.mesaj)}`));
     if (not.oneri) {
-      kutu.append(eleman("pre", "oneri-satiri", `${not.oneri.satir} | ${kacis(not.oneri.metin)}`));
+      const isaret = not.oneri.ekle ? "+" : "|";
+      kutu.append(eleman("pre", "oneri-satiri", `${not.oneri.satir} ${isaret} ${kacis(not.oneri.metin)}`));
     }
   }
   if (tani.aciklama) kutu.append(eleman("p", "tani-aciklamasi", `💡 ${mesajHtml(tani.aciklama)}`));

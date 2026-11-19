@@ -148,6 +148,7 @@ impl Proje {
             destek_ekle: sandik_koku(goreli),
             turkce_cikti: true,
             hazir_girdi: None,
+            tohum: None,
         };
         pas_cekirdek::rusta_cevir_secenekle(pas_kaynagi, &secenekler)
     }

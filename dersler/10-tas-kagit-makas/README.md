@@ -24,9 +24,8 @@ yanındaki ▶ düğmesine bas.
 - **`Belki`**: kullanıcı anlamadığımız bir şey yazarsa `Yok` döner
 - **`sürece`** ile oyun döngüsü, **`devam`** ile turu yeniden başlatma
 - **`oku!`** ile kullanıcının hamlesini okuma
-
-Bilgisayarın hamlesi saatin nanosaniyelerinden seçilir. Bu tam olarak
-rastgele değildir ama oyun için yeterlidir.
+- **`rastgele!`** ile bilgisayarın hamlesini seçme: `rastgele!(0, 2)` 0, 1
+  ya da 2 sayılarından birini rastgele verir
 
 ## Kendin dene
 

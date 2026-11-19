@@ -1,6 +1,6 @@
 //! `destek.rs` içindeki, Pas programlarına eklenen kodun testleri.
 
-use crate::pas_destek::{deger_oku_kaynaktan, satir_oku_kaynaktan};
+use crate::pas_destek::{RastgeleSayi, deger_oku_kaynaktan, rastgele, satir_oku_kaynaktan};
 
 fn oku<T: std::str::FromStr>(girdi: &str) -> (Option<T>, String) {
     let mut cikti = Vec::new();
@@ -116,4 +116,18 @@ fn sarmalayici_turkce_yazar() {
     }
     let duz: &Kedi = (&Sar(&Kedi)).pas_turkce();
     assert_eq!(format!("{duz}"), "Pamuk");
+}
+
+#[test]
+fn rastgele_sayilar_aralikta() {
+    for _ in 0..1000 {
+        let zar = rastgele(1, 6);
+        assert!((1..=6).contains(&zar));
+        assert!((-3..=3).contains(&rastgele(3, -3)));
+        let oran = rastgele(0.0, 1.0);
+        assert!((0.0..1.0).contains(&oran));
+    }
+    assert_eq!(u8::aralikta(0, 255, 256 + 7), 7);
+    assert_eq!(u64::aralikta(0, u64::MAX, u64::MAX), u64::MAX);
+    assert_eq!(i8::aralikta(-128, 127, 0), -128);
 }

@@ -40,6 +40,8 @@ pub struct Secenekler<'a> {
     /// Programın okuyacağı girdi önceden biliniyorsa (oyun alanı), `oku!`
     /// klavye yerine bu metinden okur. Yalnızca `destek_ekle` ile anlamlıdır.
     pub hazir_girdi: Option<&'a str>,
+    /// `rastgele!` için sabit bir tohum (oyun alanı). Verilmezse saatten alınır.
+    pub tohum: Option<u64>,
 }
 
 /// Pas kaynağını Rust'a çevirir.
@@ -94,17 +96,20 @@ fn destek_satiri() -> &'static str {
     })
 }
 
-/// Destek kodu; hazır girdi verildiyse `oku!` onu okur.
-fn destek_metni(hazir_girdi: Option<&str>) -> String {
-    let satir = destek_satiri();
-    match hazir_girdi {
-        None => satir.to_owned(),
-        Some(girdi) => {
-            let bos = "const HAZIR_GIRDI: Option<&str> = None;";
-            debug_assert!(satir.contains(bos));
-            satir.replace(bos, &format!("const HAZIR_GIRDI: Option<&str> = Some({girdi:?});"))
-        }
+/// Destek kodu; hazır girdi ya da tohum verildiyse onlar yerleştirilir.
+fn destek_metni(secenekler: &Secenekler) -> String {
+    let mut metin = destek_satiri().to_owned();
+    if let Some(girdi) = secenekler.hazir_girdi {
+        let bos = "const HAZIR_GIRDI: Option<&str> = None;";
+        debug_assert!(metin.contains(bos));
+        metin = metin.replace(bos, &format!("const HAZIR_GIRDI: Option<&str> = Some({girdi:?});"));
     }
+    if let Some(tohum) = secenekler.tohum {
+        let bos = "const HAZIR_TOHUM: Option<u64> = None;";
+        debug_assert!(metin.contains(bos));
+        metin = metin.replace(bos, &format!("const HAZIR_TOHUM: Option<u64> = Some({tohum});"));
+    }
+    metin
 }
 
 /// Pas çıktı makroları; argümanları Türkçe yazdırılsın diye sarmalanır
@@ -200,11 +205,7 @@ impl<'a> Cevirmen<'a> {
         }
         let mut destek_eklenecek = self.hedef == Hedef::Rust && secenekler.destek_ekle;
         if destek_eklenecek && let Some(k) = self.ilk_oge() {
-            onune_ekle(
-                &mut oncesine,
-                self.anlamlilar[k],
-                Ekleme::yeni(format!("{} ", destek_metni(secenekler.hazir_girdi))),
-            );
+            onune_ekle(&mut oncesine, self.anlamlilar[k], Ekleme::yeni(format!("{} ", destek_metni(secenekler))));
             destek_eklenecek = false;
         }
 
@@ -235,7 +236,7 @@ impl<'a> Cevirmen<'a> {
         }
         if destek_eklenecek {
             // Dosyada hiç öğe yok; destek kodu sona eklenir.
-            self.degistir(self.kaynak.len()..self.kaynak.len(), &destek_metni(secenekler.hazir_girdi));
+            self.degistir(self.kaynak.len()..self.kaynak.len(), &destek_metni(secenekler));
         }
         self.kopyala(self.kaynak.len());
         (self.cikti, self.harita)

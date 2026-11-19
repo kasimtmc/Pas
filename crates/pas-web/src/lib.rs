@@ -24,9 +24,11 @@ const PAS_DOSYASI: &str = "ana.pas";
 /// Hazır girdi bitince destek kodunun hata çıktısına yazdığı satır (bkz. `destek.rs`).
 const GIRDI_BITTI: &str = "[pas: girdi bitti]";
 
-/// Oyun alanına gönderilecek Rust kodu. `girdi`, `oku!` ile okunacak metin.
-pub fn derlenecek_kod(kaynak: &str, girdi: &str) -> String {
-    cevir(kaynak, girdi).rust
+/// Oyun alanına gönderilecek Rust kodu. `girdi`, `oku!` ile okunacak metin;
+/// `tohum`, `rastgele!` için. Program cevaplarla yeniden çalıştırılırken
+/// aynı tohum verilirse rastgele sayılar değişmez.
+pub fn derlenecek_kod(kaynak: &str, girdi: &str, tohum: u64) -> String {
+    cevir(kaynak, girdi, tohum).rust
 }
 
 /// Öğrenmek için gösterilen sade Rust çevirisi (destek kodu olmadan).
@@ -34,16 +36,22 @@ pub fn sade_rust(kaynak: &str) -> String {
     pas_cekirdek::rusta_cevir(kaynak).rust
 }
 
-fn cevir(kaynak: &str, girdi: &str) -> Ceviri {
-    let secenekler =
-        Secenekler { destek_ekle: true, turkce_cikti: true, hazir_girdi: Some(girdi), ..Secenekler::default() };
+fn cevir(kaynak: &str, girdi: &str, tohum: u64) -> Ceviri {
+    let secenekler = Secenekler {
+        destek_ekle: true,
+        turkce_cikti: true,
+        hazir_girdi: Some(girdi),
+        tohum: Some(tohum),
+        ..Secenekler::default()
+    };
     rusta_cevir_secenekle(kaynak, &secenekler)
 }
 
 /// Oyun alanından gelen sonucu (`stderr`) çözer: derleyici tanılamaları,
-/// programın çöktüğü yer ve programın kendi hata çıktısı.
-pub fn sonucu_coz(kaynak: &str, girdi: &str, hata_ciktisi: &str) -> Value {
-    let ceviri = cevir(kaynak, girdi);
+/// programın çöktüğü yer ve programın kendi hata çıktısı. `girdi` ve `tohum`
+/// derlenen kodunkilerle aynı olmalı; konumlar ona göre eşlenir.
+pub fn sonucu_coz(kaynak: &str, girdi: &str, tohum: u64, hata_ciktisi: &str) -> Value {
+    let ceviri = cevir(kaynak, girdi, tohum);
     let esleyici = Esleyici { pas: kaynak, ceviri: &ceviri };
 
     // Cargo programı çalıştırmadan önce `Running` satırını yazar; öncesi derleme çıktısıdır.
@@ -151,11 +159,14 @@ impl Esleyici<'_> {
             if gereksiz_mi(&not.mesaj) {
                 continue;
             }
-            let oneri = not.oneri.as_ref().and_then(|(satir, metin)| self.oneri(*satir, metin));
+            let oneri = not.oneri.as_ref().and_then(|(satir, metin)| match not.yeni_satir {
+                true => self.yeni_satir(*satir, metin),
+                false => self.oneri(*satir, metin),
+            });
             notlar.push(json!({
                 "seviye": seviye_sozcugu(&not.seviye),
                 "mesaj": self.cevir(&not.mesaj),
-                "oneri": oneri.map(|(satir, metin)| json!({ "satir": satir, "metin": metin })),
+                "oneri": oneri.map(|(satir, metin)| json!({ "satir": satir, "metin": metin, "ekle": not.yeni_satir })),
             }));
         }
         if let (Some(kod), Some((baslangic, _, mesaj))) = (kod, &birincil) {
@@ -180,6 +191,13 @@ impl Esleyici<'_> {
             "notlar": notlar,
             "aciklama": aciklama,
         })
+    }
+
+    /// Rust'ta `satir`ın önüne eklenmesi önerilen satırın Pas'taki yeri ve hali.
+    fn yeni_satir(&self, satir: usize, metin: &str) -> Option<(usize, String)> {
+        let ofset = SatirDizini::yeni(&self.ceviri.rust).satir_basi(satir)?;
+        let pas = self.ceviri.harita.rusttan_pasa(ofset, Yon::Baslangic);
+        Some((SatirDizini::yeni(self.pas).satir_sutun(pas).0, pasa_cevir(metin.trim())))
     }
 
     /// Rust satırı için önerilen değişikliği Pas satırına uygular.

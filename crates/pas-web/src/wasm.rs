@@ -47,23 +47,31 @@ fn metin<'a>(girdi: &'a Value, alan: &str) -> &'a str {
     girdi[alan].as_str().unwrap_or("")
 }
 
-/// `{kaynak, girdi}` → oyun alanına gönderilecek Rust kodu
+fn sayi(girdi: &Value, alan: &str) -> u64 {
+    girdi[alan].as_u64().unwrap_or(1)
+}
+
+/// `{kaynak, girdi, tohum}` → oyun alanına gönderilecek Rust kodu
 ///
 /// # Safety
 /// Bkz. [`cagir`].
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn pas_derle(adres: *const u8, uzunluk: usize) -> usize {
-    unsafe { cagir(adres, uzunluk, |g| crate::derlenecek_kod(metin(g, "kaynak"), metin(g, "girdi")).into()) }
+    unsafe {
+        cagir(adres, uzunluk, |g| crate::derlenecek_kod(metin(g, "kaynak"), metin(g, "girdi"), sayi(g, "tohum")).into())
+    }
 }
 
-/// `{kaynak, girdi, hata_ciktisi}` → tanılamalar ve panik (bkz. [`crate::sonucu_coz`])
+/// `{kaynak, girdi, tohum, hata_ciktisi}` → tanılamalar ve panik (bkz. [`crate::sonucu_coz`])
 ///
 /// # Safety
 /// Bkz. [`cagir`].
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn pas_coz(adres: *const u8, uzunluk: usize) -> usize {
     unsafe {
-        cagir(adres, uzunluk, |g| crate::sonucu_coz(metin(g, "kaynak"), metin(g, "girdi"), metin(g, "hata_ciktisi")))
+        cagir(adres, uzunluk, |g| {
+            crate::sonucu_coz(metin(g, "kaynak"), metin(g, "girdi"), sayi(g, "tohum"), metin(g, "hata_ciktisi"))
+        })
     }
 }
 
