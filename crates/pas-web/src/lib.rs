@@ -10,7 +10,9 @@
 pub mod insan_ciktisi;
 mod wasm;
 
-use pas_cekirdek::mesajlar::{aciklama, derleyici_mesajini_cevir, gereksiz_mi, oku_ipucu, panik_mesajini_cevir};
+use pas_cekirdek::mesajlar::{
+    aciklama, calisma_mesajini_cevir, derleyici_mesajini_cevir, gereksiz_mi, oku_ipucu, panik_mesajini_cevir,
+};
 use pas_cekirdek::sozcukler::{SozcukTuru, sozcuklere_ayir};
 use pas_cekirdek::sozluk::{self, GIRDILER, Sinif};
 use pas_cekirdek::{Ceviri, SatirDizini, Secenekler, Yon, pasa_cevir, rusta_cevir_secenekle};
@@ -251,6 +253,13 @@ impl Esleyici<'_> {
         while let Some(satir) = satirlar.next() {
             if let Some(svg) = satir.strip_prefix(CIZIM) {
                 cizimler.push(svg.to_owned());
+                continue;
+            }
+            if let Some(ceviri) = calisma_mesajini_cevir(satir) {
+                // Yığın taşması gibi panik olmayan çökmeler
+                if !ceviri.is_empty() {
+                    diger.push_str(&format!("hata: {ceviri}\n"));
+                }
                 continue;
             }
             let Some((is_parcacigi, satir_no, sutun)) = panik_basligi(satir) else {

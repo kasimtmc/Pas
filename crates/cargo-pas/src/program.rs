@@ -5,7 +5,7 @@ use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
 use std::process::{Command, ExitCode, Stdio};
 
-use pas_cekirdek::mesajlar::panik_mesajini_cevir;
+use pas_cekirdek::mesajlar::{calisma_mesajini_cevir, panik_mesajini_cevir};
 use pas_cekirdek::{SatirDizini, Yon};
 
 use crate::gorunum::Gorunum;
@@ -52,6 +52,11 @@ pub fn calistir(
             panikte = false;
         } else if panikte {
             let _ = writeln!(hata_akisi, "  {}", gorunum.kalin(&panik_mesajini_cevir(icerik)));
+        } else if let Some(ceviri) = calisma_mesajini_cevir(icerik) {
+            // Yığın taşması gibi panik olmayan çökmeler
+            if !ceviri.is_empty() {
+                let _ = writeln!(hata_akisi, "\n{}{}", gorunum.hata("hata"), gorunum.kalin(&format!(": {ceviri}")));
+            }
         } else {
             let _ = hata_akisi.write_all(&tampon);
         }

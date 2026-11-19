@@ -10,6 +10,78 @@ use crate::ceviri::pasa_cevir;
 
 /// (İngilizce kalıp, Türkçe şablon). Özel kalıplar genel olanlardan önce gelmeli.
 const DERLEYICI: &[(&str, &str)] = &[
+    // Yeni başlayanların sık yaptığı hatalar için özel açıklamalar (genel kalıplardan önce)
+    ("`{}` doesn't implement `std::fmt::Display`", "`{0}` doğrudan `{{}}` ile yazdırılamaz"),
+    (
+        "cannot add `{}` to `Option<{}>`",
+        "`Belki<{1}>` ile `{0}` toplanamaz; önce içindeki değeri `eşle`, `.yoksa(…)` ya da `.sarmalaç()` ile çıkar",
+    ),
+    (
+        "can't compare `{float}` with `{integer}`",
+        "ondalıklı sayı ile tam sayı karşılaştırılamaz; tam sayıyı `1.0` gibi noktalı yaz",
+    ),
+    (
+        "expected floating-point number, found integer",
+        "ondalıklı sayı bekleniyordu ama tam sayı bulundu; sayıyı `1.0` gibi noktalı yaz",
+    ),
+    (
+        "expected `f{}`, found integer",
+        "`f{0}` (ondalıklı sayı) bekleniyordu ama tam sayı bulundu; sayıyı `10.0` gibi noktalı yaz",
+    ),
+    (
+        "cannot find value `self` in this scope",
+        "`kendi` yalnızca ilk parametresi `kendi` olan yöntemlerde kullanılabilir",
+    ),
+    (
+        "`self` value is a keyword only available in methods with a `self` parameter",
+        "`kendi` yalnızca ilk parametresi `kendi` olan yöntemlerde kullanılabilir",
+    ),
+    ("this function doesn't have a `self` parameter", "bu işlevin `kendi` parametresi yok"),
+    (
+        "add a `self` receiver parameter to make the associated `fn` a method",
+        "yöntem yapmak için ilk parametre olarak `&kendi` ya da `&değişken kendi` ekle",
+    ),
+    ("this is an associated function, not a method", "bu bir yöntem değil, türe bağlı bir işlev"),
+    ("method `{}` not found for this struct", "bu yapıda `{0}` adında bir yöntem yok"),
+    (
+        "found the following associated functions; to be used as methods, functions must have a `self` parameter",
+        "şu işlevler bulundu; yöntem olarak kullanılabilmeleri için `kendi` parametresi almaları gerekir",
+    ),
+    ("the candidate is defined in an impl for the type `{}`", "aday, `{0}` türünün `uygula` bloğunda tanımlı"),
+    ("use associated function syntax instead", "bunun yerine `Tür::işlev()` biçiminde çağır"),
+    (
+        "cannot assign to `{}`, as `{}` is not declared as mutable",
+        "`{1}` `değişken` olarak tanımlanmadığı için `{0}` değiştirilemez",
+    ),
+    ("try adding a return type", "işleve bir dönüş türü eklemeyi dene"),
+    ("expected because this is `{}`", "bu `{0}` olduğu için bekleniyor"),
+    (
+        "you can convert {} `{}` to {} `{}` and panic if the converted value doesn't fit",
+        "`{1}` değerini `{3}` türüne çevirebilirsin (değer sığmazsa program durur)",
+    ),
+    ("you can convert {} `{}` to {} `{}`{}", "`{1}` değerini `{3}` türüne çevirebilirsin"),
+    ("`+` cannot be used to concatenate two `&str` strings", "`+` ile iki `&str` metin birleştirilemez"),
+    (
+        "string concatenation requires an owned `{}` on the left",
+        "metinleri `+` ile birleştirmek için soldakinin bir `{0}` olması gerekir",
+    ),
+    ("create an owned `{}` from a string reference", "soldaki metinden bir `{0}` oluştur"),
+    (
+        "the `{}` expression is missing a block after this condition",
+        "`{0}` koşulundan sonra süslü parantezli bir blok (`{{ … }}`) gelmeli",
+    ),
+    (
+        "you might have meant to write this as part of a block",
+        "bunu bir bloğun (`{{ … }}`) içine yazmak istemiş olabilirsin",
+    ),
+    ("`{}` does not implement `{}`", "`{0}` türü `{1}` niteliğini uygulamıyor"),
+    ("function cannot return without recursing", "bu işlev kendini durmadan çağırıyor; hiç bitmeyecek"),
+    ("cannot return without recursing", "kendini çağırmadan hiç geri dönemiyor"),
+    ("recursive call site", "kendini burada çağırıyor"),
+    (
+        "a `loop` may express intention better if this is on purpose",
+        "bilerek yapıyorsan `döngü` kullanmak daha anlaşılır olur",
+    ),
     // İsim çözümleme
     ("cannot find value `{}` in this scope", "`{0}` adında bir değer bulunamadı"),
     ("cannot find function `{}` in this scope", "`{0}` adında bir işlev bulunamadı"),
@@ -266,6 +338,7 @@ const DERLEYICI: &[(&str, &str)] = &[
     ("convert the identifier to upper camel case", "adı büyük harfle başlat"),
     ("remove the whole `{}` item", "bütün `{0}` satırını kaldır"),
     // Türler ve işlemler
+    ("no implementation for `{}` and `{}`", "`{0}` ve `{1}` işlemleri yapılamaz"),
     ("no implementation for `{}`", "`{0}` işlemi yapılamaz"),
     (
         "the literal `{}` does not fit into the type `{}` whose range is `{}`",
@@ -418,6 +491,7 @@ const PANIK: &[(&str, &str)] = &[
 
 /// Yakalanan düz metin içinde çevrilen sözcükler.
 const DUZ_METIN: &[(&str, &str)] = &[
+    ("{float}", "{ondalıklı sayı}"),
     ("ParseIntError { kind: InvalidDigit }", "metin bir tam sayı değil"),
     ("ParseIntError { kind: Empty }", "metin boş, sayıya çevrilemez"),
     ("ParseIntError { kind: PosOverflow }", "sayı bu türe sığmayacak kadar büyük"),
@@ -445,10 +519,20 @@ const ACIKLAMALAR: &[(&str, &str)] = &[
         "E0046",
         "Bir niteliği bir türe uygularken niteliğin gövdesiz bütün yöntemlerini yazmalısın. Eksik yöntemi `uygula … her …` bloğunun içine ekle.",
     ),
+    ("E0063", "Bir yapı oluştururken bütün alanlarına değer vermelisin. Eksik alanı da yaz: `Kedi { ad: …, yaş: 1 }`"),
     (
         "E0061",
         "İşleve verdiğin argüman sayısı, işlevin beklediği sayıdan farklı. İşlevin tanımına bakıp her parametre için bir değer ver.",
     ),
+    (
+        "E0424",
+        "`kendi`, yöntemin çağrıldığı değerdir ve yalnızca ilk parametresi `kendi` olan yöntemlerde kullanılabilir: `işlev artır(&değişken kendi) { … }`",
+    ),
+    (
+        "E0594",
+        "Bir yapının alanını değiştirebilmek için yapıyı tutan değişkenin `değişken` olarak tanımlanması gerekir: `yap değişken kedi = …;`",
+    ),
+    ("E0765", "Bir metni açan `\"` işaretinin bir de kapatanı olmalı. Metnin sonuna `\"` koymayı unutma."),
     (
         "E0282",
         "Pas bu değerin türünü kendi başına çıkaramadı. Değişkenin yanına türünü yaz: `yap sayılar: Liste<i32> = …`",
@@ -516,6 +600,25 @@ pub fn derleyici_mesajini_cevir(mesaj: &str) -> String {
     cevir(DERLEYICI, mesaj)
 }
 
+/// Programın panik dışındaki çalışma zamanı hata satırlarını (yığın taşması
+/// gibi) Türkçeye çevirir; bilinmeyen satırlar için `None`.
+pub fn calisma_mesajini_cevir(satir: &str) -> Option<String> {
+    if let Some(kalan) = satir.strip_prefix("thread '")
+        && let Some((is_parcacigi, _)) = kalan.split_once('\'')
+        && satir.ends_with("has overflowed its stack")
+    {
+        let is_parcacigi = if is_parcacigi == "main" { "ana" } else { is_parcacigi };
+        return Some(format!(
+            "program çöktü: `{is_parcacigi}` iş parçacığının yığını taştı. Bir işlev kendini (doğrudan ya da dolaylı) durmadan çağırıyor olabilir."
+        ));
+    }
+    match satir {
+        "fatal runtime error: stack overflow" => Some(String::new()),
+        _ if satir.starts_with("fatal runtime error: stack overflow") => Some(String::new()),
+        _ => None,
+    }
+}
+
 /// Bir panik mesajı satırını Türkçeye çevirir.
 pub fn panik_mesajini_cevir(mesaj: &str) -> String {
     cevir(PANIK, mesaj)
@@ -536,6 +639,10 @@ pub fn gereksiz_mi(mesaj: &str) -> bool {
         || mesaj.ends_with("warnings emitted")
         || mesaj.starts_with("requested on the command line with")
         || mesaj.starts_with("the following other types implement trait")
+        // `{}` ile yazdırılamayan türlerde ana mesajı tekrar eder
+        || mesaj.starts_with("the trait `std::fmt::Display` is not implemented for")
+        || mesaj.starts_with("a module named `self` exists in another namespace")
+        || mesaj.contains("`Turkce<")
         // Bir niteliği uygulayan türlerin uzun listesi
         || (mesaj.contains(" implements trait `") && mesaj.contains('\n'))
         // Destek kodunun (`oku!`) iç ayrıntıları
@@ -566,6 +673,10 @@ fn cevir(kaliplar: &[(&str, &str)], mesaj: &str) -> String {
         if let Some(yakalananlar) = kalipla_esle(kalip, mesaj) {
             return doldur(sablon, &yakalananlar);
         }
+    }
+    // Yalnızca bir türden oluşan etiketler (`Option<&{integer}>`) koddur.
+    if !mesaj.is_empty() && !mesaj.contains(char::is_whitespace) && !mesaj.contains('`') {
+        return yakalanani_pasa_cevir(mesaj);
     }
     kod_parcalarini_pasa_cevir(mesaj)
 }
@@ -699,6 +810,24 @@ mod testler {
             derleyici_mesajini_cevir("some new message about `Vec<String>`"),
             "some new message about `Liste<Metin>`"
         );
+    }
+
+    #[test]
+    fn tur_etiketleri_cevrilir() {
+        assert_eq!(derleyici_mesajini_cevir("Option<&{integer}>"), "Belki<&{tam sayı}>");
+        assert_eq!(derleyici_mesajini_cevir("&str"), "&str");
+    }
+
+    #[test]
+    fn calisma_mesajlari() {
+        assert_eq!(
+            calisma_mesajini_cevir("thread 'main' has overflowed its stack").as_deref(),
+            Some(
+                "program çöktü: `ana` iş parçacığının yığını taştı. Bir işlev kendini (doğrudan ya da dolaylı) durmadan çağırıyor olabilir."
+            )
+        );
+        assert_eq!(calisma_mesajini_cevir("fatal runtime error: stack overflow").as_deref(), Some(""));
+        assert_eq!(calisma_mesajini_cevir("merhaba"), None);
     }
 
     #[test]

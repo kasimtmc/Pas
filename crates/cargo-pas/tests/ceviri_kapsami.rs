@@ -93,9 +93,15 @@ fn ornegi_denetle(pas_dosyasi: &Path, kok: &Path) -> Vec<String> {
 
     let mut sorunlar = Vec::new();
     let mut tani_sayisi = 0;
+    // Her hata kodunun çocuklara yönelik bir açıklaması olmalı (aynı kod bir
+    // derlemede yalnızca ilk kez açıklanır).
+    let mut kodlar = std::collections::BTreeMap::<String, bool>::new();
     for satir in String::from_utf8_lossy(&cikti.stdout).lines() {
         let Ok(tani) = serde_json::from_str::<serde_json::Value>(satir) else { continue };
         tani_sayisi += 1;
+        if let Some(kod) = tani["kod"].as_str() {
+            *kodlar.entry(kod.to_owned()).or_default() |= tani["aciklama"].is_string();
+        }
         let mut metinler = vec![tani["mesaj"].as_str().unwrap_or_default().to_owned()];
         metinler.extend(
             tani["etiketler"].as_array().into_iter().flatten().filter_map(|e| e["mesaj"].as_str().map(str::to_owned)),
@@ -113,6 +119,9 @@ fn ornegi_denetle(pas_dosyasi: &Path, kok: &Path) -> Vec<String> {
                 sorunlar.push(format!("{ad}: \"{sozcuk}\" → {metin}"));
             }
         }
+    }
+    for (kod, _) in kodlar.iter().filter(|(_, aciklandi)| !**aciklandi) {
+        sorunlar.push(format!("{ad}: {kod} hata kodunun açıklaması yok (mesajlar.rs içindeki ACIKLAMALAR)"));
     }
     if tani_sayisi == 0 {
         sorunlar.push(format!("{ad}: hiç tanılama üretilmedi (örnek artık hata vermiyor mu?)"));

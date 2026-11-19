@@ -617,6 +617,7 @@ function cikisAciklamasi(ayrinti) {
     return "Program çok uzun sürdü ve durduruldu. Bitmeyen bir döngü olabilir mi?";
   }
   if (kod) return `Program ${kod} çıkış koduyla bitti.`;
+  if (/signal/i.test(ayrinti)) return "Program aniden durdu.";
   return `Program durduruldu: ${ayrinti}`;
 }
 
