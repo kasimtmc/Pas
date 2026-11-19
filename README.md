@@ -24,7 +24,7 @@ işlev ana() {
 ```
 
 Hiçbir şey kurmadan denemek için [**Pas Oyun Alanı**](https://kasimtmc.github.io/Pas/)nı
-aç: kodunu tarayıcıda yazıp çalıştırabilir, dersleri oradan açabilir ve
+aç: dersleri kodun yanında okuyup kodunu tarayıcıda yazıp çalıştırabilir ve
 programının bağlantısını paylaşabilirsin.
 
 Programlamaya yeni başlıyorsan [**dersler**](dersler/README.md) dizinindeki

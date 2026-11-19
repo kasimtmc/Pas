@@ -24,7 +24,7 @@ cp target/wasm32-unknown-unknown/release/pas_web.wasm "$hedef/pas.wasm"
 surum="$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -n 1)-$(git rev-parse --short HEAD 2>/dev/null || echo yerel)"
 sed "s/__SURUM__/$surum/g" oyun-alani/index.html >"$hedef/index.html"
 
-# Örnekler: tek dosyalık dersler ve örnek projeler.
+# Örnekler: tek dosyalık dersler (anlatımlarıyla birlikte) ve örnek projeler.
 python3 - "$hedef/ornekler.json" <<'PY'
 import json, pathlib, sys
 
@@ -35,8 +35,9 @@ for dizin in sorted(pathlib.Path("dersler").iterdir()) + sorted(pathlib.Path("or
         continue
     benioku = dizin / "README.md"
     if benioku.is_file():
-        ad = benioku.read_text(encoding="utf-8").splitlines()[0].lstrip("# ").strip()
-        ders = benioku.as_posix()
+        metin = benioku.read_text(encoding="utf-8")
+        ad = metin.splitlines()[0].lstrip("# ").strip()
+        ders = {"kimlik": dizin.name, "yol": benioku.as_posix(), "metin": metin}
     kaynak = (dizin / "src" / "ana.pas").read_text(encoding="utf-8")
     if not benioku.is_file():
         # Örneklerin adı ilk yorum satırından gelir: "// Sayı tahmin oyunu: …"

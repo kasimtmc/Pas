@@ -11,8 +11,9 @@ en önemli parçalarından biridir.
 ## Başlamadan önce
 
 Hiçbir şey kurmadan başlamak istersen [Pas Oyun Alanı](https://kasimtmc.github.io/Pas/)nı
-aç ve **Örnekler** listesinden dersi seç; dersin kodu açılır, ▶ Çalıştır'a
-basman yeterli.
+aç: dersler orada kodun yanında açılır, ▶ Çalıştır'a basman yeterli. Bir
+dersi doğrudan açmak için bağlantının sonuna dersin adını ekleyebilirsin:
+`https://kasimtmc.github.io/Pas/#ders=03-soru-sor`
 
 Kendi bilgisayarında çalışmak için [Rust](https://rustup.rs) ve `cargo pas`
 kurulu olmalı (ana [README](../README.md) dosyasına bak). RustRover ya da VS

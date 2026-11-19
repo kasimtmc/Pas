@@ -162,8 +162,9 @@ button.birincil svg { width: 14px; height: 14px; }
   padding: 12px 16px;
 }
 
-.alanlar:has(.yan-panel:not([hidden])) {
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(260px, .8fr);
+/* Ders açıkken: ders | düzenleyici | çıktı */
+.alanlar:has(.ders-paneli:not([hidden])) {
+  grid-template-columns: minmax(280px, .95fr) minmax(0, 1.15fr) minmax(0, .9fr);
 }
 
 .bolum, .yan-panel {
@@ -190,6 +191,26 @@ button.birincil svg { width: 14px; height: 14px; }
 }
 
 .bolum-basligi a { font-weight: 500; }
+
+.bolum-basligi .gezinme {
+  padding: 2px 10px;
+  font-size: 15px;
+  line-height: 1.2;
+}
+.bolum-basligi .gezinme:disabled { opacity: .35; cursor: default; }
+
+.ders-sirasi {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: none;
+  border-color: transparent;
+  font-weight: 600;
+  color: var(--yazi-soluk);
+  padding: 2px 6px;
+}
 
 .kapat {
   border: none;
@@ -402,7 +423,78 @@ button.birincil svg { width: 14px; height: 14px; }
   background: var(--yuzey);
 }
 
+/* ---- Ders ---- */
+.ders-metni {
+  flex: 1;
+  overflow: auto;
+  padding: 4px 18px 20px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.ders-metni h2 { font-size: 21px; line-height: 1.3; margin: 14px 0 8px; color: var(--pas); }
+.ders-metni h3 { font-size: 17px; margin: 22px 0 6px; }
+.ders-metni h4 { font-size: 15px; margin: 18px 0 4px; }
+.ders-metni p, .ders-metni ul, .ders-metni ol { margin: 8px 0; }
+.ders-metni ul, .ders-metni ol { padding-left: 22px; }
+.ders-metni li { margin: 4px 0; }
+.ders-metni hr { border: none; border-top: 1px solid var(--cizgi); margin: 20px 0 12px; }
+.ders-metni code {
+  font-family: var(--kod-yazi);
+  font-size: .9em;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--yuzey-2);
+}
+.ders-metni pre {
+  margin: 10px 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  border-radius: 6px;
+  background: var(--zemin);
+  border: 1px solid var(--cizgi);
+  font-family: var(--kod-yazi);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.ders-metni pre code { padding: 0; background: none; font-size: inherit; }
+.ders-metni table { border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+.ders-metni th, .ders-metni td { border: 1px solid var(--cizgi); padding: 5px 8px; text-align: left; vertical-align: top; }
+.ders-metni th { background: var(--yuzey-2); }
+.ders-metni .sonraki {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--pas);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ders-listesi { list-style: none; padding: 0; margin: 12px 0; }
+.ders-listesi li { margin: 0; }
+.ders-listesi a {
+  display: block;
+  padding: 9px 10px;
+  border-radius: 6px;
+  color: var(--yazi);
+  text-decoration: none;
+}
+.ders-listesi a:hover, .ders-listesi a[aria-current="true"] { background: var(--sec); }
+
 /* ---- Yan paneller ---- */
+/* Rust ve Sözlük panelleri sağdan açılan çekmecelerdir. */
+.cekmece {
+  position: fixed;
+  top: 64px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  width: min(380px, calc(100vw - 32px));
+  box-shadow: 0 10px 30px rgb(0 0 0 / .25);
+}
+
 .aciklama-metni { margin: 10px 12px 0; font-size: 13px; color: var(--yazi-soluk); }
 
 .rust-kodu {
@@ -453,16 +545,27 @@ button.birincil svg { width: 14px; height: 14px; }
 }
 
 /* ---- Dar ekranlar ---- */
+@media (max-width: 1100px) {
+  /* Ders açıkken orta genişlikte ekranlarda ders üstte, kod ve çıktı altta. */
+  .alanlar:has(.ders-paneli:not([hidden])) {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1.3fr);
+  }
+  .ders-paneli { grid-column: 1 / -1; }
+}
+
 @media (max-width: 860px) {
   /* Dar ekranda bölümler alt alta dizilir ve sayfa kaydırılır. */
   html, body { height: auto; }
   .alanlar { flex: none; }
-  .alanlar, .alanlar:has(.yan-panel:not([hidden])) {
+  .ders-paneli { max-height: 70vh; }
+  .cekmece { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 75vh; }
+  .alanlar, .alanlar:has(.ders-paneli:not([hidden])) {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
     grid-auto-rows: auto;
   }
   .duzenleyici { min-height: 320px; max-height: 60vh; }
   .cikti { min-height: 200px; }
-  .yan-panel { max-height: 70vh; }
   .ust { gap: 10px; }
 }

@@ -5,6 +5,7 @@ const SURUM = new URL(import.meta.url).searchParams.get("s") ?? "";
 const OYUN_ALANI = "https://play.rust-lang.org/execute";
 const DEPO = "https://github.com/kasimtmc/Pas";
 const KAYIT_ANAHTARI = "pas-oyun-alani-kod";
+const DERS_ANAHTARI = "pas-oyun-alani-ders";
 
 const $ = (kimlik) => document.getElementById(kimlik);
 const kod = $("kod");
@@ -467,28 +468,228 @@ async function ornekleriYukle() {
   secim.addEventListener("change", () => {
     const ornek = ornekler[Number(secim.value)];
     secim.value = "";
-    if (!ornek) return;
-    if (kod.value.trim() && kod.value !== kodBasi && !confirm("Yazdığın kodun yerine örnek yüklensin mi?")) return;
-    ornegiAc(ornek);
+    if (ornek) ornegiAc(ornek);
   });
 }
 
 /** Son yüklenen örneğin kodu; değiştirilmediyse sormadan başka örnek açılır. */
 let kodBasi = "";
 
-function ornegiAc(ornek) {
+/** Örneğin (ya da dersin) kodunu düzenleyiciye yükler; ders ise anlatımını da açar. */
+function ornegiAc(ornek, { sor = true } = {}) {
+  const degismis = kod.value.trim() && kod.value !== kodBasi;
+  if (sor && degismis && !confirm("Yazdığın kodun yerine örnek yüklensin mi?")) return;
   kod.value = ornek.kaynak;
   kodBasi = ornek.kaynak;
   girdi.value = "";
   girdiKonsoldan = false;
-  const baglanti = $("ders-baglantisi");
-  baglanti.hidden = !ornek.ders;
-  if (ornek.ders) baglanti.href = `${DEPO}/blob/main/${ornek.ders}`;
-  history.replaceState(null, "", location.pathname);
+  history.replaceState(null, "", ornek.ders ? `#ders=${ornek.ders.kimlik}` : location.pathname);
+  if (ornek.ders) dersiGoster(ornek);
   degisti();
   cikti.innerHTML = "";
   cikti.append(eleman("p", "karsilama", `<b>${kacis(ornek.ad)}</b> yüklendi. <b>▶ Çalıştır</b>'a bas.`));
   durumuYaz("");
+}
+
+// ---- Dersler ----
+
+/** Panelde gösterilen ders (bir örnek). */
+let acikDers = null;
+const dersler = () => ornekler.filter((ornek) => ornek.ders);
+const dersBul = (kimlik) => ornekler.find((ornek) => ornek.ders?.kimlik === kimlik);
+
+function dersiKaydet(kimlik) {
+  try {
+    localStorage.setItem(DERS_ANAHTARI, kimlik);
+  } catch {
+    // Kayıt yapılamıyorsa sorun değil.
+  }
+}
+
+function dersiGoster(ornek) {
+  acikDers = ornek;
+  const liste = dersler();
+  const sira = liste.indexOf(ornek);
+  $("ders-listesi-dugmesi").textContent = `Ders ${sira + 1} / ${liste.length}`;
+  $("onceki-ders").disabled = sira <= 0;
+  $("sonraki-ders").disabled = sira >= liste.length - 1;
+  $("ders-metni").innerHTML = dersHtml(ornek.ders.metin, ornek.ders.yol);
+  $("ders-metni").scrollTop = 0;
+  paneliAc("ders-paneli", "dersler-dugmesi", true);
+  dersiKaydet(ornek.ders.kimlik);
+}
+
+function dersListesiniGoster() {
+  $("ders-listesi-dugmesi").textContent = "Bütün dersler";
+  $("onceki-ders").disabled = true;
+  $("sonraki-ders").disabled = true;
+  const ogeler = dersler()
+    .map((ornek) => {
+      const kimlik = kacis(ornek.ders.kimlik);
+      const secili = ornek === acikDers ? ' aria-current="true"' : "";
+      return `<li><a href="#ders=${kimlik}" data-ders="${kimlik}"${secili}>${kacis(ornek.ad)}</a></li>`;
+    })
+    .join("");
+  $("ders-metni").innerHTML =
+    "<h2>Dersler</h2><p>Programlamayı adım adım öğren. Her derste önce kodu çalıştır, sonra anlatımı oku " +
+    "ve en sondaki <b>Kendin dene</b> alıştırmalarını yap.</p>" +
+    `<ol class="ders-listesi">${ogeler}</ol>`;
+  $("ders-metni").scrollTop = 0;
+  paneliAc("ders-paneli", "dersler-dugmesi", true);
+}
+
+function komsuDers(yon) {
+  const liste = dersler();
+  const ders = liste[liste.indexOf(acikDers) + yon];
+  if (ders) ornegiAc(ders);
+}
+
+$("onceki-ders").addEventListener("click", () => komsuDers(-1));
+$("sonraki-ders").addEventListener("click", () => komsuDers(1));
+$("ders-listesi-dugmesi").addEventListener("click", dersListesiniGoster);
+$("dersler-dugmesi").addEventListener("click", () => {
+  if (!$("ders-paneli").hidden) {
+    paneliAc("ders-paneli", "dersler-dugmesi", false);
+    dersiKaydet("");
+  } else if (acikDers) {
+    dersiGoster(acikDers);
+  } else {
+    dersListesiniGoster();
+  }
+});
+$("ders-metni").addEventListener("click", (olay) => {
+  const baglanti = olay.target.closest("a[data-ders]");
+  if (!baglanti) return;
+  olay.preventDefault();
+  const ders = dersBul(baglanti.dataset.ders);
+  if (ders) ornegiAc(ders);
+});
+
+/**
+ * Ders anlatımlarındaki Markdown'u HTML'e çevirir. Derslerde kullanılanlar
+ * yeter: başlıklar, paragraflar, listeler, tablolar, kod blokları, bağlantılar.
+ * Komut satırını anlatan "Çalıştır" bölümü oyun alanında gerekmediği için atlanır.
+ */
+function dersHtml(markdown, yol) {
+  const satirlar = markdown.split("\n");
+  let html = "";
+  const paragraf = [];
+  const paragrafiBitir = () => {
+    if (!paragraf.length) return;
+    const metin = paragraf.join(" ");
+    paragraf.length = 0;
+    const sonraki = metin.match(/^Sonraki ders: \[([^\]]+)\]\(\.\.\/([^/]+)\/README\.md\)$/);
+    html += sonraki
+      ? `<p><a class="sonraki" href="#ders=${kacis(sonraki[2])}" data-ders="${kacis(sonraki[2])}">Sonraki ders: ${kacis(sonraki[1])} →</a></p>`
+      : `<p>${satirIci(metin, yol)}</p>`;
+  };
+  let i = 0;
+  while (i < satirlar.length) {
+    const satir = satirlar[i];
+    if (satir.startsWith("```")) {
+      paragrafiBitir();
+      const dil = satir.slice(3).trim();
+      const kodSatirlari = [];
+      for (i++; i < satirlar.length && !satirlar[i].startsWith("```"); i++) kodSatirlari.push(satirlar[i]);
+      i++;
+      html += kodBlogu(kodSatirlari.join("\n"), dil);
+      continue;
+    }
+    const baslik = satir.match(/^(#{1,4}) (.*)$/);
+    if (baslik) {
+      paragrafiBitir();
+      if (baslik[1] === "##" && baslik[2].trim() === "Çalıştır") {
+        for (i++; i < satirlar.length && !satirlar[i].startsWith("## "); i++);
+        continue;
+      }
+      const duzey = baslik[1].length + 1;
+      html += `<h${duzey}>${satirIci(baslik[2], yol)}</h${duzey}>`;
+      i++;
+      continue;
+    }
+    if (/^-{3,}\s*$/.test(satir)) {
+      paragrafiBitir();
+      html += "<hr>";
+      i++;
+      continue;
+    }
+    if (satir.startsWith("|")) {
+      paragrafiBitir();
+      const tablo = [];
+      for (; i < satirlar.length && satirlar[i].startsWith("|"); i++) tablo.push(satirlar[i]);
+      html += tabloHtml(tablo, yol);
+      continue;
+    }
+    const madde = satir.match(/^([-*]|\d+\.) (.*)$/);
+    if (madde) {
+      paragrafiBitir();
+      const sirali = /\d/.test(madde[1]);
+      const ogeler = [];
+      while (i < satirlar.length) {
+        const oge = satirlar[i].match(/^([-*]|\d+\.) (.*)$/);
+        if (oge && /\d/.test(oge[1]) === sirali) {
+          ogeler.push(oge[2]);
+        } else if (/^\s{2,}\S/.test(satirlar[i]) && ogeler.length) {
+          ogeler[ogeler.length - 1] += " " + satirlar[i].trim();
+        } else {
+          break;
+        }
+        i++;
+      }
+      const etiket = sirali ? "ol" : "ul";
+      html += `<${etiket}>${ogeler.map((oge) => `<li>${satirIci(oge, yol)}</li>`).join("")}</${etiket}>`;
+      continue;
+    }
+    if (satir.trim()) paragraf.push(satir.trim());
+    else paragrafiBitir();
+    i++;
+  }
+  paragrafiBitir();
+  return html;
+}
+
+/** Satır içi Markdown: `kod`, **kalın**, *eğik*, [bağlantı](adres). */
+function satirIci(metin, yol) {
+  // Kod parçaları önce ayrılır; içlerindeki `*` ya da `[` biçimlendirme sayılmaz.
+  const kodlar = [];
+  const yer = (i) => `\u0000${i}\u0000`;
+  const html = kacis(metin.replace(/`([^`]+)`/g, (_, kod) => yer(kodlar.push(kod) - 1)))
+    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+    .replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?![*\w])/g, "$1<i>$2</i>")
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, yazi, adres) => baglanti(yazi, adres, yol));
+  return html.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${kacis(kodlar[Number(i)])}</code>`);
+}
+
+function baglanti(yazi, adres, yol) {
+  const ders = adres.match(/^\.\.\/(\d\d-[^/]+)\/README\.md$/);
+  if (ders && dersBul(ders[1])) return `<a href="#ders=${ders[1]}" data-ders="${ders[1]}">${yazi}</a>`;
+  // Diğer göreli bağlantılar GitHub'daki dosyaya gider.
+  const tam = /^https?:/.test(adres) ? adres : new URL(adres.replace(/&amp;/g, "&"), `${DEPO}/blob/main/${yol}`).href;
+  return `<a href="${kacis(tam)}" target="_blank" rel="noopener">${yazi}</a>`;
+}
+
+function tabloHtml(satirlar, yol) {
+  const hucreler = (satir) =>
+    satir
+      .replace(/^\||\|$/g, "")
+      .split(/(?<!\\)\|/)
+      .map((hucre) => satirIci(hucre.trim().replace(/\\\|/g, "|"), yol));
+  const [baslik, , ...govde] = satirlar;
+  const ust = hucreler(baslik).map((h) => `<th>${h}</th>`).join("");
+  const alt = govde.map((satir) => `<tr>${hucreler(satir).map((h) => `<td>${h}</td>`).join("")}</tr>`).join("");
+  return `<table><thead><tr>${ust}</tr></thead><tbody>${alt}</tbody></table>`;
+}
+
+/** Pas kod blokları düzenleyicideki gibi renklendirilir. */
+function kodBlogu(metin, dil) {
+  if (dil && dil !== "pas") return `<pre><code>${kacis(metin)}</code></pre>`;
+  let html = "";
+  let konum = 0;
+  for (const [bas, son, sinif] of pas.renklendir(metin)) {
+    html += kacis(metin.slice(konum, bas)) + `<span class="r-${sinif}">${kacis(metin.slice(bas, son))}</span>`;
+    konum = son;
+  }
+  return `<pre><code>${html}${kacis(metin.slice(konum))}</code></pre>`;
 }
 
 // Paylaşılan bağlantı: #kod=<sıkıştırılmış, base64url>
@@ -546,10 +747,12 @@ $("sozluk-dugmesi").addEventListener("click", () => {
   if (acik) $("sozluk-ara").focus();
 });
 
+const PANEL_DUGMELERI = { "rust-paneli": "rust-dugmesi", "sozluk-paneli": "sozluk-dugmesi", "ders-paneli": "dersler-dugmesi" };
 for (const dugme of document.querySelectorAll("[data-kapat]")) {
   dugme.addEventListener("click", () => {
     const panel = dugme.dataset.kapat;
-    paneliAc(panel, panel === "rust-paneli" ? "rust-dugmesi" : "sozluk-dugmesi", false);
+    paneliAc(panel, PANEL_DUGMELERI[panel], false);
+    if (panel === "ders-paneli") dersiKaydet("");
   });
 }
 
@@ -593,6 +796,7 @@ $("sozluk-ara").addEventListener("input", sozluguGoster);
 async function basla() {
   // Önce kayıtlı ya da paylaşılan kod; örnekler sonra gelir.
   let baslangic = null;
+  const bagliDers = location.hash.match(/^#ders=([\w-]+)$/)?.[1];
   if (location.hash.startsWith("#kod=")) {
     try {
       baslangic = await ac(location.hash.slice(5));
@@ -600,9 +804,11 @@ async function basla() {
       bildir("Bu bağlantıdaki kod açılamadı.");
     }
   }
+  let kayitliDers = null;
   if (baslangic === null) {
     try {
       baslangic = localStorage.getItem(KAYIT_ANAHTARI);
+      kayitliDers = localStorage.getItem(DERS_ANAHTARI);
     } catch {
       baslangic = null;
     }
@@ -623,15 +829,25 @@ async function basla() {
   sozluk = pas.sozluk();
   sozluguGoster();
   await ornekleriYukle();
-  if (baslangic === null && ornekler.length) {
-    ornegiAc(ornekler[0]);
+  if (bagliDers && dersBul(bagliDers)) {
+    // Bir dersin bağlantısı (`#ders=03-soru-sor`) o dersi kodu ile açar.
+    ornegiAc(dersBul(bagliDers), { sor: false });
+  } else if (baslangic === null && ornekler.length) {
+    // İlk kez gelen biri birinci dersle başlar.
+    ornegiAc(dersler()[0] ?? ornekler[0]);
   } else {
     // Kayıtlı kod değiştirilmemiş bir örnekse başka örnek açarken sorulmaz.
     if (ornekler.some((ornek) => ornek.kaynak === kod.value)) kodBasi = kod.value;
+    if (kayitliDers && dersBul(kayitliDers)) dersiGoster(dersBul(kayitliDers));
     renklendir();
   }
   calistirDugmesi.disabled = false;
   window.addEventListener("resize", boyutlandir);
+  // Sayfa açıkken bir ders bağlantısına gidilirse o ders açılır.
+  window.addEventListener("hashchange", () => {
+    const ders = dersBul(location.hash.match(/^#ders=([\w-]+)$/)?.[1]);
+    if (ders && ders !== acikDers) ornegiAc(ders);
+  });
 }
 
 basla();

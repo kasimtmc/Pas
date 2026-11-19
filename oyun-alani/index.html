@@ -19,6 +19,7 @@
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>
       Çalıştır
     </button>
+    <button id="dersler-dugmesi" aria-pressed="false" title="Adım adım dersler">Dersler</button>
     <label class="secim">
       <span class="gizli">Örnek seç</span>
       <select id="ornekler"><option value="">Örnekler…</option></select>
@@ -30,10 +31,19 @@
 </header>
 
 <main class="alanlar">
+  <section class="bolum ders-paneli" id="ders-paneli" hidden aria-label="Ders">
+    <div class="bolum-basligi">
+      <button id="onceki-ders" class="gezinme" aria-label="Önceki ders" title="Önceki ders">←</button>
+      <button id="ders-listesi-dugmesi" class="ders-sirasi" title="Bütün dersler"></button>
+      <button id="sonraki-ders" class="gezinme" aria-label="Sonraki ders" title="Sonraki ders">→</button>
+      <button class="kapat" data-kapat="ders-paneli" aria-label="Kapat">×</button>
+    </div>
+    <article id="ders-metni" class="ders-metni"></article>
+  </section>
+
   <section class="bolum duzenleyici-bolumu" aria-label="Kod">
     <div class="bolum-basligi">
       <span>ana.pas</span>
-      <a id="ders-baglantisi" hidden target="_blank" rel="noopener">Dersi oku ↗</a>
     </div>
     <div class="duzenleyici" id="duzenleyici">
       <div class="satir-numaralari" id="satir-numaralari" aria-hidden="true"></div>
@@ -60,13 +70,13 @@
     </div>
   </section>
 
-  <aside class="yan-panel" id="rust-paneli" hidden aria-label="Rust karşılığı">
+  <aside class="yan-panel cekmece" id="rust-paneli" hidden aria-label="Rust karşılığı">
     <div class="bolum-basligi"><span>Rust karşılığı</span><button class="kapat" data-kapat="rust-paneli" aria-label="Kapat">×</button></div>
     <p class="aciklama-metni">Pas kodun derlenmeden önce bu Rust koduna çevrilir. İngilizce öğrendikçe karşılaştırabilirsin.</p>
     <pre id="rust-kodu" class="rust-kodu"></pre>
   </aside>
 
-  <aside class="yan-panel" id="sozluk-paneli" hidden aria-label="Sözlük">
+  <aside class="yan-panel cekmece" id="sozluk-paneli" hidden aria-label="Sözlük">
     <div class="bolum-basligi"><span>Sözlük</span><button class="kapat" data-kapat="sozluk-paneli" aria-label="Kapat">×</button></div>
     <input id="sozluk-ara" type="search" placeholder="Ara: döngü, liste, yazdır…" aria-label="Sözlükte ara">
     <div id="sozluk-listesi" class="sozluk-listesi"></div>
