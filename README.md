@@ -29,7 +29,8 @@ programının bağlantısını paylaşabilirsin.
 
 Programlamaya yeni başlıyorsan [**dersler**](dersler/README.md) dizinindeki
 adım adım derslerle başlayabilirsin: yazdırmaktan başlayıp bir taş, kâğıt,
-makas oyunu yazmaya kadar on ders.
+makas oyunu yazmaya, oradan da sözlükler ve nitelikler gibi konulara uzanan
+on dört ders.
 
 ## Kurulum
 

@@ -35,3 +35,7 @@ rastgele değildir ama oyun için yeterlidir.
 3. "Taş, kâğıt, makas, kertenkele, Spock" kurallarını araştır ve oyuna iki
    yeni hamle ekle. Hangi yerleri değiştirmen gerektiğini Pas sana
    söyleyecek!
+
+---
+
+Sonraki ders: [Listelerle sihir](../11-yineleyiciler/README.md)

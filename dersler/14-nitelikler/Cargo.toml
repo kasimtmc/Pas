@@ -1,0 +1,11 @@
+[package]
+name = "ders-14-nitelikler"
+version = "0.1.0"
+edition = "2024"
+
+# `cargo pas` bu dosyayı `src/ana.pas` dosyasından üretir.
+[[bin]]
+name = "ders-14-nitelikler"
+path = "target/pas/src/main.rs"
+
+[dependencies]

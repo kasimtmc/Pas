@@ -10,9 +10,14 @@ en önemli parçalarından biridir.
 
 ## Başlamadan önce
 
-[Rust](https://rustup.rs) ve `cargo pas` kurulu olmalı (ana
-[README](../README.md) dosyasına bak). RustRover kullanıyorsan Pas eklentisini
-de kur; renkli kod, kod tamamlama ve ▶ Çalıştır düğmesi işini kolaylaştırır.
+Hiçbir şey kurmadan başlamak istersen [Pas Oyun Alanı](https://kasimtmc.github.io/Pas/)nı
+aç ve **Örnekler** listesinden dersi seç; dersin kodu açılır, ▶ Çalıştır'a
+basman yeterli.
+
+Kendi bilgisayarında çalışmak için [Rust](https://rustup.rs) ve `cargo pas`
+kurulu olmalı (ana [README](../README.md) dosyasına bak). RustRover ya da VS
+Code kullanıyorsan Pas eklentisini de kur; renkli kod, kod tamamlama ve
+▶ Çalıştır düğmesi işini kolaylaştırır.
 
 ## Dersler
 
@@ -26,6 +31,10 @@ de kur; renkli kod, kod tamamlama ve ▶ Çalıştır düğmesi işini kolaylaş
 8. [Yapılar](08-yapilar/README.md)
 9. [Çeşitler ve eşle](09-cesitler-ve-esle/README.md)
 10. [Proje: Taş, kâğıt, makas](10-tas-kagit-makas/README.md)
+11. [Listelerle sihir](11-yineleyiciler/README.md)
+12. [Sözlükler](12-sozlukler/README.md)
+13. [Hatalarla başa çıkmak](13-sonuc-ve-hatalar/README.md)
+14. [Nitelikler](14-nitelikler/README.md)
 
 ## Kendi projeni başlat
 

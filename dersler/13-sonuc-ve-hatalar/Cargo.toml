@@ -1,0 +1,11 @@
+[package]
+name = "ders-13-sonuc-ve-hatalar"
+version = "0.1.0"
+edition = "2024"
+
+# `cargo pas` bu dosyayı `src/ana.pas` dosyasından üretir.
+[[bin]]
+name = "ders-13-sonuc-ve-hatalar"
+path = "target/pas/src/main.rs"
+
+[dependencies]
