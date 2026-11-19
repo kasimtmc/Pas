@@ -24,6 +24,9 @@ const PAS_DOSYASI: &str = "ana.pas";
 /// Hazır girdi bitince destek kodunun hata çıktısına yazdığı satır (bkz. `destek.rs`).
 const GIRDI_BITTI: &str = "[pas: girdi bitti]";
 
+/// Kaplumbağanın çizimi (SVG) hata çıktısına bu önekle tek satır olarak yazılır.
+const CIZIM: &str = "[pas: çizim] ";
+
 /// Oyun alanına gönderilecek Rust kodu. `girdi`, `oku!` ile okunacak metin;
 /// `tohum`, `rastgele!` için. Program cevaplarla yeniden çalıştırılırken
 /// aynı tohum verilirse rastgele sayılar değişmez.
@@ -70,9 +73,9 @@ pub fn sonucu_coz(kaynak: &str, girdi: &str, tohum: u64, hata_ciktisi: &str) -> 
         .map(|tani| esleyici.tanilama(tani, &mut aciklananlar))
         .collect();
 
-    let (panik, mut program_ciktisi) = match program {
+    let (panik, mut program_ciktisi, cizimler) = match program {
         Some(metin) => esleyici.program_ciktisi(metin),
-        None => (Value::Null, String::new()),
+        None => (Value::Null, String::new(), Vec::new()),
     };
     let girdi_bitti = program_ciktisi.contains(GIRDI_BITTI);
     if girdi_bitti {
@@ -84,6 +87,7 @@ pub fn sonucu_coz(kaynak: &str, girdi: &str, tohum: u64, hata_ciktisi: &str) -> 
         "tanilamalar": tanilamalar,
         "panik": panik,
         "hata_ciktisi": program_ciktisi,
+        "cizimler": cizimler,
     })
 }
 
@@ -239,11 +243,16 @@ impl Esleyici<'_> {
     /// Programın hata çıktısındaki panik mesajını Türkçeleştirip konumunu
     /// Pas kaynağına eşler. Kalan satırlar (programın kendi yazdıkları)
     /// olduğu gibi döner.
-    fn program_ciktisi(&self, metin: &str) -> (Value, String) {
+    fn program_ciktisi(&self, metin: &str) -> (Value, String, Vec<String>) {
         let mut panik = Value::Null;
         let mut diger = String::new();
+        let mut cizimler = Vec::new();
         let mut satirlar = metin.lines();
         while let Some(satir) = satirlar.next() {
+            if let Some(svg) = satir.strip_prefix(CIZIM) {
+                cizimler.push(svg.to_owned());
+                continue;
+            }
             let Some((is_parcacigi, satir_no, sutun)) = panik_basligi(satir) else {
                 diger.push_str(satir);
                 diger.push('\n');
@@ -254,7 +263,10 @@ impl Esleyici<'_> {
                 if satir.starts_with("note: run with `RUST_BACKTRACE=1`") {
                     break;
                 }
-                mesaj.push(panik_mesajini_cevir(satir));
+                match satir.strip_prefix(CIZIM) {
+                    Some(svg) => cizimler.push(svg.to_owned()),
+                    None => mesaj.push(panik_mesajini_cevir(satir)),
+                }
             }
             let aralik = SatirDizini::yeni(&self.ceviri.rust).ofset(satir_no, sutun).map(|ofset| {
                 let pas = self.ceviri.harita.rusttan_pasa(ofset, Yon::Baslangic);
@@ -268,7 +280,7 @@ impl Esleyici<'_> {
         }
         // Panik mesajının çevresindeki boş satırlar
         let diger = diger.trim_matches('\n');
-        (panik, if diger.is_empty() { String::new() } else { format!("{diger}\n") })
+        (panik, if diger.is_empty() { String::new() } else { format!("{diger}\n") }, cizimler)
     }
 }
 

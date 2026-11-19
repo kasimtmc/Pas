@@ -115,6 +115,31 @@ fn kullan_onerisi() {
 }
 
 #[test]
+fn kaplumbaga_cizimi() {
+    let kaynak = "işlev ana() {\n    yap değişken k = Kaplumbağa::yeni();\n    her _ içinde 0..4 {\n        k.ileri(100);\n        k.sağa_dön(90);\n    }\n    yazdır!(\"bitti\");\n}\n";
+    let (cikti, sonuc) = calistir(kaynak, "");
+    assert_eq!(sonuc["tanilamalar"], Value::Array(Vec::new()));
+    assert_eq!(cikti, "bitti\n");
+    let cizimler = sonuc["cizimler"].as_array().unwrap();
+    assert_eq!(cizimler.len(), 1);
+    let svg = cizimler[0].as_str().unwrap();
+    assert!(svg.starts_with("<svg ") && svg.ends_with("</svg>"));
+    assert_eq!(svg.matches("<line ").count(), 4);
+    assert_eq!(sonuc["hata_ciktisi"], "");
+}
+
+#[test]
+fn bilinmeyen_renk_turkce_panik() {
+    let kaynak =
+        "işlev ana() {\n    yap değişken k = Kaplumbağa::yeni();\n    k.ileri(10);\n    k.renk(\"gökkuşağı\");\n}\n";
+    let (_, sonuc) = calistir(kaynak, "");
+    assert_eq!(sonuc["panik"]["aralik"]["satir"], 4);
+    assert!(sonuc["panik"]["mesaj"].as_str().unwrap().contains("`gökkuşağı` bir renk değil"));
+    // Çöken programın o ana kadarki çizimi yine gösterilir.
+    assert_eq!(sonuc["cizimler"].as_array().unwrap().len(), 1);
+}
+
+#[test]
 fn ayni_tohumla_ayni_rastgele_sayilar() {
     let kaynak = "işlev ana() {\n    yazdır!(\"{} {}\", rastgele!(1, 1000000), rastgele!(1, 1000000));\n}\n";
     let (ilk, _) = calistir_tohumla(kaynak, "", 42);

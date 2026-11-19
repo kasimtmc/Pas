@@ -768,7 +768,11 @@ mod testler {
         let kaynak = "// yorum\nişlev ana() {\n    yap ad = oku!(\"Adın? \");\n}\n";
         let ceviri = rusta_cevir_secenekle(kaynak, &secenekler);
         assert_eq!(ceviri.rust.lines().count(), kaynak.lines().count());
-        assert!(ceviri.rust.starts_with("// yorum\n#[macro_use]"), "{}", ceviri.rust);
+        assert!(
+            ceviri.rust.starts_with("// yorum\n#[allow(unused_imports)] use crate::pas_destek::hazir::*; #[macro_use]"),
+            "{}",
+            ceviri.rust
+        );
         assert!(ceviri.rust.contains("mod pas_destek {"));
         assert!(ceviri.rust.contains("let ad = pas_oku!(\"Adın? \");"));
         // `oku!` çağrısı Pas kaynağındaki yerine eşlenir.
@@ -781,7 +785,11 @@ mod testler {
     fn destek_kodu_ic_niteliklerden_sonra_gelir() {
         let secenekler = Secenekler { destek_ekle: true, ..Default::default() };
         let ceviri = rusta_cevir_secenekle("#![allow(unused)]\nmodül şekil;\n", &secenekler);
-        assert!(ceviri.rust.starts_with("#![allow(unused)]\n#[macro_use]"), "{}", ceviri.rust);
+        assert!(
+            ceviri.rust.starts_with("#![allow(unused)]\n#[allow(unused_imports)] use crate::pas_destek"),
+            "{}",
+            ceviri.rust
+        );
         assert!(ceviri.rust.ends_with("#[path = \"şekil.rs\"] mod şekil;\n"), "{}", ceviri.rust);
         // Boş dosyaya da eklenebilmeli.
         assert!(rusta_cevir_secenekle("", &secenekler).rust.contains("mod pas_destek"));

@@ -1,2 +1,5 @@
 /target
 target/
+
+# Kaplumbağanın çizimleri (cargo pas çalıştır)
+çizim*.svg

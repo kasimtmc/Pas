@@ -29,8 +29,8 @@ programının bağlantısını paylaşabilirsin.
 
 Programlamaya yeni başlıyorsan [**dersler**](dersler/README.md) dizinindeki
 adım adım derslerle başlayabilirsin: yazdırmaktan başlayıp bir taş, kâğıt,
-makas oyunu yazmaya, oradan da sözlükler ve nitelikler gibi konulara uzanan
-on dört ders.
+makas oyunu yazmaya, oradan da sözlükler, nitelikler ve kaplumbağa ile
+çizime uzanan on beş ders.
 
 ## Kurulum
 
@@ -212,6 +212,22 @@ yap oran = rastgele!(0.0, 1.0);            // ondalıklı sayılar da olur
 
 Örnek bir oyun için [`ornekler/sayi-tahmin`](ornekler/sayi-tahmin/src/ana.pas)
 dizinine bak.
+
+### Kaplumbağa ile çizim
+
+`Kaplumbağa` kalemiyle yürüdüğü yere çizgi çizer:
+
+```
+yap değişken k = Kaplumbağa::yeni();
+her _ içinde 0..4 {
+    k.ileri(100);
+    k.sağa_dön(90);
+}
+```
+
+Oyun alanında çizim çıktının üstünde görünür; `cargo pas çalıştır` ise onu
+`çizim.svg` dosyasına kaydeder. Bütün komutlar için
+[15. derse](dersler/15-kaplumbaga/README.md) bak.
 
 Tam liste için `cargo pas sözlük` komutunu çalıştır ya da
 [`sozluk.rs`](crates/pas-cekirdek/src/sozluk.rs) dosyasına bak.

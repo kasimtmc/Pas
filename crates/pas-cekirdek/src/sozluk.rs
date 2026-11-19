@@ -131,6 +131,7 @@ pub static GIRDILER: &[Girdi] = girdiler! {
         "Küme" => "HashSet": "tekrarsız elemanlar kümesi",
         "mantıksal" => "bool": "`doğru` ya da `yanlış`",
         "karakter" => "char": "tek bir karakter: 'a'",
+        "Kaplumbağa" => "Kaplumbaga": "kalemiyle yürüdüğü yere çizgi çizen kaplumbağa: `yap değişken k = Kaplumbağa::yeni();`",
     }
     Deger {
         "Var" => "Some": "`Belki` içinde bir değer var",
@@ -186,6 +187,16 @@ pub static GIRDILER: &[Girdi] = girdiler! {
         "kuvvet" => "pow": "sayının kuvveti: `2.kuvvet(3)` → 8",
         "karekök" => "sqrt": "ondalıklı sayının karekökü",
         "yuvarla" => "round": "ondalıklı sayıyı en yakın tam sayıya yuvarlar",
+        "ileri" => "pas_ileri": "kaplumbağayı baktığı yöne doğru yürütür: `k.ileri(100)`",
+        "geri" => "pas_geri": "kaplumbağayı geri geri yürütür: `k.geri(50)`",
+        "sağa_dön" => "pas_saga_don": "kaplumbağayı verilen derece kadar sağa döndürür: `k.sağa_dön(90)`",
+        "sola_dön" => "pas_sola_don": "kaplumbağayı verilen derece kadar sola döndürür: `k.sola_dön(90)`",
+        "kalemi_kaldır" => "pas_kalemi_kaldir": "kaplumbağanın kalemini kaldırır; çizmeden yürür",
+        "kalemi_indir" => "pas_kalemi_indir": "kaplumbağanın kalemini indirir; yürüdüğü yere yeniden çizer",
+        "renk" => "pas_renk": "kalemin rengini değiştirir: `k.renk(\"kırmızı\")` ya da `k.renk(\"#ff8800\")`",
+        "kalınlık" => "pas_kalinlik": "kalemin kalınlığını değiştirir: `k.kalınlık(4)`",
+        "git" => "pas_git": "kaplumbağayı bir noktaya götürür; orta (0, 0) noktasıdır: `k.git(50, -20)`",
+        "daire" => "pas_daire": "kaplumbağanın olduğu yeri merkez alan bir daire çizer: `k.daire(40)`",
     }
 };
 

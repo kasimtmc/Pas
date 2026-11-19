@@ -287,6 +287,8 @@ function sonucuGoster(kaynak, hazirGirdi, tohum, sonuc) {
     return;
   }
 
+  for (const [i, svg] of (cozum.cizimler ?? []).entries()) cikti.append(cizimGoster(svg, i));
+
   const pre = document.createElement("pre");
   pre.className = "program-ciktisi";
   pre.append(ciktiyiBicimle(sonuc.stdout ?? "", hazirGirdi));
@@ -311,7 +313,8 @@ function sonucuGoster(kaynak, hazirGirdi, tohum, sonuc) {
     pre.append(konsolGirdisi());
     durumuYaz("Cevabını bekliyor");
   } else if (sonuc.success) {
-    if (!sonuc.stdout && !cozum.hata_ciktisi) cikti.append(bilgi("Program hiçbir şey yazdırmadı."));
+    const bos = !sonuc.stdout && !cozum.hata_ciktisi && !cozum.cizimler?.length;
+    if (bos) cikti.append(bilgi("Program hiçbir şey yazdırmadı."));
     durumuYaz("Bitti ✓");
   } else {
     cikti.append(bilgi(cikisAciklamasi(sonuc.exitDetail ?? "")));
@@ -340,6 +343,26 @@ function ciktiyiBicimle(metin, hazirGirdi) {
   }
   parca.append(kalan);
   return parca;
+}
+
+/**
+ * Kaplumbağanın çizimi. SVG bir resim olarak gösterilir; böylece içindeki
+ * hiçbir şey sayfada çalıştırılmaz.
+ */
+function cizimGoster(svg, sira) {
+  const adres = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  const kutu = eleman("figure", "cizim");
+  const resim = document.createElement("img");
+  resim.src = adres;
+  resim.alt = "Kaplumbağanın çizimi";
+  const indir = document.createElement("a");
+  indir.href = adres;
+  indir.download = sira ? `çizim-${sira + 1}.svg` : "çizim.svg";
+  indir.textContent = "Çizimi indir";
+  const alt = eleman("figcaption");
+  alt.append(indir);
+  kutu.append(resim, alt);
+  return kutu;
 }
 
 function konsolGirdisi() {

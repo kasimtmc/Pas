@@ -358,6 +358,22 @@ button.birincil svg { width: 14px; height: 14px; }
 
 .karsilama { font-family: var(--duz-yazi); color: var(--yazi-soluk); line-height: 1.6; margin: 0; }
 
+.cizim {
+  margin: 0 0 12px;
+  text-align: center;
+}
+.cizim img {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid var(--cizgi);
+  border-radius: 8px;
+  background: #fff;
+}
+.cizim figcaption { margin-top: 4px; font-family: var(--duz-yazi); font-size: 13px; }
+
 .program-ciktisi {
   margin: 0;
   white-space: pre-wrap;

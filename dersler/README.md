@@ -36,6 +36,7 @@ Code kullanıyorsan Pas eklentisini de kur; renkli kod, kod tamamlama ve
 12. [Sözlükler](12-sozlukler/README.md)
 13. [Hatalarla başa çıkmak](13-sonuc-ve-hatalar/README.md)
 14. [Nitelikler](14-nitelikler/README.md)
+15. [Kaplumbağa ile çizim](15-kaplumbaga/README.md)
 
 ## Kendi projeni başlat
 

@@ -73,5 +73,4 @@ yazdırılabilen türlerin hepsi `Display` adlı bir niteliği taşır.
 
 ---
 
-Tebrikler, bütün dersleri bitirdin! Şimdi kendi projeni başlatma zamanı:
-[dersler sayfasına](../README.md#kendi-projeni-başlat) dön.
+Sonraki ders: [Kaplumbağa ile çizim](../15-kaplumbaga/README.md)

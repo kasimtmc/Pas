@@ -1,6 +1,6 @@
 //! `destek.rs` içindeki, Pas programlarına eklenen kodun testleri.
 
-use crate::pas_destek::{RastgeleSayi, deger_oku_kaynaktan, rastgele, satir_oku_kaynaktan};
+use crate::pas_destek::{Kaplumbaga, RastgeleSayi, deger_oku_kaynaktan, rastgele, satir_oku_kaynaktan};
 
 fn oku<T: std::str::FromStr>(girdi: &str) -> (Option<T>, String) {
     let mut cikti = Vec::new();
@@ -127,7 +127,37 @@ fn rastgele_sayilar_aralikta() {
         let oran = rastgele(0.0, 1.0);
         assert!((0.0..1.0).contains(&oran));
     }
-    assert_eq!(u8::aralikta(0, 255, 256 + 7), 7);
-    assert_eq!(u64::aralikta(0, u64::MAX, u64::MAX), u64::MAX);
-    assert_eq!(i8::aralikta(-128, 127, 0), -128);
+    assert_eq!(u8::aralikta_sec(0, 255, 256 + 7), 7);
+    assert_eq!(u64::aralikta_sec(0, u64::MAX, u64::MAX), u64::MAX);
+    assert_eq!(i8::aralikta_sec(-128, 127, 0), -128);
+}
+
+#[test]
+fn kaplumbaga_kare_cizer() {
+    let mut k = Kaplumbaga::new();
+    k.pas_renk("kırmızı");
+    for _ in 0..4 {
+        k.pas_ileri(100);
+        k.pas_saga_don(90);
+    }
+    k.pas_kalemi_kaldir();
+    k.pas_git(-50.5, 0);
+    k.pas_kalemi_indir();
+    k.pas_daire(10);
+    let svg = k.svg();
+    // Program bitince çizim bir dosyaya yazılır; testte yazılmasın.
+    std::mem::forget(k);
+    assert_eq!(svg.matches("<line ").count(), 4);
+    assert_eq!(svg.matches("<circle ").count(), 1);
+    assert!(svg.contains(r##"x1="0.0" y1="0.0" x2="0.0" y2="-100.0" stroke="#e53935""##), "{svg}");
+    assert!(svg.contains(r##"cx="-50.5" cy="0.0" r="10.0""##), "{svg}");
+    assert!(!svg.contains('\n'));
+}
+
+#[test]
+#[should_panic(expected = "`gökkuşağı` bir renk değil")]
+fn bilinmeyen_renk() {
+    // Çöken testte kaplumbağa yok edilmesin (çizimi dosyaya yazmasın).
+    let mut k = std::mem::ManuallyDrop::new(Kaplumbaga::new());
+    k.pas_renk("gökkuşağı");
 }
