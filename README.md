@@ -293,7 +293,8 @@ Betik sürüm numarasını her yerde günceller, testleri çalıştırır ve
 `v0.2.0` etiketini oluşturur. Etiket gönderilince (`git push origin main v0.2.0`)
 yayın iş akışı hazır dosyaları ve eklentileri GitHub Releases'a koyar.
 Depo ayarlarında `OVSX_PAT` gizli değişkeni tanımlıysa VS Code eklentisi
-[Open VSX](https://open-vsx.org)'e de gönderilir.
+[Open VSX](https://open-vsx.org)'e, `JETBRAINS_TOKEN` tanımlıysa RustRover
+eklentisi [JetBrains Marketplace](https://plugins.jetbrains.com)'e de gönderilir.
 
 `crates/cargo-pas/tests/hata_derlemi/` dizini, çocukların sık yapacağı
 hataları içeren küçük Pas programlarından oluşur. Testler bunların hepsini

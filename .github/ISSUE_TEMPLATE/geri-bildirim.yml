@@ -1,0 +1,28 @@
+name: Geri bildirim
+description: Pas'ı kullanırken takıldığın bir yer, anlamadığın bir hata mesajı ya da bir fikir
+title: "Geri bildirim: "
+labels: ["geri bildirim"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Pas'ı denediğin için teşekkürler! Yazdıkların Pas'ı herkes için daha iyi yapacak.
+        Lütfen ad, adres ya da okul gibi kişisel bilgiler yazma; burası herkese açık.
+  - type: input
+    id: nerede
+    attributes:
+      label: Neredeydin?
+      description: Hangi derste, oyun alanında mı, RustRover'da mı, VS Code'da mı?
+      placeholder: "Örneğin: Oyun alanı, Ders 3"
+  - type: textarea
+    id: ne-oldu
+    attributes:
+      label: Ne oldu?
+      description: Ne yapmaya çalışıyordun, ne bekliyordun, ne oldu? Anlamadığın bir hata mesajı varsa buraya yapıştır.
+    validations:
+      required: true
+  - type: textarea
+    id: kod
+    attributes:
+      label: Kodun (isteğe bağlı)
+      render: rust

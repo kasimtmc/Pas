@@ -742,6 +742,15 @@ $("paylas").addEventListener("click", async () => {
   }
 });
 
+// Geri bildirim formu, açık ders ve (kısaysa) kodla doldurulmuş olarak açılır.
+$("geri-bildirim").addEventListener("click", () => {
+  const adres = new URL(`${DEPO}/issues/new`);
+  adres.searchParams.set("template", "geri-bildirim.yml");
+  adres.searchParams.set("nerede", acikDers && !$("ders-paneli").hidden ? `Oyun alanı, ${acikDers.ad}` : "Oyun alanı");
+  if (kod.value.length <= 2000) adres.searchParams.set("kod", kod.value);
+  $("geri-bildirim").href = adres.href;
+});
+
 let bildirimZamanlayicisi;
 function bildir(metin) {
   const kutu = $("bildirim");

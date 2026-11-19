@@ -2,8 +2,9 @@
 # ve eklenti paketiyle birlikte bir GitHub Release oluşturur. Elle
 # çalıştırılırsa (workflow_dispatch) yalnızca derler, yayın oluşturmaz.
 #
-# VS Code eklentisi, depo ayarlarında `OVSX_PAT` gizli değişkeni varsa
-# Open VSX'e de gönderilir.
+# Depo ayarlarında şu gizli değişkenler varsa eklentiler pazarlara da
+# gönderilir: `OVSX_PAT` (VS Code eklentisi → Open VSX), `JETBRAINS_TOKEN`
+# (RustRover eklentisi → JetBrains Marketplace).
 name: Yayın
 
 on:
@@ -139,3 +140,33 @@ jobs:
       - name: Belirteç yok
         if: env.OVSX_PAT == ''
         run: echo "::notice::OVSX_PAT tanımlı değil; VS Code eklentisi Open VSX'e gönderilmedi."
+
+  jetbrains:
+    name: JetBrains Marketplace
+    needs: [eklenti, yayin]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    env:
+      JETBRAINS_TOKEN: ${{ secrets.JETBRAINS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        if: env.JETBRAINS_TOKEN != ''
+      - uses: actions/setup-java@v5
+        if: env.JETBRAINS_TOKEN != ''
+        with:
+          distribution: temurin
+          java-version: 25
+      - name: Rust araç zinciri
+        if: env.JETBRAINS_TOKEN != ''
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+      - uses: gradle/actions/setup-gradle@v4
+        if: env.JETBRAINS_TOKEN != ''
+      - name: JetBrains Marketplace'e gönder
+        if: env.JETBRAINS_TOKEN != ''
+        working-directory: eklenti
+        run: ./gradlew publishPlugin
+      - name: Belirteç yok
+        if: env.JETBRAINS_TOKEN == ''
+        run: echo "::notice::JETBRAINS_TOKEN tanımlı değil; RustRover eklentisi JetBrains Marketplace'e gönderilmedi."

@@ -44,6 +44,10 @@ intellijPlatform {
             sinceBuild = "263"
         }
     }
+    // `./gradlew publishPlugin` JetBrains Marketplace'e gönderir (bkz. yayin.yml).
+    publishing {
+        token = providers.environmentVariable("JETBRAINS_TOKEN")
+    }
 }
 
 /** Sözlüğü `cargo pas sözlük --json` çıktısından Kotlin koduna çevirir. */
