@@ -1,3 +1,5 @@
+Hiçbir şey kurmadan denemek için: **[Pas Oyun Alanı](https://kasimtmc.github.io/Pas/)**
+
 ## Kurulum
 
 Önce [Rust](https://rustup.rs) kurulu olmalı. Sonra `cargo pas` komutunu kur:
