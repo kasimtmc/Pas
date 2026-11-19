@@ -8,7 +8,7 @@ use serde_json::Value;
 use super::*;
 
 /// Pas kaynağını oyun alanındaki gibi derleyip çalıştırır; (standart çıktı, çözülen sonuç).
-fn calistir(kaynak: &str, girdi: &str) -> (String, Value) {
+pub(crate) fn calistir(kaynak: &str, girdi: &str) -> (String, Value) {
     calistir_tohumla(kaynak, girdi, 7)
 }
 

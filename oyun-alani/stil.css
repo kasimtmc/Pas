@@ -488,6 +488,65 @@ button.birincil svg { width: 14px; height: 14px; }
   text-decoration: none;
 }
 
+/* ---- Görevler ---- */
+.ders-metni .gorevler-basligi { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--cizgi); }
+.gorev {
+  margin: 12px 0;
+  padding: 10px 14px 12px;
+  border: 1px solid var(--cizgi);
+  border-radius: 8px;
+  background: var(--zemin);
+}
+.gorev.acik { border-color: var(--pas); box-shadow: 0 0 0 1px var(--pas); }
+.gorev.tamam { border-color: var(--basari); }
+.gorev h4 { display: flex; align-items: center; gap: 8px; margin: 2px 0 6px; font-size: 15.5px; }
+.gorev-durumu {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--yuzey-2);
+  font-size: 13px;
+}
+.gorev.tamam .gorev-durumu { background: var(--basari); color: #fff; }
+.gorev details { margin: 6px 0; font-size: 14px; }
+.gorev summary { cursor: pointer; color: var(--yazi-soluk); }
+.gorev .cozum pre { margin-top: 6px; }
+.gorev-basla { margin-top: 6px; }
+.gorev-acik { color: var(--pas); font-size: 14px; }
+
+button.denetle { background: var(--basari); border-color: var(--basari); color: #fff; font-weight: 600; }
+button.denetle:hover { filter: brightness(1.1); border-color: var(--basari); }
+button.denetle:disabled { opacity: .6; cursor: progress; }
+
+.gorev-etiketi {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: var(--pas);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gorev-sonucu {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-left: 4px solid var(--uyari);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--uyari) 10%, var(--yuzey));
+  font-family: var(--duz-yazi);
+  font-size: 14.5px;
+}
+.gorev-sonucu.basarili { border-left-color: var(--basari); background: color-mix(in srgb, var(--basari) 12%, var(--yuzey)); }
+.gorev-sonucu button { display: block; margin-top: 8px; }
+
+.ilerleme { float: right; font-size: 12.5px; color: var(--yazi-soluk); }
+.ilerleme.tamam { color: var(--basari); font-weight: 600; }
+
 .ders-listesi { list-style: none; padding: 0; margin: 12px 0; }
 .ders-listesi li { margin: 0; }
 .ders-listesi a {

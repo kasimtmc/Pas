@@ -28,6 +28,49 @@ sed "s/__SURUM__/$surum/g" oyun-alani/index.html >"$hedef/index.html"
 python3 - "$hedef/ornekler.json" <<'PY'
 import json, pathlib, sys
 
+def gorevleri_oku(metin):
+    """`gorevler.md`: `## Başlık`, açıklama, `İpucu: …`, ```pas başlangıç```,
+    ```girdi```/```çıktı``` çiftleri ve ```pas çözüm``` blokları.
+    Biçim `crates/pas-web/src/gorev_testleri.rs` içindeki okuyucuyla aynıdır."""
+    gorevler = []
+    satirlar = iter(metin.splitlines())
+    girdi = ""
+    for satir in satirlar:
+        if satir.startswith("## "):
+            gorevler.append({"baslik": satir[3:].strip(), "aciklama": [], "ipucu": None,
+                             "baslangic": "", "cozum": "", "ornekler": []})
+            continue
+        if not gorevler:
+            continue
+        gorev = gorevler[-1]
+        if satir.startswith("```"):
+            bilgi = satir[3:].strip()
+            blok = []
+            for ic in satirlar:
+                if ic.startswith("```"):
+                    break
+                blok.append(ic)
+            blok = "\n".join(blok)
+            if bilgi == "pas başlangıç":
+                gorev["baslangic"] = blok
+            elif bilgi == "pas çözüm":
+                gorev["cozum"] = blok
+            elif bilgi == "girdi":
+                girdi = blok
+            elif bilgi == "çıktı":
+                gorev["ornekler"].append({"girdi": girdi, "cikti": blok})
+                girdi = ""
+            else:
+                gorev["aciklama"] += [satir, *blok.split("\n"), "```"]
+            continue
+        if satir.startswith("İpucu: "):
+            gorev["ipucu"] = satir[len("İpucu: "):]
+        else:
+            gorev["aciklama"].append(satir)
+    for gorev in gorevler:
+        gorev["aciklama"] = "\n".join(gorev["aciklama"]).strip()
+    return gorevler
+
 ornekler = []
 for dizin in sorted(pathlib.Path("dersler").iterdir()) + sorted(pathlib.Path("ornekler").iterdir()):
     pas_dosyalari = list((dizin / "src").glob("*.pas")) if (dizin / "src").is_dir() else []
@@ -37,7 +80,9 @@ for dizin in sorted(pathlib.Path("dersler").iterdir()) + sorted(pathlib.Path("or
     if benioku.is_file():
         metin = benioku.read_text(encoding="utf-8")
         ad = metin.splitlines()[0].lstrip("# ").strip()
-        ders = {"kimlik": dizin.name, "yol": benioku.as_posix(), "metin": metin}
+        ders = {"kimlik": dizin.name, "yol": benioku.as_posix(), "metin": metin, "gorevler": []}
+        if (dizin / "gorevler.md").is_file():
+            ders["gorevler"] = gorevleri_oku((dizin / "gorevler.md").read_text(encoding="utf-8"))
     kaynak = (dizin / "src" / "ana.pas").read_text(encoding="utf-8")
     if not benioku.is_file():
         # Örneklerin adı ilk yorum satırından gelir: "// Sayı tahmin oyunu: …"

@@ -4,6 +4,10 @@ Bu dersler, programlamayı hiç bilmeyen biri için hazırlandı. Her ders küç
 çalıştırılabilir bir Pas programıdır. Programı çalıştır, kodunu oku, sonra
 "Kendin dene" bölümündeki alıştırmaları yap.
 
+Her dersin sonunda kendini denetleyen **görevler** var. Oyun alanında görevi
+seçip kodunu yaz ve **✓ Denetle**'ye bas; Pas çıktının doğru olup olmadığını
+söyler. Görevleri her dersin `gorevler.md` dosyasında da görebilirsin.
+
 Hata yapmaktan korkma! Pas, bir şeyler ters gittiğinde ne olduğunu ve nasıl
 düzelteceğini Türkçe olarak anlatır. Hata mesajlarını okumak programlamanın
 en önemli parçalarından biridir.

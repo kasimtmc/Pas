@@ -6,6 +6,7 @@ const OYUN_ALANI = "https://play.rust-lang.org/execute";
 const DEPO = "https://github.com/kasimtmc/Pas";
 const KAYIT_ANAHTARI = "pas-oyun-alani-kod";
 const DERS_ANAHTARI = "pas-oyun-alani-ders";
+const GOREV_ANAHTARI = "pas-oyun-alani-gorevler";
 
 const $ = (kimlik) => document.getElementById(kimlik);
 const kod = $("kod");
@@ -217,28 +218,40 @@ async function calistir({ yeniden = false } = {}) {
       girdiKonsoldan = false;
     }
   }
-  calisiyor = true;
-  calistirDugmesi.disabled = true;
-  durumuYaz(yeniden ? "Çalışıyor…" : "Derleniyor…", "calisiyor");
   const kaynak = kod.value;
   const hazirGirdi = girdi.value;
+  await mesgulken(yeniden ? "Çalışıyor…" : "Derleniyor…", async () => {
+    sonucuGoster(kaynak, hazirGirdi, tohum, await oyunAlanindaCalistir(kaynak, hazirGirdi, tohum));
+  });
+}
+
+/** Pas kaynağını Rust oyun alanında derleyip çalıştırır; oyun alanının yanıtını döndürür. */
+async function oyunAlanindaCalistir(kaynak, hazirGirdi, tohum) {
+  const yanit = await fetch(OYUN_ALANI, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      channel: "stable",
+      mode: "debug",
+      edition: "2024",
+      crateType: "bin",
+      tests: false,
+      backtrace: false,
+      code: pas.derle(kaynak, hazirGirdi, tohum),
+    }),
+  });
+  if (!yanit.ok) throw new Error(`HTTP ${yanit.status}`);
+  return yanit.json();
+}
+
+/** Çalıştırma ve denetleme sırasında düğmeleri kapatır, bağlantı hatasını gösterir. */
+async function mesgulken(durumMetni, is) {
+  calisiyor = true;
+  calistirDugmesi.disabled = true;
+  $("denetle").disabled = true;
+  durumuYaz(durumMetni, "calisiyor");
   try {
-    const yanit = await fetch(OYUN_ALANI, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        channel: "stable",
-        mode: "debug",
-        edition: "2024",
-        crateType: "bin",
-        tests: false,
-        backtrace: false,
-        code: pas.derle(kaynak, hazirGirdi, tohum),
-      }),
-    });
-    if (!yanit.ok) throw new Error(`HTTP ${yanit.status}`);
-    const sonuc = await yanit.json();
-    sonucuGoster(kaynak, hazirGirdi, tohum, sonuc);
+    await is();
   } catch (hata) {
     console.error(hata);
     cikti.innerHTML = "";
@@ -247,6 +260,7 @@ async function calistir({ yeniden = false } = {}) {
   } finally {
     calisiyor = false;
     calistirDugmesi.disabled = false;
+    $("denetle").disabled = false;
   }
 }
 
@@ -502,6 +516,7 @@ let kodBasi = "";
 function ornegiAc(ornek, { sor = true } = {}) {
   const degismis = kod.value.trim() && kod.value !== kodBasi;
   if (sor && degismis && !confirm("Yazdığın kodun yerine örnek yüklensin mi?")) return;
+  gorevdenCik();
   kod.value = ornek.kaynak;
   kodBasi = ornek.kaynak;
   girdi.value = "";
@@ -536,7 +551,7 @@ function dersiGoster(ornek) {
   $("ders-listesi-dugmesi").textContent = `Ders ${sira + 1} / ${liste.length}`;
   $("onceki-ders").disabled = sira <= 0;
   $("sonraki-ders").disabled = sira >= liste.length - 1;
-  $("ders-metni").innerHTML = dersHtml(ornek.ders.metin, ornek.ders.yol);
+  $("ders-metni").innerHTML = dersHtml(ornek.ders.metin, ornek.ders.yol) + gorevlerHtml(ornek);
   $("ders-metni").scrollTop = 0;
   paneliAc("ders-paneli", "dersler-dugmesi", true);
   dersiKaydet(ornek.ders.kimlik);
@@ -550,7 +565,10 @@ function dersListesiniGoster() {
     .map((ornek) => {
       const kimlik = kacis(ornek.ders.kimlik);
       const secili = ornek === acikDers ? ' aria-current="true"' : "";
-      return `<li><a href="#ders=${kimlik}" data-ders="${kimlik}"${secili}>${kacis(ornek.ad)}</a></li>`;
+      const toplam = ornek.ders.gorevler?.length ?? 0;
+      const biten = (ornek.ders.gorevler ?? []).filter((_, i) => tamamlananlar.has(gorevKimligi(ornek, i))).length;
+      const rozet = toplam ? `<span class="ilerleme${biten === toplam ? " tamam" : ""}">${biten === toplam ? "✓ " : ""}${biten}/${toplam}</span>` : "";
+      return `<li><a href="#ders=${kimlik}" data-ders="${kimlik}"${secili}>${kacis(ornek.ad)}${rozet}</a></li>`;
     })
     .join("");
   $("ders-metni").innerHTML =
@@ -581,12 +599,203 @@ $("dersler-dugmesi").addEventListener("click", () => {
   }
 });
 $("ders-metni").addEventListener("click", (olay) => {
+  const basla = olay.target.closest("[data-gorev-basla]");
+  if (basla) {
+    goreveBasla(acikDers, Number(basla.dataset.gorevBasla));
+    return;
+  }
   const baglanti = olay.target.closest("a[data-ders]");
   if (!baglanti) return;
   olay.preventDefault();
   const ders = dersBul(baglanti.dataset.ders);
   if (ders) ornegiAc(ders);
 });
+
+// ---- Görevler ----
+
+/** Tamamlanan görevler: "03-soru-sor#0" gibi kimlikler. */
+const tamamlananlar = new Set();
+try {
+  for (const kimlik of JSON.parse(localStorage.getItem(GOREV_ANAHTARI) ?? "[]")) tamamlananlar.add(kimlik);
+} catch {
+  // Kayıt okunamıyorsa ilerleme sıfırdan başlar.
+}
+const gorevKimligi = (ornek, sira) => `${ornek.ders.kimlik}#${sira}`;
+
+/** Üzerinde çalışılan görev: { ornek, sira, gorev } */
+let acikGorev = null;
+
+function gorevlerHtml(ornek) {
+  const gorevler = ornek.ders.gorevler ?? [];
+  if (!gorevler.length) return "";
+  const kartlar = gorevler.map((gorev, sira) => {
+    const tamam = tamamlananlar.has(gorevKimligi(ornek, sira));
+    const acik = acikGorev?.ornek === ornek && acikGorev.sira === sira;
+    const durum = tamam ? "✓" : String(sira + 1);
+    const ipucu = gorev.ipucu ? `<details><summary>İpucu</summary><p>${satirIci(gorev.ipucu, ornek.ders.yol)}</p></details>` : "";
+    const dugme = acik
+      ? `<p class="gorev-acik">Kodunu yaz, sonra <b>✓ Denetle</b>'ye bas.</p>`
+      : `<button class="gorev-basla" data-gorev-basla="${sira}">${tamam ? "Yeniden yap" : "Göreve başla"}</button>`;
+    return `<div class="gorev${tamam ? " tamam" : ""}${acik ? " acik" : ""}">
+      <h4><span class="gorev-durumu">${durum}</span>${kacis(gorev.baslik)}</h4>
+      ${dersHtml(gorev.aciklama, ornek.ders.yol)}${ipucu}${dugme}
+      <details class="cozum"><summary>Çözümü göster</summary>${kodBlogu(gorev.cozum, "pas")}</details>
+    </div>`;
+  });
+  return `<h3 class="gorevler-basligi">Görevler</h3>${kartlar.join("")}`;
+}
+
+function goreveBasla(ornek, sira) {
+  const gorev = ornek?.ders.gorevler?.[sira];
+  if (!gorev) return;
+  const degismis = kod.value.trim() && kod.value !== kodBasi;
+  if (degismis && !confirm("Yazdığın kodun yerine görevin başlangıç kodu yüklensin mi?")) return;
+  acikGorev = { ornek, sira, gorev };
+  kod.value = gorev.baslangic + "\n";
+  kodBasi = kod.value;
+  girdi.value = "";
+  girdiKonsoldan = false;
+  degisti();
+  $("denetle").hidden = false;
+  $("gorev-etiketi").hidden = false;
+  $("gorev-adi").textContent = `Görev: ${gorev.baslik}`;
+  const kaydirma = $("ders-metni").scrollTop;
+  dersiGoster(ornek);
+  $("ders-metni").scrollTop = kaydirma;
+  cikti.innerHTML = "";
+  cikti.append(eleman("p", "karsilama", `<b>${kacis(gorev.baslik)}</b>: kodunu yaz, ▶ Çalıştır ile dene, hazır olunca <b>✓ Denetle</b>'ye bas.`));
+  durumuYaz("");
+  kod.focus();
+}
+
+function gorevdenCik() {
+  if (!acikGorev) return;
+  acikGorev = null;
+  $("denetle").hidden = true;
+  $("gorev-etiketi").hidden = true;
+}
+
+$("gorevi-birak").addEventListener("click", () => {
+  const ornek = acikGorev?.ornek;
+  gorevdenCik();
+  if (ornek && !$("ders-paneli").hidden) {
+    const kaydirma = $("ders-metni").scrollTop;
+    dersiGoster(ornek);
+    $("ders-metni").scrollTop = kaydirma;
+  }
+});
+
+$("denetle").addEventListener("click", denetle);
+
+/** Görevi her örnek girdiyle çalıştırıp çıktıyı (ya da çizimi) beklenenle karşılaştırır. */
+async function denetle() {
+  if (!pas || calisiyor || !acikGorev) return;
+  const { ornek, sira, gorev } = acikGorev;
+  const kaynak = kod.value;
+  const TOHUM = 1;
+  await mesgulken("Denetleniyor…", async () => {
+    const ornekler = gorev.ornekler.length ? gorev.ornekler : [{ girdi: "", cikti: null }];
+    for (const { girdi: ornekGirdi, cikti: beklenen } of ornekler) {
+      const hazirGirdi = ornekGirdi ? `${ornekGirdi}\n` : "";
+      const sonuc = await oyunAlanindaCalistir(kaynak, hazirGirdi, TOHUM);
+      const cozum = pas.coz(kaynak, hazirGirdi, TOHUM, sonuc.stderr ?? "");
+      sonucuGoster(kaynak, hazirGirdi, TOHUM, sonuc);
+      const kosul = ornekler.length > 1 && ornekGirdi ? ` (girdi: ${ornekGirdi.split("\n").join(", ")})` : "";
+      if (!cozum.derlendi) return gorevSonucu(false, "Önce derleyicinin gösterdiği hataları düzelt.");
+      if (cozum.panik) return gorevSonucu(false, `Program çöktü${kosul}. Önce bunu düzelt.`);
+      if (cozum.girdi_bitti) {
+        return gorevSonucu(false, `Program, görevin verdiği girdilerden daha fazlasını okumaya çalıştı${kosul}. Görevi yeniden oku.`);
+      }
+      if (beklenen === null) {
+        const cozumSonucu = await oyunAlanindaCalistir(gorev.cozum, "", TOHUM);
+        const beklenenCizim = pas.coz(gorev.cozum, "", TOHUM, cozumSonucu.stderr ?? "").cizimler;
+        if (!cizimlerAyni(cozum.cizimler ?? [], beklenenCizim ?? [])) {
+          return gorevSonucu(false, "Çizim istenen şekle benzemiyor. Görevi yeniden oku: kaç adım yürüyor, kaç derece dönüyorsun?");
+        }
+        continue;
+      }
+      const fark = ciktiFarki(sonuc.stdout ?? "", beklenen);
+      if (fark) return gorevSonucu(false, fark + kosul);
+    }
+    tamamlananlar.add(gorevKimligi(ornek, sira));
+    try {
+      localStorage.setItem(GOREV_ANAHTARI, JSON.stringify([...tamamlananlar]));
+    } catch {
+      // Kayıt yapılamıyorsa sorun değil.
+    }
+    gorevSonucu(true);
+    if (!$("ders-paneli").hidden && acikDers === ornek) {
+      const kaydirma = $("ders-metni").scrollTop;
+      dersiGoster(ornek);
+      $("ders-metni").scrollTop = kaydirma;
+    }
+  });
+}
+
+/** Denetimin sonucu çıktının en üstünde gösterilir. */
+function gorevSonucu(basarili, aciklama = "") {
+  const kutu = eleman("div", `gorev-sonucu${basarili ? " basarili" : ""}`);
+  if (basarili) {
+    const { ornek, sira } = acikGorev;
+    kutu.innerHTML = "<b>🎉 Görev tamamlandı!</b> Harika iş çıkardın.";
+    const sonraki = ornek.ders.gorevler[sira + 1];
+    const liste = dersler();
+    const sonrakiDers = liste[liste.indexOf(ornek) + 1];
+    if (sonraki) {
+      const dugme = eleman("button", "", `Sonraki görev: ${kacis(sonraki.baslik)} →`);
+      dugme.addEventListener("click", () => goreveBasla(ornek, sira + 1));
+      kutu.append(dugme);
+    } else if (sonrakiDers) {
+      const dugme = eleman("button", "", `Sonraki ders: ${kacis(sonrakiDers.ad)} →`);
+      dugme.addEventListener("click", () => ornegiAc(sonrakiDers));
+      kutu.append(dugme);
+    }
+    durumuYaz("Görev tamamlandı ✓");
+  } else {
+    kutu.innerHTML = `<b>Henüz olmadı.</b> ${mesajHtml(aciklama)}`;
+    durumuYaz("Henüz olmadı");
+  }
+  cikti.prepend(kutu);
+  cikti.scrollTop = 0;
+}
+
+/** Programın çıktısıyla beklenen çıktı arasındaki ilk fark, Türkçe. */
+function ciktiFarki(gercek, beklenen) {
+  const satirlar = (metin) => {
+    const s = metin.split("\n").map((satir) => satir.trimEnd());
+    while (s.length && s.at(-1) === "") s.pop();
+    return s;
+  };
+  const g = satirlar(gercek);
+  const b = satirlar(beklenen);
+  for (let i = 0; i < Math.max(g.length, b.length); i++) {
+    if (i >= g.length) return `Çıktı erken bitti: ${i + 1}. satırda \`${b[i]}\` bekleniyordu.`;
+    if (i >= b.length) return `Fazladan bir satır var: \`${g[i]}\``;
+    if (g[i] !== b[i]) return `${i + 1}. satırda \`${b[i]}\` bekleniyordu ama \`${g[i]}\` çıktı.`;
+  }
+  return null;
+}
+
+/** İki çizimdeki çizgi ve dairelerin (renk ve sıra önemsiz) aynı olup olmadığı. */
+function cizimlerAyni(a, b) {
+  const sekiller = (cizimler) => {
+    const liste = [];
+    for (const svg of cizimler) {
+      for (const [, x1, y1, x2, y2] of svg.matchAll(/<line x1="([-\d.]+)" y1="([-\d.]+)" x2="([-\d.]+)" y2="([-\d.]+)"/g)) {
+        const uclar = [[+x1, +y1], [+x2, +y2]].sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+        // Sıfır uzunluklu çizgiler sayılmaz.
+        if (Math.hypot(uclar[0][0] - uclar[1][0], uclar[0][1] - uclar[1][1]) > 0.5) liste.push(["c", ...uclar.flat()]);
+      }
+      for (const [, x, y, r] of svg.matchAll(/<circle cx="([-\d.]+)" cy="([-\d.]+)" r="([-\d.]+)"/g)) liste.push(["d", +x, +y, +r]);
+    }
+    // Her iki çizim de aynı anahtarla sıralanır; karşılaştırma ise küçük farklara izin verir.
+    const anahtar = (sekil) => `${sekil[0]}${sekil.slice(1).map(Math.round).join(",")}`;
+    return liste.sort((p, q) => (anahtar(p) < anahtar(q) ? -1 : anahtar(p) > anahtar(q) ? 1 : 0));
+  };
+  const x = sekiller(a);
+  const y = sekiller(b);
+  return x.length === y.length && x.every((p, i) => p[0] === y[i][0] && p.slice(1).every((d, j) => Math.abs(d - y[i][j + 1]) < 1));
+}
 
 /**
  * Ders anlatımlarındaki Markdown'u HTML'e çevirir. Derslerde kullanılanlar

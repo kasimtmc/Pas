@@ -376,4 +376,6 @@ pub fn sozluk_json() -> Value {
 }
 
 #[cfg(test)]
+mod gorev_testleri;
+#[cfg(test)]
 mod testler;

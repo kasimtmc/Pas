@@ -19,6 +19,7 @@
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>
       Çalıştır
     </button>
+    <button id="denetle" class="denetle" hidden title="Görevi denetle">✓ Denetle</button>
     <button id="dersler-dugmesi" aria-pressed="false" title="Adım adım dersler">Dersler</button>
     <label class="secim">
       <span class="gizli">Örnek seç</span>
@@ -44,6 +45,10 @@
   <section class="bolum duzenleyici-bolumu" aria-label="Kod">
     <div class="bolum-basligi">
       <span>ana.pas</span>
+      <span id="gorev-etiketi" class="gorev-etiketi" hidden>
+        <span id="gorev-adi"></span>
+        <button id="gorevi-birak" class="kapat" aria-label="Görevi bırak" title="Görevi bırak">×</button>
+      </span>
     </div>
     <div class="duzenleyici" id="duzenleyici">
       <div class="satir-numaralari" id="satir-numaralari" aria-hidden="true"></div>

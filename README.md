@@ -296,6 +296,11 @@ Depo ayarlarında `OVSX_PAT` gizli değişkeni tanımlıysa VS Code eklentisi
 [Open VSX](https://open-vsx.org)'e, `JETBRAINS_TOKEN` tanımlıysa RustRover
 eklentisi [JetBrains Marketplace](https://plugins.jetbrains.com)'e de gönderilir.
 
+Derslerin görevleri `dersler/*/gorevler.md` dosyalarındadır. Her görevin
+başlangıç kodu, örnek girdi ve beklenen çıktıları ile çözümü vardır;
+`cargo test -p pas-web` her çözümü oyun alanındaki gibi çalıştırıp beklenen
+çıktıyı verdiğini denetler.
+
 `crates/cargo-pas/tests/hata_derlemi/` dizini, çocukların sık yapacağı
 hataları içeren küçük Pas programlarından oluşur. Testler bunların hepsini
 derleyip mesajların Türkçeye çevrildiğini denetler. Çevirisi olmayan yeni
