@@ -22,9 +22,22 @@ pub enum Yon {
     Bitis,
 }
 
+/// Çevirmenin eklediği bir metnin içindeki, Pas kaynağında başka bir yere
+/// karşılık gelen bir parça. Örneğin `yazdır!("{sayi}")` çevrilirken eklenen
+/// `sayi = …` argümanındaki ad, dizgideki `{sayi}` konumuna yönlendirilir; böylece
+/// `sayi` tanımlı değilse hata dizgiyi gösterir.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Yonlendirme {
+    pub rust_baslangic: usize,
+    pub rust_uzunluk: usize,
+    pub pas_baslangic: usize,
+    pub pas_uzunluk: usize,
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct KaynakHaritasi {
     parcalar: Vec<Parca>,
+    yonlendirmeler: Vec<Yonlendirme>,
 }
 
 impl KaynakHaritasi {
@@ -37,11 +50,29 @@ impl KaynakHaritasi {
         self.parcalar.push(parca);
     }
 
+    pub(crate) fn yonlendir(&mut self, yonlendirme: Yonlendirme) {
+        self.yonlendirmeler.push(yonlendirme);
+    }
+
     pub fn parcalar(&self) -> &[Parca] {
         &self.parcalar
     }
 
+    fn yonlendirme(&self, ofset: usize, yon: Yon) -> Option<&Yonlendirme> {
+        self.yonlendirmeler.iter().find(|y| {
+            let son = y.rust_baslangic + y.rust_uzunluk;
+            ofset >= y.rust_baslangic
+                && (ofset < son || (ofset == son && yon == Yon::Bitis && ofset > y.rust_baslangic))
+        })
+    }
+
     pub fn rusttan_pasa(&self, ofset: usize, yon: Yon) -> usize {
+        if let Some(y) = self.yonlendirme(ofset, yon) {
+            return match yon {
+                Yon::Baslangic => y.pas_baslangic,
+                Yon::Bitis => y.pas_baslangic + y.pas_uzunluk,
+            };
+        }
         esle(&self.parcalar, ofset, yon, |s| (s.rust_baslangic, s.rust_uzunluk), |s| (s.pas_baslangic, s.pas_uzunluk))
     }
 
@@ -52,6 +83,9 @@ impl KaynakHaritasi {
     /// Rust kodundaki bu konum, çevirmenin Pas'ta karşılığı olmadan eklediği
     /// bir metnin (destek kodu, `#[path]` niteliği…) içinde mi?
     pub fn eklenen_metinde_mi(&self, ofset: usize) -> bool {
+        if self.yonlendirme(ofset, Yon::Baslangic).is_some() {
+            return false;
+        }
         let sira = self.parcalar.partition_point(|p| p.rust_baslangic <= ofset);
         sira.checked_sub(1)
             .map(|i| &self.parcalar[i])
@@ -177,6 +211,17 @@ mod testler {
         assert!(harita.eklenen_metinde_mi(11));
         assert!(!harita.eklenen_metinde_mi(12));
         assert!(!harita.eklenen_metinde_mi(1));
+    }
+
+    #[test]
+    fn yonlendirmeler() {
+        let mut harita = ornek();
+        // Eklenen metnin (rust 7..12) içindeki 8..10, Pas'ta 20..24'e yönlendirilir.
+        harita.yonlendir(Yonlendirme { rust_baslangic: 8, rust_uzunluk: 2, pas_baslangic: 20, pas_uzunluk: 4 });
+        assert_eq!(harita.rust_araligini_pasa(8, 10), (20, 24));
+        assert!(!harita.eklenen_metinde_mi(8));
+        assert!(harita.eklenen_metinde_mi(7));
+        assert!(harita.eklenen_metinde_mi(10));
     }
 
     #[test]

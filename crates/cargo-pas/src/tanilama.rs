@@ -74,8 +74,14 @@ pub struct KaynakDosya {
 
 impl KaynakDosya {
     /// Bu aralık, kullanıcının yazmadığı (çevirmenin eklediği) kodda mı?
-    pub fn eklenen_kodda_mi(&self, baslangic: usize) -> bool {
-        self.harita.as_ref().is_some_and(|harita| harita.eklenen_metinde_mi(baslangic))
+    /// Aralık tamamen çevirmenin eklediği kodun içinde mi (destek kodu gibi)?
+    /// Kullanıcının bir ifadesini saran eklemeler (`yazdır!` argümanları)
+    /// sayılmaz; o aralıklar kullanıcının ifadesine eşlenir.
+    pub fn eklenen_kodda_mi(&self, baslangic: usize, bitis: usize) -> bool {
+        self.harita.as_ref().is_some_and(|harita| {
+            let (pas_baslangic, pas_bitis) = harita.rust_araligini_pasa(baslangic, bitis);
+            harita.eklenen_metinde_mi(baslangic) && pas_baslangic == pas_bitis
+        })
     }
 
     /// Derlenen koddaki bir aralığın kullanıcının metnindeki karşılığı.
@@ -316,7 +322,7 @@ impl Gosterici {
     /// taşınır; çağrı yeri yoksa (örneğin bir işlev tanımı) gösterilmez.
     fn vurgula(&mut self, aralik: &Aralik) -> Option<Vurgu> {
         match self.kaynaklar.al(&aralik.dosya_adi) {
-            Some(dosya) if !dosya.eklenen_kodda_mi(aralik.bayt_baslangici) => {
+            Some(dosya) if !dosya.eklenen_kodda_mi(aralik.bayt_baslangici, aralik.bayt_bitisi) => {
                 let (baslangic, bitis) = dosya.gosterilene(aralik.bayt_baslangici, aralik.bayt_bitisi);
                 Some(Vurgu {
                     dosya,

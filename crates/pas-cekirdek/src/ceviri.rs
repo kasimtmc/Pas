@@ -15,7 +15,7 @@ use std::sync::OnceLock;
 
 use unicode_normalization::{UnicodeNormalization, is_nfc};
 
-use crate::kaynak_haritasi::{KaynakHaritasi, Parca};
+use crate::kaynak_haritasi::{KaynakHaritasi, Parca, Yonlendirme};
 use crate::sozcukler::{Sozcuk, SozcukTuru, isim_mi, sozcuklere_ayir};
 use crate::sozluk::{self, Sinif};
 
@@ -33,6 +33,10 @@ pub struct Secenekler<'a> {
     /// `oku!` gibi Pas'a özgü makroları sağlayan destek kodunu dosyanın başına
     /// ekler. Yalnızca sandık köklerinde (`ana.pas`, `kütüphane.pas`) kullanılır.
     pub destek_ekle: bool,
+    /// `yazdır!` gibi makroların değerleri Türkçe yazdırması için argümanlarını
+    /// destek kodundaki sarmalayıcıya alır (`doğru`, `Var(…)`, `Yok`). Derlenen
+    /// projelerin her dosyasında açıktır; `cargo pas çevir` sade çeviriyi gösterir.
+    pub turkce_cikti: bool,
 }
 
 /// Pas kaynağını Rust'a çevirir.
@@ -87,6 +91,52 @@ fn destek_satiri() -> &'static str {
     })
 }
 
+/// Pas çıktı makroları; argümanları Türkçe yazdırılsın diye sarmalanır
+/// (`doğru`, `Var(…)`, `Yok`, …). İngilizce yazılan `println!` dokunulmaz.
+const TURKCE_CIKTI_MAKROLARI: &[&str] = &["println", "print", "eprintln", "format", "panic"];
+
+/// Bir argümanı Türkçe yazdıran sarmalayıcı (bkz. `destek.rs`).
+const SARMALA_BAS: &str = "(&crate::pas_destek::Sar(&(";
+const SARMALA_SON: &str = "))).pas_turkce()";
+/// Sarmalayıcının yöntemini sağlayan nitelikler makronun çevresindeki blokta kullanıma alınır.
+const SARMALAYICI_BLOGU: &str = "{#[allow(unused_imports)] use crate::pas_destek::{DuzSecim as _, TurkceSecimi as _}; ";
+
+/// Bir sözcüğün önüne ya da arkasına eklenecek metin.
+#[derive(Default)]
+struct Ekleme {
+    metin: String,
+    /// (metindeki bayt aralığı, Pas kaynağındaki karşılığı)
+    yonlendirmeler: Vec<(std::ops::Range<usize>, std::ops::Range<usize>)>,
+}
+
+impl Ekleme {
+    fn yeni(metin: impl Into<String>) -> Self {
+        Ekleme { metin: metin.into(), yonlendirmeler: Vec::new() }
+    }
+
+    /// `diger` bu eklemenin sonuna gelir.
+    fn sonuna(mut self, diger: Ekleme) -> Self {
+        let kayma = self.metin.len();
+        self.metin.push_str(&diger.metin);
+        self.yonlendirmeler.extend(diger.yonlendirmeler.into_iter().map(|(r, p)| (r.start + kayma..r.end + kayma, p)));
+        self
+    }
+}
+
+type Eklemeler = HashMap<usize, Ekleme>;
+
+/// `yeni`, var olan eklemenin dışında kalır: önüne gelir.
+fn onune_ekle(eklemeler: &mut Eklemeler, sozcuk: usize, yeni: Ekleme) {
+    let eski = eklemeler.remove(&sozcuk).unwrap_or_default();
+    eklemeler.insert(sozcuk, yeni.sonuna(eski));
+}
+
+/// `yeni`, var olan eklemenin dışında kalır: arkasına gelir.
+fn arkasina_ekle(eklemeler: &mut Eklemeler, sozcuk: usize, yeni: Ekleme) {
+    let eski = eklemeler.remove(&sozcuk).unwrap_or_default();
+    eklemeler.insert(sozcuk, eski.sonuna(yeni));
+}
+
 const CIKTIYI_BOSALT: &str = ";::std::io::Write::flush(&mut ::std::io::stdout()).ok();}";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -123,16 +173,18 @@ impl<'a> Cevirmen<'a> {
     }
 
     fn calistir(mut self, secenekler: &Secenekler) -> (String, KaynakHaritasi) {
-        let mut oncesine: HashMap<usize, String> = HashMap::new();
-        let mut sonrasina: HashMap<usize, String> = HashMap::new();
+        let mut oncesine = Eklemeler::new();
+        let mut sonrasina = Eklemeler::new();
         if self.hedef == Hedef::Rust {
             self.modul_yollarini_planla(secenekler, &mut oncesine);
             self.bosaltan_yaziyi_planla(&mut oncesine, &mut sonrasina);
+            if secenekler.turkce_cikti {
+                self.turkce_ciktiyi_planla(&mut oncesine, &mut sonrasina);
+            }
         }
         let mut destek_eklenecek = self.hedef == Hedef::Rust && secenekler.destek_ekle;
         if destek_eklenecek && let Some(k) = self.ilk_oge() {
-            let sonrasi = oncesine.remove(&self.anlamlilar[k]).unwrap_or_default();
-            oncesine.insert(self.anlamlilar[k], format!("{} {sonrasi}", destek_satiri()));
+            onune_ekle(&mut oncesine, self.anlamlilar[k], Ekleme::yeni(format!("{} ", destek_satiri())));
             destek_eklenecek = false;
         }
 
@@ -140,8 +192,8 @@ impl<'a> Cevirmen<'a> {
         for k in 0..self.anlamlilar.len() {
             let ti = self.anlamlilar[k];
             let sozcuk = self.sozcukler[ti];
-            if let Some(metin) = oncesine.get(&ti) {
-                self.degistir(sozcuk.baslangic..sozcuk.baslangic, metin);
+            if let Some(ekleme) = oncesine.remove(&ti) {
+                self.ekle(sozcuk.baslangic, ekleme);
             }
             match sozcuk.tur {
                 SozcukTuru::Isim => {
@@ -157,8 +209,8 @@ impl<'a> Cevirmen<'a> {
                 SozcukTuru::Isaret => bicim.isareti_isle(&self, k),
                 _ => {}
             }
-            if let Some(metin) = sonrasina.get(&ti) {
-                self.degistir(sozcuk.bitis..sozcuk.bitis, metin);
+            if let Some(ekleme) = sonrasina.remove(&ti) {
+                self.ekle(sozcuk.bitis, ekleme);
             }
         }
         if destek_eklenecek {
@@ -184,7 +236,21 @@ impl<'a> Cevirmen<'a> {
         self.kopyalanan = konum;
     }
 
-    fn degistir(&mut self, aralik: std::ops::Range<usize>, metin: &str) {
+    /// Pas kaynağının `konum` noktasına karşılığı olmayan bir metin ekler.
+    fn ekle(&mut self, konum: usize, ekleme: Ekleme) {
+        let rust_baslangic = self.degistir(konum..konum, &ekleme.metin);
+        for (rust, pas) in ekleme.yonlendirmeler {
+            self.harita.yonlendir(Yonlendirme {
+                rust_baslangic: rust_baslangic + rust.start,
+                rust_uzunluk: rust.len(),
+                pas_baslangic: pas.start,
+                pas_uzunluk: pas.len(),
+            });
+        }
+    }
+
+    /// Değiştirilen metnin çıktıdaki başlangıcını döndürür.
+    fn degistir(&mut self, aralik: std::ops::Range<usize>, metin: &str) -> usize {
         self.kopyala(aralik.start);
         self.harita.ekle(Parca {
             pas_baslangic: aralik.start,
@@ -192,8 +258,10 @@ impl<'a> Cevirmen<'a> {
             rust_baslangic: self.cikti.len(),
             rust_uzunluk: metin.len(),
         });
+        let rust_baslangic = self.cikti.len();
         self.cikti.push_str(metin);
         self.kopyalanan = aralik.end;
+        rust_baslangic
     }
 
     fn anlamli_sozcuk(&self, k: usize) -> Option<Sozcuk> {
@@ -274,7 +342,7 @@ impl<'a> Cevirmen<'a> {
     }
 
     /// `mod çalış;` → `#[path = "çalış.rs"] mod çalış;`
-    fn modul_yollarini_planla(&self, secenekler: &Secenekler, oncesine: &mut HashMap<usize, String>) {
+    fn modul_yollarini_planla(&self, secenekler: &Secenekler, oncesine: &mut Eklemeler) {
         for k in 0..self.anlamlilar.len() {
             let Some(sozcuk) = self.anlamli_sozcuk(k) else { continue };
             if sozcuk.tur != SozcukTuru::Isim || self.rust_adi(sozcuk.metin(self.kaynak)) != "mod" {
@@ -322,12 +390,12 @@ impl<'a> Cevirmen<'a> {
                 Some(modul_yolu) => modul_yolu(&ad),
                 None => format!("{ad}.rs"),
             };
-            oncesine.insert(self.anlamlilar[j], format!("#[path = {yol:?}] "));
+            onune_ekle(oncesine, self.anlamlilar[j], Ekleme::yeni(format!("#[path = {yol:?}] ")));
         }
     }
 
     /// `yaz!(…)` → `{print!(…);::std::io::Write::flush(…).ok();}`
-    fn bosaltan_yaziyi_planla(&self, oncesine: &mut HashMap<usize, String>, sonrasina: &mut HashMap<usize, String>) {
+    fn bosaltan_yaziyi_planla(&self, oncesine: &mut Eklemeler, sonrasina: &mut Eklemeler) {
         for k in 0..self.anlamlilar.len() {
             let Some(sozcuk) = self.anlamli_sozcuk(k) else { continue };
             let kelime = sozcuk.metin(self.kaynak);
@@ -338,10 +406,117 @@ impl<'a> Cevirmen<'a> {
                 continue;
             }
             if let Some(kapanis) = self.eslesen_kapanis(k + 2) {
-                oncesine.insert(self.anlamlilar[k], "{".to_owned());
-                sonrasina.insert(self.anlamlilar[kapanis], CIKTIYI_BOSALT.to_owned());
+                onune_ekle(oncesine, self.anlamlilar[k], Ekleme::yeni("{"));
+                arkasina_ekle(sonrasina, self.anlamlilar[kapanis], Ekleme::yeni(CIKTIYI_BOSALT));
             }
         }
+    }
+
+    /// `yazdır!("{} {ad:?}", x)` →
+    /// `{use …; println!("{} {ad:?}", Sar(&(x)).pas_turkce(), ad = Sar(&ad).pas_turkce())}`
+    ///
+    /// Argümanlar, `doğru`/`yanlış`, `Var(…)`/`Yok` gibi Türkçe yazdıran bir
+    /// sarmalayıcıya alınır. Dizgi içine yazılan `{ad}` değişkenleri adlandırılmış
+    /// argümana dönüşür; adları hatalar için dizgideki yerlerine yönlendirilir.
+    fn turkce_ciktiyi_planla(&self, oncesine: &mut Eklemeler, sonrasina: &mut Eklemeler) {
+        for k in 0..self.anlamlilar.len() {
+            let Some(sozcuk) = self.anlamli_sozcuk(k) else { continue };
+            let kelime = sozcuk.metin(self.kaynak);
+            let rust = self.rust_adi(kelime);
+            if sozcuk.tur != SozcukTuru::Isim || rust == kelime || !TURKCE_CIKTI_MAKROLARI.contains(&&*rust) {
+                continue;
+            }
+            if self.anlamli_metin(k + 1) != "!" || !matches!(self.anlamli_metin(k + 2), "(" | "[" | "{") {
+                continue;
+            }
+            let Some(kapanis) = self.eslesen_kapanis(k + 2) else { continue };
+            let argumanlar = self.argumanlar(k + 3, kapanis);
+            let Some(&(dizgi, dizgi_sonu)) = argumanlar.first() else { continue };
+            let dizgi_sozcugu = self.anlamli_sozcuk(dizgi).expect("argüman var");
+            if dizgi != dizgi_sonu || !matches!(dizgi_sozcugu.tur, SozcukTuru::Dizgi | SozcukTuru::HamDizgi) {
+                continue;
+            }
+            // Genişlik/duyarlık argümanları (`{:1$}`, `{:.*}`) sarmalanamaz; dokunulmaz.
+            let dizgi_metni = dizgi_sozcugu.metin(self.kaynak);
+            if dizgi_metni.contains('$') || dizgi_metni.contains(".*") {
+                continue;
+            }
+
+            let mut adlandirilmis = Vec::new();
+            for &(bas, son) in &argumanlar[1..] {
+                if bas > son {
+                    continue; // sondaki virgül
+                }
+                let mut ifade = bas;
+                if self.anlamli_sozcuk(bas).is_some_and(|s| s.tur == SozcukTuru::Isim)
+                    && self.anlamli_metin(bas + 1) == "="
+                    && self.anlamli_metin(bas + 2) != "="
+                {
+                    adlandirilmis.push(self.rust_adi(self.anlamli_metin(bas)).into_owned());
+                    ifade = bas + 2;
+                }
+                if ifade > son {
+                    continue;
+                }
+                onune_ekle(oncesine, self.anlamlilar[ifade], Ekleme::yeni(SARMALA_BAS));
+                arkasina_ekle(sonrasina, self.anlamlilar[son], Ekleme::yeni(SARMALA_SON));
+            }
+
+            // Dizgideki `{ad}` değişkenleri
+            let mut eklenecek = Ekleme::default();
+            let mut virgul_gerek = self.anlamli_metin(kapanis - 1) != ",";
+            for (ad, pas_araligi) in bicim_degiskenleri(dizgi_metni, dizgi_sozcugu.baslangic) {
+                let rust_adi = self.rust_adi(ad).into_owned();
+                if adlandirilmis.contains(&rust_adi) {
+                    continue;
+                }
+                let on = if virgul_gerek { ", " } else { " " };
+                virgul_gerek = true;
+                let ilk = on.len();
+                let ikinci = ilk + rust_adi.len() + " = ".len() + SARMALA_BAS.len();
+                eklenecek = eklenecek.sonuna(Ekleme {
+                    metin: format!("{on}{rust_adi} = {SARMALA_BAS}{rust_adi}{SARMALA_SON}"),
+                    yonlendirmeler: vec![
+                        (ilk..ilk + rust_adi.len(), pas_araligi.clone()),
+                        (ikinci..ikinci + rust_adi.len(), pas_araligi),
+                    ],
+                });
+                adlandirilmis.push(rust_adi);
+            }
+            if argumanlar.len() == 1 && eklenecek.metin.is_empty() {
+                continue; // yazdırılacak değer yok
+            }
+            arkasina_ekle(oncesine, self.anlamlilar[kapanis], eklenecek);
+            onune_ekle(oncesine, self.anlamlilar[k], Ekleme::yeni(SARMALAYICI_BLOGU));
+            arkasina_ekle(sonrasina, self.anlamlilar[kapanis], Ekleme::yeni("}"));
+        }
+    }
+
+    /// `bas..kapanis` arasındaki, en üst düzey virgüllerle ayrılmış argümanların
+    /// (ilk, son) anlamlı sözcük sıraları. `::<…>` içindeki virgüller ayırmaz.
+    fn argumanlar(&self, bas: usize, kapanis: usize) -> Vec<(usize, usize)> {
+        let mut argumanlar = Vec::new();
+        let mut derinlik = 0usize;
+        let mut baslangic = bas;
+        for k in bas..kapanis {
+            match self.anlamli_metin(k) {
+                "(" | "[" | "{" => derinlik += 1,
+                ")" | "]" | "}" => derinlik = derinlik.saturating_sub(1),
+                "<" if self.anlamli_metin(k.wrapping_sub(1)) == ":" => derinlik += 1,
+                ">" if derinlik > 0 && self.anlamli_metin(k.wrapping_sub(1)) != "-" => derinlik -= 1,
+                "," if derinlik == 0 => {
+                    argumanlar.push((baslangic, k.wrapping_sub(1)));
+                    baslangic = k + 1;
+                }
+                _ => {}
+            }
+        }
+        if baslangic < kapanis {
+            argumanlar.push((baslangic, kapanis - 1));
+        } else if !argumanlar.is_empty() {
+            argumanlar.push((baslangic, baslangic.wrapping_sub(1)));
+        }
+        argumanlar
     }
 
     fn eslesen_kapanis(&self, acilis: usize) -> Option<usize> {
@@ -438,6 +613,34 @@ impl BicimIzleyici {
             _ => {}
         }
     }
+}
+
+/// Bir biçim dizgisindeki `{ad}`, `{ad:?}` değişkenleri ve adlarının kaynaktaki yerleri.
+fn bicim_degiskenleri(dizgi: &str, dizgi_baslangici: usize) -> Vec<(&str, std::ops::Range<usize>)> {
+    let (Some(acilis), Some(kapanis)) = (dizgi.find('"'), dizgi.rfind('"')) else { return Vec::new() };
+    if kapanis <= acilis {
+        return Vec::new();
+    }
+    let icerik = &dizgi[acilis + 1..kapanis];
+    let mut sonuc = Vec::new();
+    let mut i = 0;
+    while i < icerik.len() {
+        let kalan = &icerik[i..];
+        if kalan.starts_with("{{") || kalan.starts_with("}}") {
+            i += 2;
+        } else if let Some(ic) = kalan.strip_prefix('{') {
+            let uzunluk = ic.find([':', '}']).unwrap_or(ic.len());
+            let ad = &ic[..uzunluk];
+            if isim_mi(ad) {
+                let baslangic = dizgi_baslangici + acilis + 1 + i + 1;
+                sonuc.push((ad, baslangic..baslangic + ad.len()));
+            }
+            i += 1 + uzunluk;
+        } else {
+            i += kalan.chars().next().map_or(1, char::len_utf8);
+        }
+    }
+    sonuc
 }
 
 fn nfc(kelime: &str) -> std::borrow::Cow<'_, str> {
@@ -563,6 +766,49 @@ mod testler {
         assert!(rusta_cevir_secenekle("", &secenekler).rust.contains("mod pas_destek"));
         // Varsayılan olarak eklenmez.
         assert!(!rusta("işlev ana() {}").contains("pas_destek"));
+    }
+
+    fn turkce(kaynak: &str) -> Ceviri {
+        rusta_cevir_secenekle(kaynak, &Secenekler { turkce_cikti: true, ..Default::default() })
+    }
+
+    #[test]
+    fn yazdir_turkce_cikti_icin_sarmalanir() {
+        let rusta = |kaynak: &str| turkce(kaynak).rust;
+        let b = SARMALAYICI_BLOGU;
+        let (bas, son) = (SARMALA_BAS, SARMALA_SON);
+        assert_eq!(
+            rusta("yazdır!(\"{} {x:?}\", a + 1);"),
+            format!("{b}println!(\"{{}} {{x:?}}\", {bas}a + 1{son}, x = {bas}x{son})}};")
+        );
+        // Adlandırılmış argümanlar ve sözlük sözcükleri
+        assert_eq!(
+            rusta("yazdır!(\"{uzunluk} {ad}\", ad = 5,);"),
+            format!("{b}println!(\"{{len}} {{ad}}\", ad = {bas}5{son}, len = {bas}len{son})}};")
+        );
+        // Değer yoksa ya da dizgi genişlik argümanı kullanıyorsa dokunulmaz.
+        assert_eq!(rusta("yazdır!(\"merhaba\");"), "println!(\"merhaba\");");
+        assert_eq!(rusta("yazdır!(\"{:1$}\", a, 5);"), "println!(\"{:1$}\", a, 5);");
+        // İngilizce makrolar Rust gibi davranır.
+        assert_eq!(rusta("println!(\"{x}\");"), "println!(\"{x}\");");
+        // `::<…>` içindeki virgül argümanları ayırmaz.
+        assert!(
+            rusta("yazdır!(\"{}\", Sözlük::<i32, i32>::new().uzunluk());")
+                .contains(&format!("{bas}HashMap::<i32, i32>::new().len(){son}"))
+        );
+        // `yaz!` hem sarmalanır hem çıktıyı hemen basar.
+        assert_eq!(rusta("yaz!(\"{x}\");"), format!("{b}{{print!(\"{{x}}\", x = {bas}x{son}){CIKTIYI_BOSALT}}};"));
+    }
+
+    #[test]
+    fn dizgideki_degisken_dizgiye_yonlendirilir() {
+        let kaynak = "yazdır!(\"{sayi}\");";
+        let ceviri = turkce(kaynak);
+        // Eklenen `sayi = …` argümanındaki ad, dizgideki `{sayi}` yerini gösterir.
+        let eklenen = ceviri.rust.find("sayi = ").unwrap();
+        let (bas, son) = ceviri.harita.rust_araligini_pasa(eklenen, eklenen + 4);
+        assert_eq!(&kaynak[bas..son], "sayi");
+        assert_eq!(bas, kaynak.find("sayi").unwrap());
     }
 
     #[test]

@@ -70,6 +70,11 @@ const DERLEYICI: &[(&str, &str)] = &[
     ("binary operation `{}` cannot be applied to type `{}`", "`{0}` işlemi `{1}` türüne uygulanamaz"),
     ("can't compare `{}` with `{}`", "`{0}` ile `{1}` karşılaştırılamaz"),
     ("`{}` doesn't implement `{}`", "`{0}` türü `{1}` niteliğini uygulamıyor"),
+    (
+        "`{}` cannot be formatted using `{:?}` because it doesn't implement `{}`",
+        "`{0}` `{{:?}}` ile yazdırılamaz çünkü `{1}` niteliğini uygulamıyor",
+    ),
+    ("consider annotating `{}` with `{}`", "`{0}` tanımının üstüne `{1}` ekle"),
     ("`{}` cannot be formatted with the default formatter", "`{0}` doğrudan `{{}}` ile yazdırılamaz"),
     ("unsatisfied trait bound", "bu tür istenen niteliği karşılamıyor"),
     ("expected {} `{}`\n   found {} `{}`", "beklenen: `{1}`, bulunan: `{3}`"),
@@ -235,6 +240,17 @@ const DERLEYICI: &[(&str, &str)] = &[
     ),
     ("attempt to divide `{}` by zero", "`{0}` sıfıra bölünmeye çalışılıyor"),
     // Uyarılar
+    (
+        "found both `{}` and `{}` as identifiers, which look alike",
+        "`{0}` ve `{1}` birbirine çok benzeyen iki ayrı isim; aynı şeyi mi kastettin?",
+    ),
+    ("other identifier used here", "diğer isim burada"),
+    ("this identifier can be confused with `{}`", "bu isim `{0}` ile karıştırılabilir"),
+    ("fields {} are never read", "şu alanlar hiç okunmamış: {0}"),
+    (
+        "`{}` has a derived impl for the trait `{}`, but this is intentionally ignored during dead code analysis",
+        "`{0}` için `{1}` türetilmiş olması, alanların kullanıldığı anlamına gelmez",
+    ),
     ("unused variable: `{}`", "`{0}` değişkeni hiç kullanılmamış"),
     ("if this is intentional, prefix it with an underscore", "bilerek yaptıysan başına alt çizgi koy"),
     ("if this is intentional, prefix it with an underscore: `{}`", "bilerek yaptıysan başına alt çizgi koy: `{0}`"),

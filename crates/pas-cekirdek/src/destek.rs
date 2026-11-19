@@ -75,6 +75,107 @@ mod pas_destek {
         }
     }
 
+    // ---- Türkçe çıktı ----
+    // Pas'ın yazdırma makroları her argümanı `(&Sar(&x)).pas_turkce()` diye
+    // sarmalar. "Otomatik referans uzmanlaşması": `Debug` uygulayan türler
+    // için `TurkceSecimi` seçilir ve değer Türkçe yazılır (`doğru`, `Var(…)`,
+    // `Yok`, `Tamam(…)`, `Hata(…)`); diğer türler `DuzSecim` ile olduğu gibi
+    // geçer, böylece derleyicinin hata mesajları değişmez.
+    pub struct Sar<'a, T: ?Sized>(pub &'a T);
+
+    pub struct Turkce<'a, T: ?Sized>(pub &'a T);
+
+    pub trait TurkceSecimi<'a, T: ?Sized> {
+        fn pas_turkce(&self) -> Turkce<'a, T>;
+    }
+
+    impl<'a, T: ?Sized + std::fmt::Debug> TurkceSecimi<'a, T> for Sar<'a, T> {
+        fn pas_turkce(&self) -> Turkce<'a, T> {
+            Turkce(self.0)
+        }
+    }
+
+    pub trait DuzSecim<'a, T: ?Sized> {
+        fn pas_turkce(&self) -> &'a T;
+    }
+
+    impl<'a, T: ?Sized> DuzSecim<'a, T> for &Sar<'a, T> {
+        fn pas_turkce(&self) -> &'a T {
+            self.0
+        }
+    }
+
+    impl<T: ?Sized + std::fmt::Display> std::fmt::Display for Turkce<'_, T> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            if std::any::type_name::<T>().trim_start_matches('&') == "bool" {
+                let deger = self.0.to_string();
+                return f.pad(if deger == "true" { "doğru" } else { "yanlış" });
+            }
+            std::fmt::Display::fmt(self.0, f)
+        }
+    }
+
+    impl<T: ?Sized + std::fmt::Debug> std::fmt::Debug for Turkce<'_, T> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let ham = if f.alternate() { format!("{:#?}", self.0) } else { format!("{:?}", self.0) };
+            f.pad(&hata_ayiklamayi_turkcelestir(&ham))
+        }
+    }
+
+    macro_rules! pas_bicim_aktar {
+        ($($nitelik:ident)*) => {$(
+            impl<T: ?Sized + std::fmt::$nitelik> std::fmt::$nitelik for Turkce<'_, T> {
+                fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    std::fmt::$nitelik::fmt(self.0, f)
+                }
+            }
+        )*};
+    }
+    pas_bicim_aktar!(LowerHex UpperHex Octal Binary LowerExp UpperExp Pointer);
+
+    /// `Debug` çıktısındaki `Some`, `None`, `Ok`, `Err`, `true`, `false`
+    /// isimlerini Türkçeleştirir; tırnak içindeki metinlere dokunmaz.
+    pub fn hata_ayiklamayi_turkcelestir(metin: &str) -> String {
+        let mut sonuc = String::with_capacity(metin.len());
+        let mut karakterler = metin.char_indices().peekable();
+        while let Some((i, c)) = karakterler.next() {
+            if c == '"' || c == '\'' {
+                sonuc.push(c);
+                while let Some((_, d)) = karakterler.next() {
+                    sonuc.push(d);
+                    if d == '\\' {
+                        if let Some((_, e)) = karakterler.next() {
+                            sonuc.push(e);
+                        }
+                    } else if d == c {
+                        break;
+                    }
+                }
+            } else if c.is_alphabetic() || c == '_' {
+                let mut son = i + c.len_utf8();
+                while let Some(&(j, d)) = karakterler.peek() {
+                    if !(d.is_alphanumeric() || d == '_') {
+                        break;
+                    }
+                    son = j + d.len_utf8();
+                    karakterler.next();
+                }
+                sonuc.push_str(match &metin[i..son] {
+                    "Some" => "Var",
+                    "None" => "Yok",
+                    "Ok" => "Tamam",
+                    "Err" => "Hata",
+                    "true" => "doğru",
+                    "false" => "yanlış",
+                    isim => isim,
+                });
+            } else {
+                sonuc.push(c);
+            }
+        }
+        sonuc
+    }
+
     macro_rules! pas_oku {
         () => {
             $crate::pas_destek::satir_oku("")

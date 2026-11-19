@@ -20,7 +20,7 @@ pub mod sozcukler;
 pub mod sozluk;
 
 pub use ceviri::{Ceviri, Secenekler, pasa_cevir, rusta_cevir, rusta_cevir_secenekle};
-pub use kaynak_haritasi::{KaynakHaritasi, SatirDizini, Yon};
+pub use kaynak_haritasi::{KaynakHaritasi, SatirDizini, Yon, Yonlendirme};
 
 /// Pas kaynak dosyalarının uzantısı.
 pub const UZANTI: &str = "pas";

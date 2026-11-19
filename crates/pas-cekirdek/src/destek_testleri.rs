@@ -58,3 +58,50 @@ fn makro_derlenir() {
         let _: u32 = pas_oku!(soru, u32);
     }
 }
+
+#[test]
+fn hata_ayiklama_ciktisi_turkcelesir() {
+    use crate::pas_destek::hata_ayiklamayi_turkcelestir;
+    assert_eq!(
+        hata_ayiklamayi_turkcelestir(r#"[Some("Some true"), None, Ok('\''), Err(false), Nonesuch]"#),
+        r#"[Var("Some true"), Yok, Tamam('\''), Hata(yanlış), Nonesuch]"#
+    );
+    assert_eq!(
+        hata_ayiklamayi_turkcelestir(r#"Kedi { ad: "None \"Ok\"", tok: true }"#),
+        r#"Kedi { ad: "None \"Ok\"", tok: doğru }"#
+    );
+}
+
+#[test]
+// `(&Sar(&x))` içindeki `&` gereksiz değil: hangi niteliğin seçileceğini o belirler.
+#[allow(clippy::needless_borrow)]
+fn sarmalayici_turkce_yazar() {
+    #[allow(unused_imports)]
+    use crate::pas_destek::{DuzSecim as _, Sar, TurkceSecimi as _};
+    let secenek: Option<Vec<bool>> = Some(vec![true]);
+    assert_eq!(
+        format!(
+            "{} {:?} {} {:?}",
+            (&Sar(&true)).pas_turkce(),
+            (&Sar(&secenek)).pas_turkce(),
+            (&Sar(&5)).pas_turkce(),
+            (&Sar(&"metin")).pas_turkce()
+        ),
+        "doğru Var([doğru]) 5 \"metin\""
+    );
+    // Biçim seçenekleri korunur.
+    assert_eq!(
+        format!("{:>8}|{:x}|{:.2}", (&Sar(&false)).pas_turkce(), (&Sar(&255)).pas_turkce(), (&Sar(&1.5)).pas_turkce()),
+        "  yanlış|ff|1.50"
+    );
+
+    // `Debug` uygulamayan türler olduğu gibi geçer.
+    struct Kedi;
+    impl std::fmt::Display for Kedi {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            f.write_str("Pamuk")
+        }
+    }
+    let duz: &Kedi = (&Sar(&Kedi)).pas_turkce();
+    assert_eq!(format!("{duz}"), "Pamuk");
+}
