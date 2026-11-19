@@ -12,6 +12,7 @@ mod wasm;
 
 use pas_cekirdek::mesajlar::{
     aciklama, calisma_mesajini_cevir, derleyici_mesajini_cevir, gereksiz_mi, oku_ipucu, panik_mesajini_cevir,
+    yazim_onerileri,
 };
 use pas_cekirdek::sozcukler::{SozcukTuru, sozcuklere_ayir};
 use pas_cekirdek::sozluk::{self, GIRDILER, Sinif};
@@ -175,11 +176,15 @@ impl Esleyici<'_> {
                 "oneri": oneri.map(|(satir, metin)| json!({ "satir": satir, "metin": metin, "ekle": not.yeni_satir })),
             }));
         }
-        if let (Some(kod), Some((baslangic, _, mesaj))) = (kod, &birincil) {
+        if let Some((baslangic, _, mesaj)) = &birincil {
             let dizin = SatirDizini::yeni(self.pas);
             let satir = dizin.satir(dizin.satir_sutun(*baslangic).0).unwrap_or("");
-            if let Some(ipucu) = oku_ipucu(kod, satir, mesaj.as_deref().unwrap_or("")) {
+            if let Some(ipucu) = kod.and_then(|kod| oku_ipucu(kod, satir, mesaj.as_deref().unwrap_or(""))) {
                 notlar.push(json!({ "seviye": "yardım", "mesaj": ipucu, "oneri": null }));
+            }
+            // `eger` → `eğer`
+            for oneri in yazim_onerileri(satir) {
+                notlar.push(json!({ "seviye": "yardım", "mesaj": oneri, "oneri": null }));
             }
         }
 

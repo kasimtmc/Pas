@@ -240,6 +240,9 @@ impl Gosterici {
         if let Some(ipucu) = vurgular.iter().find(|m| m.birincil).and_then(|m| oku_ipucu(kod, m)) {
             let _ = writeln!(cikti, "{dolgu} {} {}: {ipucu}", self.gorunum.kenar("="), self.gorunum.kalin("yardım"));
         }
+        for oneri in vurgular.iter().find(|m| m.birincil).map(yazim_onerileri).unwrap_or_default() {
+            let _ = writeln!(cikti, "{dolgu} {} {}: {oneri}", self.gorunum.kenar("="), self.gorunum.kalin("yardım"));
+        }
         if let Some(kod) = kod
             && let Some(metin) = aciklama(kod)
             && self.aciklananlar.insert(kod.to_owned())
@@ -294,6 +297,7 @@ impl Gosterici {
         if let Some(ipucu) = oku_ipucu(kod, birincil) {
             notlar.push(format!("yardım: {ipucu}"));
         }
+        notlar.extend(yazim_onerileri(birincil).into_iter().map(|oneri| format!("yardım: {oneri}")));
         let deger = serde_json::json!({
             "seviye": seviye_sozcugu(&tani.seviye),
             "kod": kod,
@@ -495,6 +499,12 @@ fn oku_ipucu(kod: Option<&str>, birincil: &Vurgu) -> Option<&'static str> {
     let dizin = SatirDizini::yeni(&birincil.dosya.metin);
     let satir = dizin.satir(dizin.satir_sutun(birincil.baslangic).0)?;
     mesajlar::oku_ipucu(kod?, satir, birincil.etiket.as_deref().unwrap_or(""))
+}
+
+/// Hatanın satırında Türkçe harfleri olmadan yazılmış Pas sözcükleri: `eger` → `eğer`.
+fn yazim_onerileri(birincil: &Vurgu) -> Vec<String> {
+    let dizin = SatirDizini::yeni(&birincil.dosya.metin);
+    dizin.satir(dizin.satir_sutun(birincil.baslangic).0).map(mesajlar::yazim_onerileri).unwrap_or_default()
 }
 
 fn seviye_sozcugu(seviye: &str) -> &str {

@@ -140,6 +140,13 @@ fn bilinmeyen_renk_turkce_panik() {
 }
 
 #[test]
+fn turkce_harfsiz_yazim_onerilir() {
+    let (_, sonuc) = calistir("işlev ana() {\n    yap x = 5;\n    eger x > 3 {\n    }\n}\n", "");
+    let notlar = sonuc["tanilamalar"][0]["notlar"].to_string();
+    assert!(notlar.contains("`eger` yerine `eğer` mi demek istedin?"), "{notlar}");
+}
+
+#[test]
 fn ayni_tohumla_ayni_rastgele_sayilar() {
     let kaynak = "işlev ana() {\n    yazdır!(\"{} {}\", rastgele!(1, 1000000), rastgele!(1, 1000000));\n}\n";
     let (ilk, _) = calistir_tohumla(kaynak, "", 42);

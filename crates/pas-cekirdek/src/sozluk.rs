@@ -223,6 +223,53 @@ pub fn rust_ile(kelime: &str) -> Option<&'static Girdi> {
     dizin().rust_ile.get(kelime).copied()
 }
 
+/// Türkçe harfleri ASCII karşılıklarına indirir: `eğer` → `eger`.
+pub fn ascii_yazim(kelime: &str) -> String {
+    kelime
+        .chars()
+        .map(|c| match c {
+            'ç' => 'c',
+            'ğ' => 'g',
+            'ı' => 'i',
+            'ö' => 'o',
+            'ş' => 's',
+            'ü' => 'u',
+            'Ç' => 'C',
+            'Ğ' => 'G',
+            'İ' => 'I',
+            'Ö' => 'O',
+            'Ş' => 'S',
+            'Ü' => 'U',
+            diger => diger,
+        })
+        .collect()
+}
+
+/// Türkçe harfleri olmadan yazılmış bir Pas sözcüğünün doğrusu: `eger` →
+/// `eğer`. Yalnızca anahtar sözcükler, türler, değerler ve (`makro` ise)
+/// makrolar için; yöntem ve işlev adları kullanıcının kendi adları olabilir.
+pub fn turkce_yazimi(kelime: &str, makro: bool) -> Option<&'static Girdi> {
+    static ASCII_ILE: OnceLock<HashMap<String, Vec<&'static Girdi>>> = OnceLock::new();
+    let dizin = ASCII_ILE.get_or_init(|| {
+        let mut dizin: HashMap<String, Vec<&'static Girdi>> = HashMap::new();
+        for girdi in GIRDILER {
+            let ascii = ascii_yazim(girdi.pas);
+            if ascii != girdi.pas {
+                dizin.entry(ascii).or_default().push(girdi);
+            }
+        }
+        dizin
+    });
+    if pas_ile(kelime).is_some() || rust_ile(kelime).is_some() {
+        return None;
+    }
+    dizin.get(kelime)?.iter().copied().find(|girdi| match girdi.tur {
+        Sinif::Makro => makro,
+        Sinif::AnahtarSozcuk | Sinif::Tur | Sinif::Deger => !makro,
+        Sinif::Islev | Sinif::Yontem => false,
+    })
+}
+
 #[cfg(test)]
 mod testler {
     use super::*;
@@ -248,6 +295,20 @@ mod testler {
             assert!(chars.all(isim_devami_mi), "{}", e.pas);
             assert!(is_nfc(e.pas), "`{}` NFC biçiminde değil", e.pas);
         }
+    }
+
+    #[test]
+    fn turkce_harfsiz_yazim() {
+        assert_eq!(turkce_yazimi("eger", false).map(|g| g.pas), Some("eğer"));
+        assert_eq!(turkce_yazimi("islev", false).map(|g| g.pas), Some("işlev"));
+        assert_eq!(turkce_yazimi("Sozluk", false).map(|g| g.pas), Some("Sözlük"));
+        assert_eq!(turkce_yazimi("yazdir", true).map(|g| g.pas), Some("yazdır"));
+        // Makro adları yalnızca `!` ile, yöntem adları hiç önerilmez.
+        assert!(turkce_yazimi("yazdir", false).is_none());
+        assert!(turkce_yazimi("degerler", false).is_none());
+        // Zaten doğru yazılmış ya da Rust sözcüğü olanlar
+        assert!(turkce_yazimi("eğer", false).is_none());
+        assert!(turkce_yazimi("if", false).is_none());
     }
 
     #[test]

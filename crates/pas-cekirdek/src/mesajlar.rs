@@ -7,6 +7,8 @@
 //! `ters tırnaklı` kod parçaları yine Pas'a çevrilir.
 
 use crate::ceviri::pasa_cevir;
+use crate::sozcukler::{SozcukTuru, sozcuklere_ayir};
+use crate::sozluk;
 
 /// (İngilizce kalıp, Türkçe şablon). Özel kalıplar genel olanlardan önce gelmeli.
 const DERLEYICI: &[(&str, &str)] = &[
@@ -492,6 +494,7 @@ const PANIK: &[(&str, &str)] = &[
 /// Yakalanan düz metin içinde çevrilen sözcükler.
 const DUZ_METIN: &[(&str, &str)] = &[
     ("{float}", "{ondalıklı sayı}"),
+    ("an operator", "bir işleç"),
     ("ParseIntError { kind: InvalidDigit }", "metin bir tam sayı değil"),
     ("ParseIntError { kind: Empty }", "metin boş, sayıya çevrilemez"),
     ("ParseIntError { kind: PosOverflow }", "sayı bu türe sığmayacak kadar büyük"),
@@ -648,6 +651,29 @@ pub fn gereksiz_mi(mesaj: &str) -> bool {
         // Destek kodunun (`oku!`) iç ayrıntıları
         || mesaj.contains("`deger_oku`")
         || mesaj.contains("`satir_oku`")
+}
+
+/// Satırda Türkçe harfleri olmadan yazılmış Pas sözcükleri varsa doğrularını
+/// önerir: "`eger` yerine `eğer` mi demek istedin?"
+pub fn yazim_onerileri(satir: &str) -> Vec<String> {
+    let sozcukler = sozcuklere_ayir(satir);
+    let anlamlilar: Vec<_> = sozcukler.iter().filter(|s| !s.anlamsiz_mi()).collect();
+    let mut oneriler: Vec<String> = Vec::new();
+    for (i, sozcuk) in anlamlilar.iter().enumerate() {
+        if sozcuk.tur != SozcukTuru::Isim {
+            continue;
+        }
+        let kelime = sozcuk.metin(satir);
+        let makro = anlamlilar.get(i + 1).is_some_and(|s| s.metin(satir) == "!");
+        if let Some(girdi) = sozluk::turkce_yazimi(kelime, makro) {
+            let isaret = if makro { "!" } else { "" };
+            let oneri = format!("`{kelime}{isaret}` yerine `{}{isaret}` mi demek istedin?", girdi.pas);
+            if !oneriler.contains(&oneri) {
+                oneriler.push(oneri);
+            }
+        }
+    }
+    oneriler
 }
 
 /// `oku!` makrosunun sık yapılan yanlış kullanımları için ipucu. `satir`,
@@ -810,6 +836,15 @@ mod testler {
             derleyici_mesajini_cevir("some new message about `Vec<String>`"),
             "some new message about `Liste<Metin>`"
         );
+    }
+
+    #[test]
+    fn yazim_onerileri_bulunur() {
+        assert_eq!(
+            yazim_onerileri("    eger x > 3 { yazdir!(\"eger\"); } // islev"),
+            vec!["`eger` yerine `eğer` mi demek istedin?", "`yazdir!` yerine `yazdır!` mi demek istedin?"]
+        );
+        assert!(yazim_onerileri("    eğer x > 3 {").is_empty());
     }
 
     #[test]
