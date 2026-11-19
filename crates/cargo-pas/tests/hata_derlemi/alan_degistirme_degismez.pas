@@ -3,7 +3,7 @@ yapı Kedi {
 }
 
 işlev ana() {
-    yap kedi = Kedi { yaş: 1 };
+    tanımla kedi = Kedi { yaş: 1 };
     kedi.yaş = 2;
     yazdır!("{}", kedi.yaş);
 }

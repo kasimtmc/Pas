@@ -15,7 +15,7 @@ işlev kare(sayı: i32) -> i32 {
 }
 
 işlev ana() {
-    her i içinde 1..=5 {
+    her i için 1..=5 {
         yazdır!("{}", kare(i));
     }
 }
@@ -35,7 +35,7 @@ işlev kare(sayı: i32) -> i32 {
 }
 
 işlev ana() {
-    her i içinde 1..=5 {
+    her i için 1..=5 {
         yazdır!("{}", kare(i));
     }
 }
@@ -68,7 +68,7 @@ işlev ana() {
 
 ```pas çözüm
 işlev en_büyüğü(a: i32, b: i32, c: i32) -> i32 {
-    yap değişken büyük = a;
+    tanımla değişken büyük = a;
     eğer b > büyük {
         büyük = b;
     }

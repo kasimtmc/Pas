@@ -145,7 +145,7 @@ fn tanima_gitme_hover_ve_tamamlama() {
     .unwrap();
     let hesap = "/// İki sayıyı toplar.\ngenel işlev topla(a: i32, b: i32) -> i32 {\n    a + b\n}\n";
     fs::write(dizin.join("src/hesap.pas"), hesap).unwrap();
-    let ana = "modül hesap;\n\nişlev ana() {\n    yap şu = hesap::topla(1, 2);\n    yap değişken l = liste![şu];\n    l.ek\n}\n";
+    let ana = "modül hesap;\n\nişlev ana() {\n    tanımla şu = hesap::topla(1, 2);\n    tanımla değişken l = liste![şu];\n    l.ek\n}\n";
     fs::write(dizin.join("src/ana.pas"), ana).unwrap();
 
     let mut istemci = Istemci::baslat();
@@ -220,7 +220,7 @@ fn turkce_tanilama_ve_hizli_duzeltme() {
         .unwrap();
     // Diskteki dosya hatasız; hatalı hali editörde, kaydedilmemiş.
     fs::write(dizin.join("src/ana.pas"), "işlev ana() {}\n").unwrap();
-    let ana = "işlev ana() {\n    yap ş = 1;\n    ş = 2;\n    yazdır!(\"{ş}\");\n}\n";
+    let ana = "işlev ana() {\n    tanımla ş = 1;\n    ş = 2;\n    yazdır!(\"{ş}\");\n}\n";
 
     let mut istemci = Istemci::baslat();
     let baslatma = istemci.iste(

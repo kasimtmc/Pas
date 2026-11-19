@@ -19,14 +19,14 @@ yanındaki ▶ düğmesine bas.
 **`oku!`** soruyu yazar ve kullanıcının yazdığı satırı okur:
 
 ```
-yap ad = oku!("Adın ne? ");
+tanımla ad = oku!("Adın ne? ");
 ```
 
 **Sayı okumak** için sorudan sonra türünü de yazarız:
 
 ```
-yap yaş = oku!("Kaç yaşındasın? ", u32);
-yap boy = oku!("Boyun kaç metre? ", f64);
+tanımla yaş = oku!("Kaç yaşındasın? ", u32);
+tanımla boy = oku!("Boyun kaç metre? ", f64);
 ```
 
 - `u32`: artı (pozitif) bir tam sayı (0, 1, 2, …)

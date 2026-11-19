@@ -16,10 +16,10 @@ yanındaki ▶ düğmesine bas.
 
 ## Neler öğreniyoruz?
 
-**`her … içinde`**: Bir aralıktaki her sayı için çalışır.
+**`her … için`**: Bir aralıktaki her sayı için çalışır.
 
 ```
-her i içinde 1..=10 {
+her i için 1..=10 {
     yazdır!("{i}");
 }
 ```

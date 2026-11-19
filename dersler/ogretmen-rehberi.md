@@ -66,10 +66,10 @@ geçebilir.
 | Ders | Bağlantı | Konular | Görev | Süre |
 |---|---|---|---|---|
 | 1. Merhaba dünya! | `#ders=01-merhaba` | `işlev ana`, `yazdır!`, `yaz!`, yorumlar | 2 | 1 ders saati |
-| 2. Değişkenler | `#ders=02-degiskenler` | `yap`, `değişken`, sayılar, dört işlem | 2 | 1 |
+| 2. Değişkenler | `#ders=02-degiskenler` | `tanımla`, `değişken`, sayılar, dört işlem | 2 | 1 |
 | 3. Soru sormak | `#ders=03-soru-sor` | `oku!`, sayı ve metin okuma | 2 | 1 |
 | 4. Kararlar | `#ders=04-kararlar` | `eğer`, `değilse`, karşılaştırma, `&&`, `\|\|` | 2 | 1–2 |
-| 5. Döngüler | `#ders=05-donguler` | `her … içinde`, `sürece`, `döngü`, `kır` | 3 | 2 |
+| 5. Döngüler | `#ders=05-donguler` | `her … için`, `sürece`, `döngü`, `kır` | 3 | 2 |
 | 6. İşlevler | `#ders=06-islevler` | işlev yazmak, parametre, değer döndürmek | 2 | 1–2 |
 | 7. Listeler | `#ders=07-listeler` | `liste!`, `ekle`, `uzunluk`, listede dolaşmak | 2 | 1–2 |
 | 8. Yapılar | `#ders=08-yapilar` | `yapı`, `uygula`, yöntemler, `kendi` | 2 | 2 |
@@ -108,7 +108,7 @@ Yeni başlayanların en sık yaptığı hatalar:
 | Hata | Pas ne der? | Ne yapmalı? |
 |---|---|---|
 | Satır sonunda `;` unutmak | `;` bekleniyordu | Satırın sonuna `;` koy. |
-| Değişeceği halde `değişken` yazmamak | `x` değiştirilemez bir değişken; ona ikinci kez değer verilemez | `yap değişken x = …;` |
+| Değişeceği halde `değişken` yazmamak | `x` değiştirilemez bir değişken; ona ikinci kez değer verilemez | `tanımla değişken x = …;` |
 | Karşılaştırmada `=` kullanmak | türler uyuşmuyor (yardım: karşılaştırmak istediysen `=` yerine `==` yaz) | `eğer x == 5` |
 | Tırnağı kapatmamak | kapatılmamış dizgi | Metnin sonuna `"` ekle. |
 | Sayı yerine metin okumak | `oku!` metin okur; sayı okumak için türünü de yaz | `oku!("Yaşın? ", u32)` |

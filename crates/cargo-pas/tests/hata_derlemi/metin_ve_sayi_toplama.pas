@@ -1,3 +1,3 @@
 işlev ana() {
-    yap s = "yaş: " + 5;
+    tanımla s = "yaş: " + 5;
 }

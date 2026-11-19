@@ -36,8 +36,8 @@ uygula Kedi {
 }
 
 işlev ana() {
-    yap değişken pamuk = Kedi::yeni("Pamuk", 3);
-    yap değişken boncuk = Kedi::yeni("Boncuk", 1);
+    tanımla değişken pamuk = Kedi::yeni("Pamuk", 3);
+    tanımla değişken boncuk = Kedi::yeni("Boncuk", 1);
 
     pamuk.miyavla();
     boncuk.miyavla();

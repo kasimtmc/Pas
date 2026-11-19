@@ -160,7 +160,7 @@ mod testler {
     #[test]
     fn tanilamalar_lsp_bicimine_cevrilir() {
         // "ş" 1 karakter ama 2 bayt; sütunlar karakter olarak sayılır.
-        let metin = "işlev ana() {\n    yap ş = 1;\n    ş = 2;\n}\n";
+        let metin = "işlev ana() {\n    tanımla ş = 1;\n    ş = 2;\n}\n";
         let lsp = lsp_tanilamalari(&[ornek_tani()], "src/ana.pas", metin);
         assert_eq!(lsp.len(), 1);
         assert_eq!(

@@ -1,5 +1,5 @@
 işlev selam() -> &str {
-    yap metin = biçimle!("Merhaba");
+    tanımla metin = biçimle!("Merhaba");
     &metin
 }
 

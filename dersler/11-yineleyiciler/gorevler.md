@@ -6,11 +6,11 @@ Bu görevleri [Pas Oyun Alanı](https://kasimtmc.github.io/Pas/)nda yapıp **Den
 
 `dönüştür` ve `biriktir` ile sayıların karelerinden yeni bir liste yap ve yazdır: `[1, 4, 9, 16, 25, 36]`
 
-İpucu: `yap kareler: Liste<i32> = sayılar.yinele().dönüştür(|s| s * s).biriktir();`
+İpucu: `tanımla kareler: Liste<i32> = sayılar.yinele().dönüştür(|s| s * s).biriktir();`
 
 ```pas başlangıç
 işlev ana() {
-    yap sayılar = liste![1, 2, 3, 4, 5, 6];
+    tanımla sayılar = liste![1, 2, 3, 4, 5, 6];
 }
 ```
 
@@ -20,8 +20,8 @@ işlev ana() {
 
 ```pas çözüm
 işlev ana() {
-    yap sayılar = liste![1, 2, 3, 4, 5, 6];
-    yap kareler: Liste<i32> = sayılar.yinele().dönüştür(|s| s * s).biriktir();
+    tanımla sayılar = liste![1, 2, 3, 4, 5, 6];
+    tanımla kareler: Liste<i32> = sayılar.yinele().dönüştür(|s| s * s).biriktir();
     yazdır!("{:?}", kareler);
 }
 ```
@@ -34,7 +34,7 @@ işlev ana() {
 
 ```pas başlangıç
 işlev ana() {
-    yap isimler = liste!["Ali", "Deniz", "Can", "Elif", "Mehmet"];
+    tanımla isimler = liste!["Ali", "Deniz", "Can", "Elif", "Mehmet"];
 }
 ```
 
@@ -44,8 +44,8 @@ işlev ana() {
 
 ```pas çözüm
 işlev ana() {
-    yap isimler = liste!["Ali", "Deniz", "Can", "Elif", "Mehmet"];
-    yap uzunlar: Liste<&&str> = isimler.yinele().süz(|isim| isim.uzunluk() > 4).biriktir();
+    tanımla isimler = liste!["Ali", "Deniz", "Can", "Elif", "Mehmet"];
+    tanımla uzunlar: Liste<&&str> = isimler.yinele().süz(|isim| isim.uzunluk() > 4).biriktir();
     yazdır!("{:?}", uzunlar);
 }
 ```

@@ -45,19 +45,19 @@ işlev bilgisayarın_hamlesi() -> Hamle {
 
 işlev ana() {
     yazdır!("Taş, kâğıt, makas! Önce 3 tur kazanan oyunu alır.");
-    yap değişken senin_puanın = 0;
-    yap değişken benim_puanım = 0;
+    tanımla değişken senin_puanın = 0;
+    tanımla değişken benim_puanım = 0;
 
     sürece senin_puanın < 3 && benim_puanım < 3 {
-        yap yazılan = oku!("Hamlen (taş / kâğıt / makas): ");
-        yap senin = eşle Hamle::metinden(&yazılan) {
+        tanımla yazılan = oku!("Hamlen (taş / kâğıt / makas): ");
+        tanımla senin = eşle Hamle::metinden(&yazılan) {
             Var(hamle) => hamle,
             Yok => {
                 yazdır!("Bunu anlamadım. taş, kâğıt ya da makas yaz.");
                 devam;
             }
         };
-        yap benim = bilgisayarın_hamlesi();
+        tanımla benim = bilgisayarın_hamlesi();
         yazdır!("Sen: {}, ben: {}", senin.ad(), benim.ad());
 
         eğer senin.yener_mi(&benim) {

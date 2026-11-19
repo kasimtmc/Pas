@@ -1,5 +1,5 @@
 işlev ana() {
-    yap x: i32 = 5;
-    yap y: f64 = 2.5;
-    yap z = x * y;
+    tanımla x: i32 = 5;
+    tanımla y: f64 = 2.5;
+    tanımla z = x * y;
 }

@@ -1,4 +1,4 @@
 işlev ana() {
-    yap l = liste![1, 2];
+    tanımla l = liste![1, 2];
     l.uzunlug();
 }

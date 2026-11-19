@@ -19,8 +19,8 @@ işlev ne_yapmalı(ışık: &Işık) -> &'durağan str {
 }
 
 işlev ana() {
-    yap ışıklar = [Işık::Kırmızı, Işık::Sarı, Işık::Yeşil];
-    her ışık içinde &ışıklar {
+    tanımla ışıklar = [Işık::Kırmızı, Işık::Sarı, Işık::Yeşil];
+    her ışık için &ışıklar {
         yazdır!("{}", ne_yapmalı(ışık));
     }
 }
@@ -48,8 +48,8 @@ işlev ne_yapmalı(ışık: &Işık) -> &'durağan str {
 }
 
 işlev ana() {
-    yap ışıklar = [Işık::Kırmızı, Işık::Sarı, Işık::Yeşil];
-    her ışık içinde &ışıklar {
+    tanımla ışıklar = [Işık::Kırmızı, Işık::Sarı, Işık::Yeşil];
+    her ışık için &ışıklar {
         yazdır!("{}", ne_yapmalı(ışık));
     }
 }
@@ -68,7 +68,7 @@ işlev mevsim(ay: u32) -> &'durağan str {
 }
 
 işlev ana() {
-    her ay içinde [1, 4, 7, 10, 13] {
+    her ay için [1, 4, 7, 10, 13] {
         yazdır!("{ay}: {}", mevsim(ay));
     }
 }
@@ -94,7 +94,7 @@ işlev mevsim(ay: u32) -> &'durağan str {
 }
 
 işlev ana() {
-    her ay içinde [1, 4, 7, 10, 13] {
+    her ay için [1, 4, 7, 10, 13] {
         yazdır!("{ay}: {}", mevsim(ay));
     }
 }

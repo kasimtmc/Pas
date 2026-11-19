@@ -1,3 +1,3 @@
 işlev ana() {
-    yap tür = 3;
+    tanımla tür = 3;
 }

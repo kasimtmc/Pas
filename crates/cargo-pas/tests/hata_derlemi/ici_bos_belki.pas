@@ -1,4 +1,4 @@
 işlev ana() {
-    yap x: Belki<i32> = Var(5);
-    yap y = x + 1;
+    tanımla x: Belki<i32> = Var(5);
+    tanımla y = x + 1;
 }

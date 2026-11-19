@@ -16,11 +16,11 @@ yanındaki ▶ düğmesine bas.
 
 ## Neler öğreniyoruz?
 
-**`yap`** ile bir değişken oluştururuz:
+**`tanımla`** ile bir değişken oluştururuz:
 
 ```
-yap ad = "Elif";
-yap yaş = 11;
+tanımla ad = "Elif";
+tanımla yaş = 11;
 ```
 
 **Yazdırırken** değişkenin adını süslü parantez içine yazarız:
@@ -32,7 +32,7 @@ boş `{}` koyup hesabı virgülden sonra yazarız:
 sonradan değiştirmek istiyorsan başına `değişken` yaz:
 
 ```
-yap değişken puan = 0;
+tanımla değişken puan = 0;
 puan += 5;    // puan = puan + 5 ile aynı
 ```
 
@@ -47,7 +47,7 @@ kalan. Dikkat: iki tam sayıyı bölersen sonuç da tam sayı olur (`17 / 5` →
 1. Kendi adını ve yaşını değişkenlere koyup bir cümle yazdır.
 2. Bir `değişken` ile para biriktirme oyunu yap: 0 lira ile başla, üç kez
    para ekle ve her seferinde toplamı yazdır.
-3. `yap` ile oluşturduğun (başında `değişken` olmayan) bir değeri değiştirmeye
+3. `tanımla` ile oluşturduğun (başında `değişken` olmayan) bir değeri değiştirmeye
    çalış. Pas ne diyor? Önerisini uygula.
 
 ---

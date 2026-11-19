@@ -1,2 +1,2 @@
 yapı kedi;
-işlev ana() { yap _k = kedi; }
+işlev ana() { tanımla _k = kedi; }

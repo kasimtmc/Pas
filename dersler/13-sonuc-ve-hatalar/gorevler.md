@@ -15,7 +15,7 @@ işlev böl(a: i32, b: i32) -> Sonuç<i32, Metin> {
 }
 
 işlev ana() {
-    her (a, b) içinde [(10, 2), (7, 0), (9, 3)] {
+    her (a, b) için [(10, 2), (7, 0), (9, 3)] {
         eşle böl(a, b) {
             Tamam(bölüm) => yazdır!("{a} / {b} = {bölüm}"),
             Hata(neden) => yazdır!("{a} / {b}: {neden}"),
@@ -39,7 +39,7 @@ işlev böl(a: i32, b: i32) -> Sonuç<i32, Metin> {
 }
 
 işlev ana() {
-    her (a, b) içinde [(10, 2), (7, 0), (9, 3)] {
+    her (a, b) için [(10, 2), (7, 0), (9, 3)] {
         eşle böl(a, b) {
             Tamam(bölüm) => yazdır!("{a} / {b} = {bölüm}"),
             Hata(neden) => yazdır!("{a} / {b}: {neden}"),
@@ -62,7 +62,7 @@ on → sayı değil
 
 ```pas başlangıç
 işlev ana() {
-    her yazı içinde ["12", "on", "7"] {
+    her yazı için ["12", "on", "7"] {
     }
 }
 ```
@@ -75,7 +75,7 @@ on → sayı değil
 
 ```pas çözüm
 işlev ana() {
-    her yazı içinde ["12", "on", "7"] {
+    her yazı için ["12", "on", "7"] {
         eşle yazı.ayrıştır::<i32>() {
             Tamam(sayı) => yazdır!("{yazı} → {}", sayı * 2),
             Hata(_) => yazdır!("{yazı} → sayı değil"),

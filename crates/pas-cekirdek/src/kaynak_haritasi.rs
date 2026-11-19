@@ -190,7 +190,7 @@ mod testler {
     use super::*;
 
     fn ornek() -> KaynakHaritasi {
-        // "yap x" (pas) -> "let x" (rust); "#[p] " eklemesi ve ardından "genel" -> "pub"
+        // "tanımla x" (pas) -> "let x" (rust); "#[p] " eklemesi ve ardından "genel" -> "pub"
         let mut harita = KaynakHaritasi::default();
         harita.ekle(Parca { pas_baslangic: 0, pas_uzunluk: 6, rust_baslangic: 0, rust_uzunluk: 3 });
         harita.ekle(Parca { pas_baslangic: 10, pas_uzunluk: 0, rust_baslangic: 7, rust_uzunluk: 5 });

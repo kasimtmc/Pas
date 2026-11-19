@@ -86,14 +86,14 @@ class PasRenkAyarlari : ColorSettingsPage {
         }
 
         işlev ana() {
-            yap değişken liste = liste![1, 2, 3]; // yorum
+            tanımla değişken liste = liste![1, 2, 3]; // yorum
             liste.ekle(4);
             eşle liste.çıkar() {
                 Var(son) => yazdır!("Son sayı: {son}"),
                 Yok => yazdır!("Liste boş"),
             }
             /* blok yorum */
-            yap harf = 'ş';
+            tanımla harf = 'ş';
         }
     """.trimIndent()
 

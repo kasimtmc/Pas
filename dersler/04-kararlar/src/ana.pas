@@ -1,5 +1,5 @@
 işlev ana() {
-    yap sayı = oku!("Bir sayı yaz: ", i32);
+    tanımla sayı = oku!("Bir sayı yaz: ", i32);
 
     // `eğer` bir koşul doğruysa çalışır, değilse `değilse` kısmı çalışır.
     eğer sayı > 0 {
@@ -19,7 +19,7 @@ işlev ana() {
     }
 
     // `&&` "ve", `||` "veya" demektir.
-    yap yaş = oku!("Kaç yaşındasın? ", u32);
+    tanımla yaş = oku!("Kaç yaşındasın? ", u32);
     eğer yaş >= 7 && yaş <= 12 {
         yazdır!("7 ile 12 yaş arasındasın.");
     }
@@ -28,11 +28,11 @@ işlev ana() {
     }
 
     // `eğer` bir değer de verebilir.
-    yap durum = eğer yaş < 18 { "çocuk" } değilse { "yetişkin" };
+    tanımla durum = eğer yaş < 18 { "çocuk" } değilse { "yetişkin" };
     yazdır!("Durum: {durum}");
 
     // `mantıksal` bir değer ya `doğru` ya da `yanlış` olur.
-    yap hava_güzel = oku!("Hava güzel mi? (evet/hayır) ", mantıksal);
+    tanımla hava_güzel = oku!("Hava güzel mi? (evet/hayır) ", mantıksal);
     eğer hava_güzel {
         yazdır!("Hadi dışarı çıkalım!");
     } değilse {

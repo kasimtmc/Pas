@@ -10,8 +10,8 @@ ve gençlerdir.
 
 ```
 işlev ana() {
-    yap ad = oku!("Adın ne? ");
-    her i içinde 1..=3 {
+    tanımla ad = oku!("Adın ne? ");
+    her i için 1..=3 {
         yazdır!("{i}. Merhaba {ad}!");
     }
 }

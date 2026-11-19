@@ -1,6 +1,6 @@
 işlev ana() {
-    yap a: i32 = 5;
-    yap b: u32 = 7;
+    tanımla a: i32 = 5;
+    tanımla b: u32 = 7;
     eğer a < b {
         yazdır!("küçük");
     }

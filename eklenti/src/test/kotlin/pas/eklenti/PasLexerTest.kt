@@ -23,7 +23,7 @@ class PasLexerTest {
     fun anahtarSozcuklerVeIsimler() {
         assertEquals(
             listOf(
-                PasSozcukler.ANAHTAR_SOZCUK to "yap",
+                PasSozcukler.ANAHTAR_SOZCUK to "tanımla",
                 PasSozcukler.ANAHTAR_SOZCUK to "değişken",
                 PasSozcukler.ISIM to "sayılar",
                 PasSozcukler.ISLEC to ":",
@@ -35,7 +35,7 @@ class PasLexerTest {
                 PasSozcukler.SAG_KOSELI to "]",
                 PasSozcukler.NOKTALI_VIRGUL to ";",
             ),
-            sozcukler("yap değişken sayılar: Liste = liste![1];"),
+            sozcukler("tanımla değişken sayılar: Liste = liste![1];"),
         )
     }
 

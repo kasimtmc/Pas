@@ -1,4 +1,4 @@
 işlev ana() {
-    yap x = 1;
+    tanımla x = 1;
     x += 1;
 }

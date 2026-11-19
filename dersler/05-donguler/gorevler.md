@@ -6,7 +6,7 @@ Bu görevleri [Pas Oyun Alanı](https://kasimtmc.github.io/Pas/)nda yapıp **Den
 
 1'den 10'a kadar olan çift sayıları alt alta yazdır.
 
-İpucu: `her sayı içinde 1..=10` 1'den 10'a kadar döner.
+İpucu: `her sayı için 1..=10` 1'den 10'a kadar döner.
 
 ```pas başlangıç
 işlev ana() {
@@ -24,7 +24,7 @@ işlev ana() {
 
 ```pas çözüm
 işlev ana() {
-    her sayı içinde 1..=10 {
+    her sayı için 1..=10 {
         eğer sayı % 2 == 0 {
             yazdır!("{sayı}");
         }
@@ -69,8 +69,8 @@ Hangi sayı? 3
 
 ```pas çözüm
 işlev ana() {
-    yap sayı = oku!("Hangi sayı? ", i32);
-    her i içinde 1..=10 {
+    tanımla sayı = oku!("Hangi sayı? ", i32);
+    her i için 1..=10 {
         yazdır!("{sayı} x {i} = {}", sayı * i);
     }
 }
@@ -84,7 +84,7 @@ işlev ana() {
 
 ```pas başlangıç
 işlev ana() {
-    yap değişken sayaç = 5;
+    tanımla değişken sayaç = 5;
 }
 ```
 
@@ -99,7 +99,7 @@ Kalkış!
 
 ```pas çözüm
 işlev ana() {
-    yap değişken sayaç = 5;
+    tanımla değişken sayaç = 5;
     sürece sayaç > 0 {
         yazdır!("{sayaç}");
         sayaç -= 1;

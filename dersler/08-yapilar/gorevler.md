@@ -22,7 +22,7 @@ uygula Dikdörtgen {
 }
 
 işlev ana() {
-    yap kapı = Dikdörtgen { en: 4, boy: 6 };
+    tanımla kapı = Dikdörtgen { en: 4, boy: 6 };
     yazdır!("Alan: {}", kapı.alan());
 }
 ```
@@ -44,7 +44,7 @@ uygula Dikdörtgen {
 }
 
 işlev ana() {
-    yap kapı = Dikdörtgen { en: 4, boy: 6 };
+    tanımla kapı = Dikdörtgen { en: 4, boy: 6 };
     yazdır!("Alan: {}", kapı.alan());
 }
 ```
@@ -66,7 +66,7 @@ uygula Kedi {
 }
 
 işlev ana() {
-    yap değişken kedi = Kedi { ad: "Minnoş".metne_çevir(), yaş: 1 };
+    tanımla değişken kedi = Kedi { ad: "Minnoş".metne_çevir(), yaş: 1 };
     // İki kez doğum günü kutla.
     yazdır!("{} {} yaşında", kedi.ad, kedi.yaş);
 }
@@ -89,7 +89,7 @@ uygula Kedi {
 }
 
 işlev ana() {
-    yap değişken kedi = Kedi { ad: "Minnoş".metne_çevir(), yaş: 1 };
+    tanımla değişken kedi = Kedi { ad: "Minnoş".metne_çevir(), yaş: 1 };
     kedi.doğum_günü();
     kedi.doğum_günü();
     yazdır!("{} {} yaşında", kedi.ad, kedi.yaş);

@@ -1,5 +1,5 @@
 işlev ana() {
-    yap a = Metin::from("x");
-    yap b = a;
+    tanımla a = Metin::from("x");
+    tanımla b = a;
     yazdır!("{a}");
 }

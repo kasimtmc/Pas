@@ -22,7 +22,7 @@ cargo pas çalıştır
 verdikçe değişeceği için `değişken` olmalı:
 
 ```
-yap değişken k = Kaplumbağa::yeni();
+tanımla değişken k = Kaplumbağa::yeni();
 ```
 
 **Komutlar**:
@@ -48,7 +48,7 @@ kahverengi, gri, lacivert, turkuaz. `"#ff8800"` gibi renk kodları da olur.
 altıgende her köşede `360 / 6` derece döneriz.
 
 ```
-her _ içinde 0..4 {
+her _ için 0..4 {
     k.ileri(100);
     k.sağa_dön(90);
 }

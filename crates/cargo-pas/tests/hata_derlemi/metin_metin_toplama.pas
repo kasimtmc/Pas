@@ -1,6 +1,6 @@
 işlev ana() {
-    yap ad = Metin::from("Ali");
-    yap soyad = Metin::from(" Can");
-    yap tam = ad + soyad;
+    tanımla ad = Metin::from("Ali");
+    tanımla soyad = Metin::from(" Can");
+    tanımla tam = ad + soyad;
     yazdır!("{tam}");
 }

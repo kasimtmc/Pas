@@ -688,10 +688,10 @@ mod testler {
     #[test]
     fn anahtar_sozcukler_ve_hazir_isimler() {
         assert_eq!(
-            rusta("yap değişken l: Liste<Metin> = liste![]; eğer l.boş_mu() { döndür Yok; } değilse { kır; }"),
+            rusta("tanımla değişken l: Liste<Metin> = liste![]; eğer l.boş_mu() { döndür Yok; } değilse { kır; }"),
             "let mut l: Vec<String> = vec![]; if l.is_empty() { return None; } else { break; }"
         );
-        assert_eq!(rusta("her i içinde 0..10 {}"), "for i in 0..10 {}");
+        assert_eq!(rusta("her i için 0..10 {}"), "for i in 0..10 {}");
     }
 
     #[test]
@@ -703,14 +703,14 @@ mod testler {
     #[test]
     fn dizgilere_ve_yorumlara_dokunulmaz() {
         assert_eq!(
-            rusta("yap s = \"yap eğer\"; // eğer yap\n/* işlev */ 'ı'"),
-            "let s = \"yap eğer\"; // eğer yap\n/* işlev */ 'ı'"
+            rusta("tanımla s = \"tanımla eğer\"; // eğer yap\n/* işlev */ 'ı'"),
+            "let s = \"tanımla eğer\"; // eğer yap\n/* işlev */ 'ı'"
         );
     }
 
     #[test]
     fn ham_isimler_anahtar_sozcukleri_kacirir() {
-        assert_eq!(rusta("yap r#tür = 1;"), "let r#tür = 1;");
+        assert_eq!(rusta("tanımla r#tür = 1;"), "let r#tür = 1;");
     }
 
     #[test]
@@ -721,7 +721,7 @@ mod testler {
         );
         // Biçim dizgisi olmayan dizgilere dokunulmaz.
         assert_eq!(
-            rusta("yazdır!(\"{}\", \"{uzunluk}\"); yap s = \"{uzunluk}\";"),
+            rusta("yazdır!(\"{}\", \"{uzunluk}\"); tanımla s = \"{uzunluk}\";"),
             "println!(\"{}\", \"{uzunluk}\"); let s = \"{uzunluk}\";"
         );
         assert_eq!(rusta("doğrula_eşit!(a, \"{ana}\", \"{ana}\");"), "assert_eq!(a, \"{ana}\", \"{main}\");");
@@ -765,7 +765,7 @@ mod testler {
     #[test]
     fn destek_kodu_satir_eklemeden_eklenir() {
         let secenekler = Secenekler { destek_ekle: true, ..Default::default() };
-        let kaynak = "// yorum\nişlev ana() {\n    yap ad = oku!(\"Adın? \");\n}\n";
+        let kaynak = "// yorum\nişlev ana() {\n    tanımla ad = oku!(\"Adın? \");\n}\n";
         let ceviri = rusta_cevir_secenekle(kaynak, &secenekler);
         assert_eq!(ceviri.rust.lines().count(), kaynak.lines().count());
         assert!(
@@ -848,9 +848,9 @@ mod testler {
     fn ters_ceviri() {
         assert_eq!(
             pasa_cevir("fn main() { let mut v: Vec<String> = vec![]; println!(\"{}\", v.len()); }"),
-            "işlev ana() { yap değişken v: Liste<Metin> = liste![]; yazdır!(\"{}\", v.uzunluk()); }"
+            "işlev ana() { tanımla değişken v: Liste<Metin> = liste![]; yazdır!(\"{}\", v.uzunluk()); }"
         );
-        assert_eq!(pasa_cevir("let her = 1;"), "yap r#her = 1;");
+        assert_eq!(pasa_cevir("let her = 1;"), "tanımla r#her = 1;");
         assert_eq!(pasa_cevir("`Option<i32>`"), "`Belki<i32>`");
         assert_eq!(pasa_cevir("&'static str"), "&'durağan str");
         assert_eq!(pasa_cevir("pas_oku!()"), "oku!()");
@@ -858,13 +858,13 @@ mod testler {
 
     #[test]
     fn gidip_donme() {
-        let kaynak = "işlev ana() {\n    yap değişken sayılar = liste![1, 2];\n    sayılar.ekle(3);\n    yazdır!(\"{}\", sayılar.uzunluk());\n}\n";
+        let kaynak = "işlev ana() {\n    tanımla değişken sayılar = liste![1, 2];\n    sayılar.ekle(3);\n    yazdır!(\"{}\", sayılar.uzunluk());\n}\n";
         assert_eq!(pasa_cevir(&rusta(kaynak)), kaynak);
     }
 
     #[test]
     fn kaynak_haritasi_pasi_gosterir() {
-        let kaynak = "işlev ana() { yap x = yok_böyle; }";
+        let kaynak = "işlev ana() { tanımla x = yok_böyle; }";
         let t = rusta_cevir(kaynak);
         let rust_baslangic = t.rust.find("yok_böyle").unwrap();
         let rust_bitis = rust_baslangic + "yok_böyle".len();

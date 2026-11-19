@@ -3,7 +3,7 @@ kullan std::collections::Sözlük;
 
 işlev ana() {
     // Sözlük her anahtara bir değer bağlar: ülke → başkent.
-    yap değişken başkentler = Sözlük::yeni();
+    tanımla değişken başkentler = Sözlük::yeni();
     başkentler.yerleştir("Türkiye", "Ankara");
     başkentler.yerleştir("Japonya", "Tokyo");
     başkentler.yerleştir("Mısır", "Kahire");
@@ -27,24 +27,24 @@ işlev ana() {
     yazdır!("Sözlükte {} ülke var.", başkentler.uzunluk());
 
     // Aynı anahtara yeniden yerleştirirsek eski değerin yerine geçer.
-    yap değişken puanlar = Sözlük::yeni();
+    tanımla değişken puanlar = Sözlük::yeni();
     puanlar.yerleştir("Ayşe", 10);
     puanlar.yerleştir("Ayşe", 25);
     yazdır!("Ayşe'nin puanı: {}", puanlar["Ayşe"]);
 
     // Bir cümlede her kelimenin kaç kez geçtiğini sayalım.
-    yap cümle = "bir berber bir berbere gel beraber bir berber dükkanı açalım demiş";
-    yap değişken sayaç: Sözlük<&str, u32> = Sözlük::yeni();
-    her kelime içinde cümle.böl(" ") {
-        yap önceki = *sayaç.al(kelime).yoksa(&0);
+    tanımla cümle = "bir berber bir berbere gel beraber bir berber dükkanı açalım demiş";
+    tanımla değişken sayaç: Sözlük<&str, u32> = Sözlük::yeni();
+    her kelime için cümle.böl(" ") {
+        tanımla önceki = *sayaç.al(kelime).yoksa(&0);
         sayaç.yerleştir(kelime, önceki + 1);
     }
 
     // Sözlükteki anahtarların bir sırası yoktur. Düzenli yazdırmak için
     // anahtarları bir listeye alıp sıralarız.
-    yap değişken kelimeler: Liste<_> = sayaç.anahtarlar().biriktir();
+    tanımla değişken kelimeler: Liste<_> = sayaç.anahtarlar().biriktir();
     kelimeler.sırala();
-    her kelime içinde kelimeler {
+    her kelime için kelimeler {
         yazdır!("{kelime}: {}", sayaç[kelime]);
     }
 }

@@ -35,7 +35,7 @@ işlev ana() {
     selamla("Deniz");
     selamla("Ece");
 
-    yap sonuç = topla(3, 4);
+    tanımla sonuç = topla(3, 4);
     yazdır!("3 + 4 = {sonuç}");
 
     eğer çift_mi(sonuç) {

@@ -12,7 +12,7 @@ Rehbere Ali, Can ve Elif'i numaralarıyla ekle. Sonra Can'ın numarasını yazd�
 kullan std::collections::Sözlük;
 
 işlev ana() {
-    yap değişken rehber = Sözlük::yeni();
+    tanımla değişken rehber = Sözlük::yeni();
     rehber.yerleştir("Ali", "555 11 22");
     // Can: 555 33 44, Elif: 555 55 66
 }
@@ -27,11 +27,11 @@ Zeynep rehberde yok
 kullan std::collections::Sözlük;
 
 işlev ana() {
-    yap değişken rehber = Sözlük::yeni();
+    tanımla değişken rehber = Sözlük::yeni();
     rehber.yerleştir("Ali", "555 11 22");
     rehber.yerleştir("Can", "555 33 44");
     rehber.yerleştir("Elif", "555 55 66");
-    her ad içinde ["Can", "Zeynep"] {
+    her ad için ["Can", "Zeynep"] {
         eşle rehber.al(ad) {
             Var(numara) => yazdır!("{ad}: {numara}"),
             Yok => yazdır!("{ad} rehberde yok"),
@@ -60,8 +60,8 @@ u: 1
 kullan std::collections::Sözlük;
 
 işlev ana() {
-    yap metin = "elma armut";
-    yap değişken sayaç: Sözlük<karakter, u32> = Sözlük::yeni();
+    tanımla metin = "elma armut";
+    tanımla değişken sayaç: Sözlük<karakter, u32> = Sözlük::yeni();
 }
 ```
 
@@ -79,17 +79,17 @@ u: 1
 kullan std::collections::Sözlük;
 
 işlev ana() {
-    yap metin = "elma armut";
-    yap değişken sayaç: Sözlük<karakter, u32> = Sözlük::yeni();
-    her harf içinde metin.karakterler() {
+    tanımla metin = "elma armut";
+    tanımla değişken sayaç: Sözlük<karakter, u32> = Sözlük::yeni();
+    her harf için metin.karakterler() {
         eğer harf != ' ' {
-            yap önceki = *sayaç.al(&harf).yoksa(&0);
+            tanımla önceki = *sayaç.al(&harf).yoksa(&0);
             sayaç.yerleştir(harf, önceki + 1);
         }
     }
-    yap değişken harfler: Liste<_> = sayaç.anahtarlar().biriktir();
+    tanımla değişken harfler: Liste<_> = sayaç.anahtarlar().biriktir();
     harfler.sırala();
-    her harf içinde harfler {
+    her harf için harfler {
         yazdır!("{harf}: {}", sayaç[harf]);
     }
 }

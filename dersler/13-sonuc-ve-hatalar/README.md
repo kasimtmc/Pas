@@ -48,7 +48,7 @@ biter, `Tamam` ise içindeki değer alınır. Böylece her adımda `eşle`
 yazmana gerek kalmaz.
 
 ```
-yap ilk = böl(a, b)?;
+tanımla ilk = böl(a, b)?;
 ```
 
 **`ayrıştır()`**: metni sayıya çevirmeyi dener ve bir `Sonuç` verir.

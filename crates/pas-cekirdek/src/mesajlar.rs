@@ -229,7 +229,7 @@ const DERLEYICI: &[(&str, &str)] = &[
         "this `{}` may be an `{}` variant, which should be handled",
         "bu `{0}` bir `{1}` olabilir; bu durumu (örneğin `eşle` ile) ele almalısın",
     ),
-    ("use `let _ = ...` to ignore the resulting value", "sonucu bilerek yok saymak için `yap _ = ...` yaz"),
+    ("use `let _ = ...` to ignore the resulting value", "sonucu bilerek yok saymak için `tanımla _ = ...` yaz"),
     ("the trait bound `{}: {}` is not satisfied", "`{0}` türü `{1}` niteliğini karşılamıyor"),
     ("the trait `{}` is not implemented for `{}`", "`{1}` türü `{0}` niteliğini uygulamıyor"),
     // Değiştirilebilirlik ve sahiplik
@@ -533,16 +533,16 @@ const ACIKLAMALAR: &[(&str, &str)] = &[
     ),
     (
         "E0594",
-        "Bir yapının alanını değiştirebilmek için yapıyı tutan değişkenin `değişken` olarak tanımlanması gerekir: `yap değişken kedi = …;`",
+        "Bir yapının alanını değiştirebilmek için yapıyı tutan değişkenin `değişken` olarak tanımlanması gerekir: `tanımla değişken kedi = …;`",
     ),
     ("E0765", "Bir metni açan `\"` işaretinin bir de kapatanı olmalı. Metnin sonuna `\"` koymayı unutma."),
     (
         "E0282",
-        "Pas bu değerin türünü kendi başına çıkaramadı. Değişkenin yanına türünü yaz: `yap sayılar: Liste<i32> = …`",
+        "Pas bu değerin türünü kendi başına çıkaramadı. Değişkenin yanına türünü yaz: `tanımla sayılar: Liste<i32> = …`",
     ),
     (
         "E0283",
-        "Pas bu değerin türünü kendi başına çıkaramadı. Değişkenin yanına türünü yaz: `yap sayılar: Liste<i32> = …`",
+        "Pas bu değerin türünü kendi başına çıkaramadı. Değişkenin yanına türünü yaz: `tanımla sayılar: Liste<i32> = …`",
     ),
     (
         "E0106",
@@ -567,13 +567,13 @@ const ACIKLAMALAR: &[(&str, &str)] = &[
     ),
     (
         "E0384",
-        "Pas'ta değişkenler kendiliğinden değiştirilemez. Değerini sonradan değiştirmek istiyorsan değişkeni `yap değişken x = …;` diye tanımla.",
+        "Pas'ta değişkenler kendiliğinden değiştirilemez. Değerini sonradan değiştirmek istiyorsan değişkeni `tanımla değişken x = …;` diye tanımla.",
     ),
     ("E0412", "Bu isimde bir tür yok. Yazımını kontrol et ya da türü `kullan` ile kullanıma al."),
     ("E0423", "Bu isim bir değer gibi kullanılmış ama bir değer değil (örneğin bir tür olabilir)."),
     (
         "E0425",
-        "Kullandığın isim burada tanımlı değil. Yazımını kontrol et (büyük-küçük harfler de önemli) ya da kullanmadan önce `yap` ile tanımla.",
+        "Kullandığın isim burada tanımlı değil. Yazımını kontrol et (büyük-küçük harfler de önemli) ya da kullanmadan önce tanımla: `tanımla sayı = 5;`",
     ),
     ("E0432", "`kullan` ile almak istediğin şey bulunamadı. Yolunu ve yazımını kontrol et."),
     ("E0433", "Bu isim bulunamadı. Yazımını kontrol et ya da `kullan` ile kullanıma al."),
@@ -582,7 +582,7 @@ const ACIKLAMALAR: &[(&str, &str)] = &[
         "Bir değeri aynı anda yalnızca tek bir yerden değiştirebilirsin. Bu kural, programının beklenmedik biçimde bozulmasını engeller.",
     ),
     ("E0502", "Bir değeri okurken aynı anda değiştiremezsin. Önce okumayı bitir, sonra değiştir."),
-    ("E0596", "Bunu değiştirebilmek için değişkenin `değişken` olarak tanımlanması gerekir: `yap değişken x = …;`"),
+    ("E0596", "Bunu değiştirebilmek için değişkenin `değişken` olarak tanımlanması gerekir: `tanımla değişken x = …;`"),
     (
         "E0597",
         "Ödünç aldığın değer, sen onu kullanmayı bitirmeden yok oluyor. Değeri daha dış bir blokta tanımlamayı dene.",
@@ -653,6 +653,9 @@ pub fn gereksiz_mi(mesaj: &str) -> bool {
         || mesaj.contains("`satir_oku`")
 }
 
+/// Pas'ın eski sürümlerinde kullanılan anahtar sözcükler ve yenileri.
+const ESKI_SOZCUKLER: &[(&str, &str)] = &[("yap", "tanımla"), ("içinde", "için"), ("olsun", "tanımla")];
+
 /// Satırda Türkçe harfleri olmadan yazılmış Pas sözcükleri varsa doğrularını
 /// önerir: "`eger` yerine `eğer` mi demek istedin?"
 pub fn yazim_onerileri(satir: &str) -> Vec<String> {
@@ -664,6 +667,14 @@ pub fn yazim_onerileri(satir: &str) -> Vec<String> {
             continue;
         }
         let kelime = sozcuk.metin(satir);
+        // Pas'ın eski sürümlerindeki anahtar sözcükler
+        if let Some((_, yeni)) = ESKI_SOZCUKLER.iter().find(|(eski, _)| *eski == kelime) {
+            let oneri = format!("`{kelime}` yerine artık `{yeni}` yazılıyor");
+            if !oneriler.contains(&oneri) {
+                oneriler.push(oneri);
+            }
+            continue;
+        }
         let makro = anlamlilar.get(i + 1).is_some_and(|s| s.metin(satir) == "!");
         if let Some(girdi) = sozluk::turkce_yazimi(kelime, makro) {
             let isaret = if makro { "!" } else { "" };
@@ -845,6 +856,10 @@ mod testler {
             vec!["`eger` yerine `eğer` mi demek istedin?", "`yazdir!` yerine `yazdır!` mi demek istedin?"]
         );
         assert!(yazim_onerileri("    eğer x > 3 {").is_empty());
+        assert_eq!(
+            yazim_onerileri("    her i içinde 0..3 { yap x = i; }"),
+            vec!["`içinde` yerine artık `için` yazılıyor", "`yap` yerine artık `tanımla` yazılıyor"]
+        );
     }
 
     #[test]

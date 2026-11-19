@@ -1,3 +1,3 @@
 işlev ana() {
-    yap x: i32 = "5".ayrıştır();
+    tanımla x: i32 = "5".ayrıştır();
 }

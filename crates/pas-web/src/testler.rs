@@ -42,24 +42,24 @@ fn calistir_tohumla(kaynak: &str, girdi: &str, tohum: u64) -> (String, Value) {
 
 #[test]
 fn tur_hatasi_pas_kaynagina_eslenir() {
-    let (_, sonuc) = calistir("işlev ana() {\n    yap sayı: i32 = \"beş\";\n}\n", "");
+    let (_, sonuc) = calistir("işlev ana() {\n    tanımla sayı: i32 = \"beş\";\n}\n", "");
     assert_eq!(sonuc["derlendi"], false);
     let tani = &sonuc["tanilamalar"][0];
     assert_eq!(tani["seviye"], "hata");
     assert_eq!(tani["kod"], "E0308");
     assert_eq!(tani["mesaj"], "türler uyuşmuyor");
     assert_eq!(tani["aralik"]["satir"], 2);
-    assert_eq!(tani["aralik"]["sutun"], 21);
-    assert_eq!(tani["aralik"]["bitis_sutunu"], 26);
+    assert_eq!(tani["aralik"]["sutun"], 25);
+    assert_eq!(tani["aralik"]["bitis_sutunu"], 30);
     assert!(tani["aciklama"].is_string());
     let etiketler = tani["etiketler"].as_array().unwrap();
     assert_eq!(etiketler.len(), 2, "{etiketler:?}");
-    assert_eq!(etiketler[0]["sutun"], 15);
+    assert_eq!(etiketler[0]["sutun"], 19);
 }
 
 #[test]
 fn yazdir_icindeki_hata_ve_oneri() {
-    let kaynak = "işlev ana() {\n    yap sayı = 5;\n    yazdır!(\"{} {}\", sayı, sayi);\n}\n";
+    let kaynak = "işlev ana() {\n    tanımla sayı = 5;\n    yazdır!(\"{} {}\", sayı, sayi);\n}\n";
     let (_, sonuc) = calistir(kaynak, "");
     let tani = &sonuc["tanilamalar"][0];
     assert_eq!(tani["kod"], "E0425");
@@ -73,7 +73,7 @@ fn yazdir_icindeki_hata_ve_oneri() {
 
 #[test]
 fn panik_yeri_ve_mesaji() {
-    let kaynak = "işlev ana() {\n    yap l = liste![1, 2];\n    yazdır!(\"{}\", l[5]);\n}\n";
+    let kaynak = "işlev ana() {\n    tanımla l = liste![1, 2];\n    yazdır!(\"{}\", l[5]);\n}\n";
     let (_, sonuc) = calistir(kaynak, "");
     assert_eq!(sonuc["derlendi"], true);
     let panik = &sonuc["panik"];
@@ -84,7 +84,7 @@ fn panik_yeri_ve_mesaji() {
 
 #[test]
 fn hazir_girdi_okunur_ve_yazilir() {
-    let kaynak = "işlev ana() {\n    yap ad = oku!(\"Adın ne? \");\n    yap yaş = oku!(\"Yaşın? \", u32);\n    yazdır!(\"{ad} {}\", yaş + 1);\n}\n";
+    let kaynak = "işlev ana() {\n    tanımla ad = oku!(\"Adın ne? \");\n    tanımla yaş = oku!(\"Yaşın? \", u32);\n    yazdır!(\"{ad} {}\", yaş + 1);\n}\n";
     let (cikti, sonuc) = calistir(kaynak, "Ayşe\non\n10\n");
     assert_eq!(sonuc["tanilamalar"], Value::Array(Vec::new()));
     assert_eq!(cikti, "Adın ne? Ayşe\nYaşın? on\n`on` geçerli bir tam sayı değil, tekrar dene.\nYaşın? 10\nAyşe 11\n");
@@ -92,7 +92,7 @@ fn hazir_girdi_okunur_ve_yazilir() {
 
 #[test]
 fn hazir_girdi_bitince_program_durur() {
-    let kaynak = "işlev ana() {\n    döngü {\n        yap sayı = oku!(\"Sayı: \", i32);\n        yazdır!(\"{}\", sayı * 2);\n    }\n}\n";
+    let kaynak = "işlev ana() {\n    döngü {\n        tanımla sayı = oku!(\"Sayı: \", i32);\n        yazdır!(\"{}\", sayı * 2);\n    }\n}\n";
     let (cikti, sonuc) = calistir(kaynak, "4\n");
     assert_eq!(cikti, "Sayı: 4\n8\nSayı: ");
     assert_eq!(sonuc["girdi_bitti"], true);
@@ -102,7 +102,7 @@ fn hazir_girdi_bitince_program_durur() {
 
 #[test]
 fn kullan_onerisi() {
-    let (_, sonuc) = calistir("işlev ana() {\n    yap m: Sözlük<i32, i32> = Sözlük::yeni();\n}\n", "");
+    let (_, sonuc) = calistir("işlev ana() {\n    tanımla m: Sözlük<i32, i32> = Sözlük::yeni();\n}\n", "");
     let oneri = sonuc["tanilamalar"][0]["notlar"]
         .as_array()
         .unwrap()
@@ -116,7 +116,7 @@ fn kullan_onerisi() {
 
 #[test]
 fn kaplumbaga_cizimi() {
-    let kaynak = "işlev ana() {\n    yap değişken k = Kaplumbağa::yeni();\n    her _ içinde 0..4 {\n        k.ileri(100);\n        k.sağa_dön(90);\n    }\n    yazdır!(\"bitti\");\n}\n";
+    let kaynak = "işlev ana() {\n    tanımla değişken k = Kaplumbağa::yeni();\n    her _ için 0..4 {\n        k.ileri(100);\n        k.sağa_dön(90);\n    }\n    yazdır!(\"bitti\");\n}\n";
     let (cikti, sonuc) = calistir(kaynak, "");
     assert_eq!(sonuc["tanilamalar"], Value::Array(Vec::new()));
     assert_eq!(cikti, "bitti\n");
@@ -130,8 +130,7 @@ fn kaplumbaga_cizimi() {
 
 #[test]
 fn bilinmeyen_renk_turkce_panik() {
-    let kaynak =
-        "işlev ana() {\n    yap değişken k = Kaplumbağa::yeni();\n    k.ileri(10);\n    k.renk(\"gökkuşağı\");\n}\n";
+    let kaynak = "işlev ana() {\n    tanımla değişken k = Kaplumbağa::yeni();\n    k.ileri(10);\n    k.renk(\"gökkuşağı\");\n}\n";
     let (_, sonuc) = calistir(kaynak, "");
     assert_eq!(sonuc["panik"]["aralik"]["satir"], 4);
     assert!(sonuc["panik"]["mesaj"].as_str().unwrap().contains("`gökkuşağı` bir renk değil"));
@@ -141,7 +140,7 @@ fn bilinmeyen_renk_turkce_panik() {
 
 #[test]
 fn turkce_harfsiz_yazim_onerilir() {
-    let (_, sonuc) = calistir("işlev ana() {\n    yap x = 5;\n    eger x > 3 {\n    }\n}\n", "");
+    let (_, sonuc) = calistir("işlev ana() {\n    tanımla x = 5;\n    eger x > 3 {\n    }\n}\n", "");
     let notlar = sonuc["tanilamalar"][0]["notlar"].to_string();
     assert!(notlar.contains("`eger` yerine `eğer` mi demek istedin?"), "{notlar}");
 }
@@ -158,7 +157,8 @@ fn ayni_tohumla_ayni_rastgele_sayilar() {
 
 #[test]
 fn uyarilar_turkce() {
-    let (cikti, sonuc) = calistir("işlev ana() {\n    yap kullanılmayan = 1;\n    yazdır!(\"{}\", doğru);\n}\n", "");
+    let (cikti, sonuc) =
+        calistir("işlev ana() {\n    tanımla kullanılmayan = 1;\n    yazdır!(\"{}\", doğru);\n}\n", "");
     assert_eq!(cikti, "doğru\n");
     let tani = &sonuc["tanilamalar"][0];
     assert_eq!(tani["seviye"], "uyarı");

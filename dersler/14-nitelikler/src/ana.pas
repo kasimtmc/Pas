@@ -63,19 +63,19 @@ işlev iki_kez_seslen(hayvan: &dinamik Hayvan) {
 }
 
 işlev ana() {
-    yap minnoş = Kedi { ad: "Minnoş".metne_çevir() };
+    tanımla minnoş = Kedi { ad: "Minnoş".metne_çevir() };
     minnoş.tanıt();
     iki_kez_seslen(&minnoş);
 
     // Farklı türden hayvanlar aynı listede durabilir; her biri bir `Kutu` içinde.
-    yap çiftlik: Liste<Kutu<dinamik Hayvan>> = liste![
+    tanımla çiftlik: Liste<Kutu<dinamik Hayvan>> = liste![
         Kutu::yeni(minnoş),
         Kutu::yeni(Köpek { ad: "Karabaş".metne_çevir(), yaş: 3 }),
         Kutu::yeni(İnek),
     ];
 
     yazdır!("Çiftlikte {} hayvan var:", çiftlik.uzunluk());
-    her hayvan içinde &çiftlik {
+    her hayvan için &çiftlik {
         hayvan.tanıt();
     }
 }

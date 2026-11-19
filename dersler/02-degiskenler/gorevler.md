@@ -15,8 +15,8 @@ Alan: 35
 
 ```pas başlangıç
 işlev ana() {
-    yap en = 7;
-    yap boy = 5;
+    tanımla en = 7;
+    tanımla boy = 5;
     // Alanı ve çevreyi hesapla.
 }
 ```
@@ -28,8 +28,8 @@ Alan: 35
 
 ```pas çözüm
 işlev ana() {
-    yap en = 7;
-    yap boy = 5;
+    tanımla en = 7;
+    tanımla boy = 5;
     yazdır!("Alan: {}", en * boy);
     yazdır!("Çevre: {}", 2 * (en + boy));
 }
@@ -49,7 +49,7 @@ Kumbara: 27 lira
 
 ```pas başlangıç
 işlev ana() {
-    yap değişken kumbara = 20;
+    tanımla değişken kumbara = 20;
     yazdır!("Kumbara: {kumbara} lira");
 }
 ```
@@ -62,7 +62,7 @@ Kumbara: 27 lira
 
 ```pas çözüm
 işlev ana() {
-    yap değişken kumbara = 20;
+    tanımla değişken kumbara = 20;
     yazdır!("Kumbara: {kumbara} lira");
     kumbara += 15;
     yazdır!("Kumbara: {kumbara} lira");

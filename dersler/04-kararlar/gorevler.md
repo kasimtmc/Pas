@@ -34,7 +34,7 @@ Bir sayı: 7
 
 ```pas çözüm
 işlev ana() {
-    yap sayı = oku!("Bir sayı: ", i32);
+    tanımla sayı = oku!("Bir sayı: ", i32);
     eğer sayı % 2 == 0 {
         yazdır!("{sayı} çift");
     } değilse {
@@ -93,7 +93,7 @@ Böyle bir not yok.
 
 ```pas çözüm
 işlev ana() {
-    yap not = oku!("Notun: ", u32);
+    tanımla not = oku!("Notun: ", u32);
     eğer not > 100 {
         yazdır!("Böyle bir not yok.");
     } değilse eğer not >= 50 {

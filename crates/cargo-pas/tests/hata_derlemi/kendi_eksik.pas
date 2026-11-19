@@ -9,6 +9,6 @@ uygula Sayaç {
 }
 
 işlev ana() {
-    yap değişken s = Sayaç { değer: 0 };
+    tanımla değişken s = Sayaç { değer: 0 };
     s.artır();
 }

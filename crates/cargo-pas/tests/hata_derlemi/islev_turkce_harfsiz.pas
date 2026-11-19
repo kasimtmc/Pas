@@ -1,3 +1,3 @@
 islev ana() {
-    yap x = 5;
+    tanımla x = 5;
 }

@@ -15,7 +15,7 @@ Ortalama: 18
 
 ```pas başlangıç
 işlev ana() {
-    yap sayılar = liste![4, 8, 15, 16, 23, 42];
+    tanımla sayılar = liste![4, 8, 15, 16, 23, 42];
 }
 ```
 
@@ -26,9 +26,9 @@ Ortalama: 18
 
 ```pas çözüm
 işlev ana() {
-    yap sayılar = liste![4, 8, 15, 16, 23, 42];
-    yap değişken toplam = 0;
-    her sayı içinde &sayılar {
+    tanımla sayılar = liste![4, 8, 15, 16, 23, 42];
+    tanımla değişken toplam = 0;
+    her sayı için &sayılar {
         toplam += sayı;
     }
     yazdır!("Toplam: {toplam}");
@@ -51,7 +51,7 @@ Listeye `süt` ve `peynir` ekle, sonra her ürünü numarasıyla yazdır:
 
 ```pas başlangıç
 işlev ana() {
-    yap değişken alışveriş = liste!["ekmek", "yumurta"];
+    tanımla değişken alışveriş = liste!["ekmek", "yumurta"];
 }
 ```
 
@@ -64,11 +64,11 @@ işlev ana() {
 
 ```pas çözüm
 işlev ana() {
-    yap değişken alışveriş = liste!["ekmek", "yumurta"];
+    tanımla değişken alışveriş = liste!["ekmek", "yumurta"];
     alışveriş.ekle("süt");
     alışveriş.ekle("peynir");
-    yap değişken sıra = 1;
-    her ürün içinde &alışveriş {
+    tanımla değişken sıra = 1;
+    her ürün için &alışveriş {
         yazdır!("{sıra}. {ürün}");
         sıra += 1;
     }

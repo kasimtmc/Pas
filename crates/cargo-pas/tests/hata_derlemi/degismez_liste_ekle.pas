@@ -1,5 +1,5 @@
 işlev ana() {
-    yap meyveler = liste!["elma"];
+    tanımla meyveler = liste!["elma"];
     meyveler.ekle("armut");
     yazdır!("{:?}", meyveler);
 }

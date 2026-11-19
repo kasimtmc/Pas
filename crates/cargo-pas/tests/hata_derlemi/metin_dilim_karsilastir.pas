@@ -1,4 +1,4 @@
 işlev ana() {
-    yap s = Metin::from("a");
+    tanımla s = Metin::from("a");
     eğer s == 5 { }
 }

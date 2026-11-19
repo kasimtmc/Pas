@@ -1,3 +1,3 @@
 işlev ana() {
-    yap x: u8 = 300;
+    tanımla x: u8 = 300;
 }

@@ -4,6 +4,6 @@ yapı Kedi {
 }
 
 işlev ana() {
-    yap kedi = Kedi { ad: Metin::from("Pamuk") };
+    tanımla kedi = Kedi { ad: Metin::from("Pamuk") };
     yazdır!("{}", kedi);
 }

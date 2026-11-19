@@ -53,7 +53,7 @@ durabilir. Her hayvanı bir `Kutu`ya koyarsak hepsi `Kutu<dinamik Hayvan>`
 olur:
 
 ```
-yap çiftlik: Liste<Kutu<dinamik Hayvan>> = liste![
+tanımla çiftlik: Liste<Kutu<dinamik Hayvan>> = liste![
     Kutu::yeni(minnoş),
     Kutu::yeni(İnek),
 ];

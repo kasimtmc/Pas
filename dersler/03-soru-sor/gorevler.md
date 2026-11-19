@@ -34,7 +34,7 @@ Merhaba Can!
 
 ```pas çözüm
 işlev ana() {
-    yap ad = oku!("Adın ne? ");
+    tanımla ad = oku!("Adın ne? ");
     yazdır!("Merhaba {ad}!");
 }
 ```
@@ -75,8 +75,8 @@ Toplam: 7
 
 ```pas çözüm
 işlev ana() {
-    yap a = oku!("Birinci sayı: ", i32);
-    yap b = oku!("İkinci sayı: ", i32);
+    tanımla a = oku!("Birinci sayı: ", i32);
+    tanımla b = oku!("İkinci sayı: ", i32);
     yazdır!("Toplam: {}", a + b);
 }
 ```

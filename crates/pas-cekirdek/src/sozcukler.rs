@@ -260,7 +260,7 @@ mod testler {
 
     #[test]
     fn her_bayti_kapsar() {
-        let kaynak = "işlev ana() { yap ş = r#\"a\"#; } // yorum\n/* iç /* içe */ */ 'a' 'b";
+        let kaynak = "işlev ana() { tanımla ş = r#\"a\"#; } // yorum\n/* iç /* içe */ */ 'a' 'b";
         let sozcukler = sozcuklere_ayir(kaynak);
         let mut konum = 0;
         for t in &sozcukler {
@@ -272,7 +272,7 @@ mod testler {
 
     #[test]
     fn turkce_isimler() {
-        assert_eq!(turler("yap sayılar"), [(Isim, "yap"), (Isim, "sayılar")]);
+        assert_eq!(turler("tanımla sayılar"), [(Isim, "tanımla"), (Isim, "sayılar")]);
         assert_eq!(turler("ğüşıöç_İ"), [(Isim, "ğüşıöç_İ")]);
     }
 

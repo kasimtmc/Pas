@@ -21,7 +21,7 @@ yanındaki ▶ düğmesine bas.
 çizginin arasına yazılır:
 
 ```
-yap iki_katı = |sayı: i32| sayı * 2;
+tanımla iki_katı = |sayı: i32| sayı * 2;
 yazdır!("{}", iki_katı(21)); // 42
 ```
 
@@ -41,7 +41,7 @@ ekleyebilirsin:
 Bunları art arda yazabilirsin:
 
 ```
-yap kalanlar: Liste<i32> =
+tanımla kalanlar: Liste<i32> =
     notlar.yinele().dönüştür(|not| *not).süz(|not| *not < 50).dönüştür(|not| not + 10).biriktir();
 ```
 

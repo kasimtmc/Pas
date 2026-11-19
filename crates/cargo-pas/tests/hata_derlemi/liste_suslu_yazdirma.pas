@@ -1,4 +1,4 @@
 işlev ana() {
-    yap sayılar = liste![1, 2, 3];
+    tanımla sayılar = liste![1, 2, 3];
     yazdır!("{}", sayılar);
 }

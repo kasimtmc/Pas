@@ -1,4 +1,4 @@
 işlev ana() {
-    yap x = 5
+    tanımla x = 5
     yazdır!("{x}");
 }

@@ -19,7 +19,7 @@ yanındaki ▶ düğmesine bas.
 **Liste oluşturmak**:
 
 ```
-yap değişken meyveler = liste!["elma", "armut"];
+tanımla değişken meyveler = liste!["elma", "armut"];
 meyveler.ekle("muz");
 ```
 
@@ -33,7 +33,7 @@ meyveler.ekle("muz");
 **Listede dolaşmak**:
 
 ```
-her meyve içinde &meyveler {
+her meyve için &meyveler {
     yazdır!("{meyve}");
 }
 ```

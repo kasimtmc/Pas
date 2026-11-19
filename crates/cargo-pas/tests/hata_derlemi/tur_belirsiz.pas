@@ -1,3 +1,3 @@
 işlev ana() {
-    yap l = Liste::yeni();
+    tanımla l = Liste::yeni();
 }

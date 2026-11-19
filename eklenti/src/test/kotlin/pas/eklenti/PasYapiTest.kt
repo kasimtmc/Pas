@@ -28,7 +28,7 @@ class PasYapiTest : BasePlatformTestCase() {
         }
 
         işlev ana() {
-            yap f: işlev(i32) -> i32 = |x| x;
+            tanımla f: işlev(i32) -> i32 = |x| x;
             işlev iç_işlev() {}
         }
     """.trimIndent()
@@ -74,7 +74,7 @@ class PasYapiTest : BasePlatformTestCase() {
     }
 
     fun testKatlama() {
-        val dosya = myFixture.configureByText("ana.pas", "işlev ana() {\n    yap x = 1;\n}\n/* çok\nsatırlı */\nişlev tek() {}")
+        val dosya = myFixture.configureByText("ana.pas", "işlev ana() {\n    tanımla x = 1;\n}\n/* çok\nsatırlı */\nişlev tek() {}")
         val bolgeler = PasKatlama().buildFoldRegions(dosya, myFixture.editor.document, false)
         assertEquals(listOf("{...}", "/*...*/"), bolgeler.map { PasKatlama().getPlaceholderText(it.element) })
     }
@@ -82,11 +82,11 @@ class PasYapiTest : BasePlatformTestCase() {
     fun testGirintiDuzeltilir() {
         val dosya = myFixture.configureByText(
             "ana.pas",
-            "işlev ana() {\nyap l = liste![\n1,\n2,\n];\n        eşle l.uzunluk() {\n0 => yazdır!(\"boş\"),\n_ => {\n// yorum\nyazdır!(\"dolu\")\n}\n}\n}\n",
+            "işlev ana() {\ntanımla l = liste![\n1,\n2,\n];\n        eşle l.uzunluk() {\n0 => yazdır!(\"boş\"),\n_ => {\n// yorum\nyazdır!(\"dolu\")\n}\n}\n}\n",
         )
         WriteCommandAction.runWriteCommandAction(project) { CodeStyleManager.getInstance(project).reformat(dosya) }
         assertEquals(
-            "işlev ana() {\n    yap l = liste![\n        1,\n        2,\n    ];\n    eşle l.uzunluk() {\n        0 => yazdır!(\"boş\"),\n" +
+            "işlev ana() {\n    tanımla l = liste![\n        1,\n        2,\n    ];\n    eşle l.uzunluk() {\n        0 => yazdır!(\"boş\"),\n" +
                 "        _ => {\n            // yorum\n            yazdır!(\"dolu\")\n        }\n    }\n}\n",
             dosya.text,
         )

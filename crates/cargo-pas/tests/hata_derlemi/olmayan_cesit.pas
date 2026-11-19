@@ -4,5 +4,5 @@
 }
 
 işlev ana() {
-    yap h = Hamle::Makas;
+    tanımla h = Hamle::Makas;
 }

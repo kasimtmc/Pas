@@ -27,7 +27,7 @@ kullan std::collections::Sözlük;
 **Sözlük oluşturmak ve doldurmak**:
 
 ```
-yap değişken başkentler = Sözlük::yeni();
+tanımla değişken başkentler = Sözlük::yeni();
 başkentler.yerleştir("Türkiye", "Ankara");
 ```
 

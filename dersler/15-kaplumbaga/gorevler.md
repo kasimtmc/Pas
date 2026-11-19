@@ -10,14 +10,14 @@ Kaplumbağaya kenarı 100 olan bir eşkenar üçgen çizdir: her köşede `ileri
 
 ```pas başlangıç
 işlev ana() {
-    yap değişken k = Kaplumbağa::yeni();
+    tanımla değişken k = Kaplumbağa::yeni();
 }
 ```
 
 ```pas çözüm
 işlev ana() {
-    yap değişken k = Kaplumbağa::yeni();
-    her _ içinde 0..3 {
+    tanımla değişken k = Kaplumbağa::yeni();
+    her _ için 0..3 {
         k.ileri(100);
         k.sağa_dön(120);
     }
@@ -32,14 +32,14 @@ Dört basamaklı bir merdiven çiz. Her basamakta önce 30 yukarı, sonra 30 sa�
 
 ```pas başlangıç
 işlev ana() {
-    yap değişken k = Kaplumbağa::yeni();
+    tanımla değişken k = Kaplumbağa::yeni();
 }
 ```
 
 ```pas çözüm
 işlev ana() {
-    yap değişken k = Kaplumbağa::yeni();
-    her _ içinde 0..4 {
+    tanımla değişken k = Kaplumbağa::yeni();
+    her _ için 0..4 {
         k.ileri(30);
         k.sağa_dön(90);
         k.ileri(30);

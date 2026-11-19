@@ -10,10 +10,10 @@ Türkçe gösterilir ve Pas kodundaki doğru satırı işaret eder.
 
 ```
 işlev ana() {
-    yap değişken sayılar = liste![3, 1, 4];
+    tanımla değişken sayılar = liste![3, 1, 4];
     sayılar.ekle(1);
 
-    her sayı içinde sayılar.yinele() {
+    her sayı için sayılar.yinele() {
         eğer sayı % 2 == 0 {
             yazdır!("{sayı} çift");
         } değilse {
@@ -104,7 +104,7 @@ Pas desteği ekler:
 - `işlev ana()` satırının yanında ▶ Çalıştır düğmesi
 - Derleyici hatalarının, dosya kaydedilmeden de editörde Türkçe gösterilmesi
 - Derleyicinin önerdiği düzeltmeleri Alt+Enter ile uygulama (örneğin
-  `yap x` → `yap değişken x`, `isim` → `isim.kopyala()`)
+  `tanımla x` → `tanımla değişken x`, `isim` → `isim.kopyala()`)
 - Kod katlama, otomatik girinti (Ctrl+Alt+L girintiyi düzeltir) ve
   işlevleri, yapıları, `uygula` bloklarını listeleyen yapı görünümü
 - Tanıma gitme (Ctrl+tık), kullanıldığı yerleri bulma (Alt+F7), üzerine
@@ -154,14 +154,14 @@ cd vscode && npm ci && npm run paketle
 hata[E0384]: `x` değiştirilemez bir değişken; ona ikinci kez değer verilemez
  --> src/ana.pas:3:5
   |
-2 |     yap x = 5;
+2 |     tanımla x = 5;
   |         - `x` için ilk değer burada verildi
 3 |     x = 6;
   |     ^^^^^ değiştirilemez değişkene ikinci kez değer verilemez
   |
   = yardım: değerini sonradan değiştirebilmek için başına `değişken` ekle
   |
-2 |     yap değişken x = 5;
+2 |     tanımla değişken x = 5;
   = açıklama: Pas'ta değişkenler kendiliğinden değiştirilemez. …
 ```
 
@@ -173,8 +173,8 @@ satır işaretlenir.
 Pas, Rust'ın sözdizimini olduğu gibi kullanır. Değişen tek şey sözcüklerdir.
 Bu sayede Pas öğrenen biri ileride gerçek Rust'a kolayca geçebilir.
 
-- **Anahtar sözcükler:** `işlev` (fn), `yap` (let), `değişken` (mut),
-  `eğer`/`değilse` (if/else), `her … içinde` (for … in), `sürece` (while),
+- **Anahtar sözcükler:** `işlev` (fn), `tanımla` (let), `değişken` (mut),
+  `eğer`/`değilse` (if/else), `her … için` (for … in), `sürece` (while),
   `döngü` (loop), `eşle` (match), `yapı` (struct), `çeşit` (enum),
   `uygula` (impl), `nitelik` (trait), `genel` (pub), `döndür` (return),
   `doğru`/`yanlış` (true/false) …
@@ -192,10 +192,10 @@ ekrana `Var(doğru)` yazar, `Some(true)` değil.
 `oku!` makrosu kullanıcıdan bir satır okur:
 
 ```
-yap ad = oku!("Adın ne? ");                // Metin
-yap yaş = oku!("Kaç yaşındasın? ", u32);   // sayı
-yap boy = oku!("Boyun kaç metre? ", f64);  // 1,45 da 1.45 de olur
-yap devam = oku!("Devam mı? ", mantıksal); // evet/hayır, doğru/yanlış
+tanımla ad = oku!("Adın ne? ");               // Metin
+tanımla yaş = oku!("Kaç yaşındasın? ", u32);  // sayı
+tanımla boy = oku!("Boyun kaç metre? ", f64); // 1,45 da 1.45 de olur
+tanımla devam = oku!("Devam mı? ", mantıksal); // evet/hayır, doğru/yanlış
 ```
 
 Sayı beklenirken başka bir şey yazılırsa `oku!` "`on iki` geçerli bir
@@ -206,9 +206,9 @@ tam sayı değil, tekrar dene." diyerek yeniden sorar.
 `rastgele!` iki sayı arasında (ikisi de dahil) rastgele bir sayı seçer:
 
 ```
-yap zar = rastgele!(1, 6);
-yap tutulan: u32 = rastgele!(1, 100);
-yap oran = rastgele!(0.0, 1.0);            // ondalıklı sayılar da olur
+tanımla zar = rastgele!(1, 6);
+tanımla tutulan: u32 = rastgele!(1, 100);
+tanımla oran = rastgele!(0.0, 1.0);            // ondalıklı sayılar da olur
 ```
 
 Örnek bir oyun için [`ornekler/sayi-tahmin`](ornekler/sayi-tahmin/src/ana.pas)
@@ -219,8 +219,8 @@ dizinine bak.
 `Kaplumbağa` kalemiyle yürüdüğü yere çizgi çizer:
 
 ```
-yap değişken k = Kaplumbağa::yeni();
-her _ içinde 0..4 {
+tanımla değişken k = Kaplumbağa::yeni();
+her _ için 0..4 {
     k.ileri(100);
     k.sağa_dön(90);
 }
@@ -238,7 +238,7 @@ Bilinmesi gerekenler:
 - İngilizce Rust sözcükleri de geçerlidir; Pas ve Rust aynı dosyada birlikte
   yazılabilir.
 - Türkçe bir anahtar sözcüğü isim olarak kullanmak için başına `r#` koy:
-  `yap r#tür = 3;`
+  `tanımla r#tür = 3;`
 - `Cargo.toml` içindeki `[[bin]] path = "target/pas/src/main.rs"` satırı
   IDE'lerin projeyi tanıması içindir; `cargo pas yeni` bunu kendisi yazar.
 - `src/ana.pas` programın başladığı dosyadır (`main.rs`),

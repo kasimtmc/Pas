@@ -41,8 +41,8 @@ uygula Şekil her Daire {
 }
 
 işlev ana() {
-    yap kare = Kare { kenar: 4.0 };
-    yap daire = Daire { yarıçap: 2.0 };
+    tanımla kare = Kare { kenar: 4.0 };
+    tanımla daire = Daire { yarıçap: 2.0 };
     yazdır!("Kare: {:.2}", kare.alan());
     yazdır!("Daire: {:.2}", daire.alan());
 }
@@ -79,8 +79,8 @@ uygula Şekil her Daire {
 }
 
 işlev ana() {
-    yap kare = Kare { kenar: 4.0 };
-    yap daire = Daire { yarıçap: 2.0 };
+    tanımla kare = Kare { kenar: 4.0 };
+    tanımla daire = Daire { yarıçap: 2.0 };
     yazdır!("Kare: {:.2}", kare.alan());
     yazdır!("Daire: {:.2}", daire.alan());
 }

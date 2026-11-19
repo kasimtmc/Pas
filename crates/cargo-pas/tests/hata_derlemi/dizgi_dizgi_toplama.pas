@@ -1,4 +1,4 @@
 işlev ana() {
-    yap ad = "Ali" + " Can";
+    tanımla ad = "Ali" + " Can";
     yazdır!("{ad}");
 }

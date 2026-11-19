@@ -16,7 +16,7 @@ işlev öneri(hava: &Hava) -> &'durağan str {
 
 // `Belki`: bir değer olabilir (`Var`) de olmayabilir de (`Yok`).
 işlev ilk_büyük(sayılar: &[i32], sınır: i32) -> Belki<i32> {
-    her sayı içinde sayılar {
+    her sayı için sayılar {
         eğer *sayı > sınır {
             döndür Var(*sayı);
         }
@@ -25,12 +25,12 @@ işlev ilk_büyük(sayılar: &[i32], sınır: i32) -> Belki<i32> {
 }
 
 işlev ana() {
-    yap havalar = [Hava::Güneşli, Hava::Yağmurlu, Hava::Karlı];
-    her hava içinde &havalar {
+    tanımla havalar = [Hava::Güneşli, Hava::Yağmurlu, Hava::Karlı];
+    her hava için &havalar {
         yazdır!("{}", öneri(hava));
     }
 
-    yap sayılar = [4, 8, 15, 16, 23, 42];
+    tanımla sayılar = [4, 8, 15, 16, 23, 42];
     eşle ilk_büyük(&sayılar, 10) {
         Var(sayı) => yazdır!("10'dan büyük ilk sayı: {sayı}"),
         Yok => yazdır!("10'dan büyük sayı yok."),
@@ -41,8 +41,8 @@ işlev ana() {
     }
 
     // `eşle` sayı aralıklarıyla da çalışır. `_` "geri kalan her şey" demektir.
-    yap not = oku!("Sınav notun kaç? (0-100) ", u32);
-    yap derece = eşle not {
+    tanımla not = oku!("Sınav notun kaç? (0-100) ", u32);
+    tanımla derece = eşle not {
         85..=100 => "Pekiyi",
         70..=84 => "İyi",
         50..=69 => "Orta",

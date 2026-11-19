@@ -1,3 +1,3 @@
 işlev ana() {
-    yap x: i32 = "on";
+    tanımla x: i32 = "on";
 }

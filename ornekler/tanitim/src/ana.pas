@@ -46,21 +46,21 @@ işlev ana() {
     yazdır!("Merhaba dünya!");
 
     // Değişkenler
-    yap değişken oyuncu = Oyuncu::yeni("Ayşe");
+    tanımla değişken oyuncu = Oyuncu::yeni("Ayşe");
     oyuncu.puan_ekle(10);
     oyuncu.puan_ekle(5);
     yazdır!("{} şu an {} puanda", oyuncu.ad, oyuncu.puan);
 
     // Listeler ve döngüler
-    yap değişken sayılar = liste![3, 1, 4, 1, 5];
+    tanımla değişken sayılar = liste![3, 1, 4, 1, 5];
     sayılar.ekle(9);
-    yap değişken toplam = 0;
-    her sayı içinde sayılar.yinele() {
+    tanımla değişken toplam = 0;
+    her sayı için sayılar.yinele() {
         toplam += sayı;
     }
     yazdır!("{} sayının toplamı: {toplam}", sayılar.uzunluk());
 
-    yap değişken geri_sayım = 3;
+    tanımla değişken geri_sayım = 3;
     sürece geri_sayım > 0 {
         yaz!("{geri_sayım}... ");
         geri_sayım -= 1;
@@ -68,13 +68,13 @@ işlev ana() {
     yazdır!("Kalkış!");
 
     // Eşleme
-    yap hayvanlar = [Hayvan::Kedi, Hayvan::Köpek, Hayvan::Kuş { kanat_açıklığı: 0.3 }];
-    her h içinde &hayvanlar {
+    tanımla hayvanlar = [Hayvan::Kedi, Hayvan::Köpek, Hayvan::Kuş { kanat_açıklığı: 0.3 }];
+    her h için &hayvanlar {
         yazdır!("{}", ses(h));
     }
 
     // Belki ve Sonuç
-    yap ilk_çift: Belki<&i32> = sayılar.yinele().bul(|s| *s % 2 == 0);
+    tanımla ilk_çift: Belki<&i32> = sayılar.yinele().bul(|s| *s % 2 == 0);
     eşle ilk_çift {
         Var(s) => yazdır!("İlk çift sayı: {s}"),
         Yok => yazdır!("Çift sayı yok"),
@@ -85,7 +85,7 @@ işlev ana() {
     }
 
     // Modüller
-    her şekil içinde [Şekil::Kare(4.0), Şekil::Daire(1.0)] {
+    her şekil için [Şekil::Kare(4.0), Şekil::Daire(1.0)] {
         yazdır!("Alan: {:.2}", alan(&şekil));
     }
 }

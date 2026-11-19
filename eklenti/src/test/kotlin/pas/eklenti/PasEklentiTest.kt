@@ -32,11 +32,13 @@ class PasEklentiTest : BasePlatformTestCase() {
     fun testTamamlamaSozluguOnerir() {
         myFixture.configureByText("ana.pas", "işlev ana() {\n    ya<caret>\n}")
         val oneriler = myFixture.completeBasic()?.map { it.lookupString }.orEmpty()
-        assertContainsElements(oneriler, "yap", "yazdır!", "yaz!")
+        assertContainsElements(oneriler, "yazdır!", "yaz!")
+        myFixture.configureByText("ana.pas", "işlev ana() {\n    tan<caret>\n}")
+        tamamla("tanımla")
     }
 
     fun testTamamlamaDosyadakiIsimleriOnerir() {
-        myFixture.configureByText("ana.pas", "işlev ana() {\n    yap sayılar = 1;\n    say<caret>\n}")
+        myFixture.configureByText("ana.pas", "işlev ana() {\n    tanımla sayılar = 1;\n    say<caret>\n}")
         tamamla("sayılar")
         assertTrue(myFixture.editor.document.text.contains("    sayılar\n"))
     }
@@ -49,9 +51,9 @@ class PasEklentiTest : BasePlatformTestCase() {
     }
 
     fun testYorumSatiri() {
-        myFixture.configureByText("ana.pas", "yap x = 1;<caret>")
+        myFixture.configureByText("ana.pas", "tanımla x = 1;<caret>")
         myFixture.performEditorAction("CommentByLineComment")
-        myFixture.checkResult("//yap x = 1;")
+        myFixture.checkResult("//tanımla x = 1;")
     }
 
     fun testKonumFiltresiDeseni() {
@@ -74,7 +76,7 @@ class PasEklentiTest : BasePlatformTestCase() {
     }
 
     fun testHizliDuzeltmeEkler() {
-        myFixture.configureByText("ana.pas", "işlev ana() {\n    yap x = 1;\n    x = 2;\n}")
+        myFixture.configureByText("ana.pas", "işlev ana() {\n    tanımla x = 1;\n    x = 2;\n}")
         val belge = myFixture.editor.document
         val ofset = belge.text.indexOf("x = 1")
         val duzeltme = PasHizliDuzeltme(
@@ -86,26 +88,26 @@ class PasEklentiTest : BasePlatformTestCase() {
         assertEquals("Ekle: değişken", duzeltme.text)
         assertTrue(duzeltme.isAvailable(project, myFixture.editor, myFixture.file))
         val onizleme = duzeltme.generatePreview(project, myFixture.editor, myFixture.file) as IntentionPreviewInfo.CustomDiff
-        assertEquals("    yap x = 1;", onizleme.originalText())
-        assertEquals("    yap değişken x = 1;", onizleme.modifiedText())
+        assertEquals("    tanımla x = 1;", onizleme.originalText())
+        assertEquals("    tanımla değişken x = 1;", onizleme.modifiedText())
         WriteCommandAction.runWriteCommandAction(project) { duzeltme.invoke(project, myFixture.editor, myFixture.file) }
-        assertEquals("işlev ana() {\n    yap değişken x = 1;\n    x = 2;\n}", belge.text)
+        assertEquals("işlev ana() {\n    tanımla değişken x = 1;\n    x = 2;\n}", belge.text)
         // Belge değişti; aynı düzeltme artık geçerli değil.
         assertFalse(duzeltme.isAvailable(project, myFixture.editor, myFixture.file))
     }
 
     fun testHizliDuzeltmeDegistirir() {
-        myFixture.configureByText("ana.pas", "yap kullanilmayan = 3;")
+        myFixture.configureByText("ana.pas", "tanımla kullanilmayan = 3;")
         val belge = myFixture.editor.document
         val duzeltme = PasHizliDuzeltme(
             "m",
-            listOf(BelgeDegisikligi(TextRange(4, 17), "_kullanilmayan")),
+            listOf(BelgeDegisikligi(TextRange(8, 21), "_kullanilmayan")),
             belge.modificationStamp,
             kesin = true,
         )
         assertEquals("Şununla değiştir: _kullanilmayan", duzeltme.text)
         WriteCommandAction.runWriteCommandAction(project) { duzeltme.invoke(project, myFixture.editor, myFixture.file) }
-        assertEquals("yap _kullanilmayan = 3;", belge.text)
+        assertEquals("tanımla _kullanilmayan = 3;", belge.text)
     }
 
     fun testDilSunucusuYalnizcaPasDosyalariniDestekler() {

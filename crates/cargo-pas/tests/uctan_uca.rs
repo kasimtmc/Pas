@@ -49,14 +49,16 @@ fn turkce_modullu_program_calisir() {
 
 #[test]
 fn derleme_hatalari_pas_kaynagini_gosterir() {
-    let dizin =
-        proje("hatali", &[("src/ana.pas", "işlev ana() {\n    yap x = 5;\n    x = 6;\n    yazdır!(\"{x}\");\n}\n")]);
+    let dizin = proje(
+        "hatali",
+        &[("src/ana.pas", "işlev ana() {\n    tanımla x = 5;\n    x = 6;\n    yazdır!(\"{x}\");\n}\n")],
+    );
     let cikti = cargo_pas(&dizin, &["derle"]);
     let hata_ciktisi = metin(&cikti.stderr);
     assert_eq!(cikti.status.code(), Some(101));
     assert!(hata_ciktisi.contains("hata[E0384]"), "{hata_ciktisi}");
     assert!(hata_ciktisi.contains("--> src/ana.pas:3:5"), "{hata_ciktisi}");
-    assert!(hata_ciktisi.contains("yap değişken x = 5;"), "{hata_ciktisi}");
+    assert!(hata_ciktisi.contains("tanımla değişken x = 5;"), "{hata_ciktisi}");
     assert!(!hata_ciktisi.contains("main.rs"), "{hata_ciktisi}");
 }
 
@@ -66,7 +68,7 @@ fn panikler_cevrilir() {
         "coken",
         &[(
             "src/ana.pas",
-            "işlev ana() {\n    yap l = liste![1, 2];\n    yap i = l.uzunluk() + 1;\n    yazdır!(\"{}\", l[i]);\n}\n",
+            "işlev ana() {\n    tanımla l = liste![1, 2];\n    tanımla i = l.uzunluk() + 1;\n    yazdır!(\"{}\", l[i]);\n}\n",
         )],
     );
     let cikti = cargo_pas(&dizin, &["çalıştır"]);
@@ -98,7 +100,7 @@ fn yeni_proje_calisir() {
 
 #[test]
 fn json_tanilamalari_ide_icin_okunabilir() {
-    let dizin = proje("jsonlu", &[("src/ana.pas", "işlev ana() {\n    yap x = 5;\n    x = 6;\n}\n")]);
+    let dizin = proje("jsonlu", &[("src/ana.pas", "işlev ana() {\n    tanımla x = 5;\n    x = 6;\n}\n")]);
     // Kaydedilmemiş içerik standart girdiden verilir; diskteki dosya farklıdır.
     let mut surec = Command::new(env!("CARGO_BIN_EXE_cargo-pas"))
         .args(["denetle", "--json", "--stdin", "src/ana.pas"])
@@ -110,7 +112,7 @@ fn json_tanilamalari_ide_icin_okunabilir() {
         .spawn()
         .unwrap();
     use std::io::Write;
-    surec.stdin.take().unwrap().write_all("işlev ana() {\n    yap ş = 5;\n    ş = 6;\n}\n".as_bytes()).unwrap();
+    surec.stdin.take().unwrap().write_all("işlev ana() {\n    tanımla ş = 5;\n    ş = 6;\n}\n".as_bytes()).unwrap();
     let cikti = surec.wait_with_output().unwrap();
     let satirlar = metin(&cikti.stdout);
     let hata: serde_json::Value = satirlar
@@ -124,14 +126,14 @@ fn json_tanilamalari_ide_icin_okunabilir() {
     assert_eq!(hata["aralik"]["sutun"], 5);
     assert!(hata["mesaj"].as_str().unwrap().contains("`ş`"), "{hata}");
     assert!(hata["aciklama"].is_string());
-    assert!(hata["notlar"].as_array().unwrap().iter().any(|not| not.as_str().unwrap().contains("yap değişken ş")));
+    assert!(hata["notlar"].as_array().unwrap().iter().any(|not| not.as_str().unwrap().contains("tanımla değişken ş")));
     // IDE'nin Alt+Enter ile uygulayacağı öneri: `ş`nin önüne `değişken ` ekle.
     let oneri = &hata["oneriler"][0];
     assert_eq!(oneri["kesin"], true);
     assert_eq!(oneri["degisiklikler"][0]["metin"], "değişken ");
     assert_eq!(oneri["degisiklikler"][0]["aralik"]["satir"], 2);
-    assert_eq!(oneri["degisiklikler"][0]["aralik"]["sutun"], 9);
-    assert_eq!(oneri["degisiklikler"][0]["aralik"]["bitis_sutunu"], 9);
+    assert_eq!(oneri["degisiklikler"][0]["aralik"]["sutun"], 13);
+    assert_eq!(oneri["degisiklikler"][0]["aralik"]["bitis_sutunu"], 13);
 }
 
 /// `cargo pas çalıştır` komutunu verilen standart girdiyle çalıştırır.
@@ -156,8 +158,8 @@ fn oku_makrosu_girdi_okur() {
         &[
             (
                 "src/ana.pas",
-                "modül selam;\n\nişlev ana() {\n    yap ad = oku!(\"Adın ne? \");\n    \
-                 yap yaş = oku!(\"Kaç yaşındasın? \", u32);\n    yap boy = oku!(\"Boyun? \", f64);\n    \
+                "modül selam;\n\nişlev ana() {\n    tanımla ad = oku!(\"Adın ne? \");\n    \
+                 tanımla yaş = oku!(\"Kaç yaşındasın? \", u32);\n    tanımla boy = oku!(\"Boyun? \", f64);\n    \
                  yazdır!(\"{} {yaş} yaşında, boyu {boy}.\", selam::selamla(&ad));\n}\n",
             ),
             ("src/selam.pas", "genel işlev selamla(ad: &str) -> Metin {\n    biçimle!(\"Merhaba {ad}!\")\n}\n"),
@@ -176,7 +178,7 @@ fn oku_makrosu_girdi_okur() {
 fn girdi_bitince_oku_turkce_panik_verir() {
     let dizin = proje(
         "girdisiz",
-        &[("src/ana.pas", "işlev ana() {\n    yap sayı = oku!(\"Sayı: \", i32);\n    yazdır!(\"{sayı}\");\n}\n")],
+        &[("src/ana.pas", "işlev ana() {\n    tanımla sayı = oku!(\"Sayı: \", i32);\n    yazdır!(\"{sayı}\");\n}\n")],
     );
     let cikti = girdiyle_calistir(&dizin, "");
     let hata_ciktisi = metin(&cikti.stderr);
@@ -191,26 +193,26 @@ fn yeni_sozluk_sozcukleri_calisir() {
     let ana = r#"kullan std::collections::HashMap;
 
 işlev ana() {
-    yap değişken sayılar: Liste<i32> = Liste::yeni();
-    her s içinde [5, 3, 8, 1] {
+    tanımla değişken sayılar: Liste<i32> = Liste::yeni();
+    her s için [5, 3, 8, 1] {
         sayılar.ekle(s);
     }
     sayılar.sırala();
     yazdır!("{:?} {:?}", sayılar, sayılar.al(10).yoksa(&0));
     sayılar.ters_çevir();
-    yap toplam: i32 = sayılar.yinele().toplam();
+    tanımla toplam: i32 = sayılar.yinele().toplam();
     yazdır!("{toplam} {:?} {:?}", sayılar.yinele().en_büyük(), sayılar.yinele().en_küçük());
-    yap çiftler: Liste<i32> = sayılar.yinele().süz(|s| *s % 2 == 0).dönüştür(|s| s * 10).biriktir();
+    tanımla çiftler: Liste<i32> = sayılar.yinele().süz(|s| *s % 2 == 0).dönüştür(|s| s * 10).biriktir();
     yazdır!("{:?} {}", çiftler, sayılar.yinele().bul(|s| **s > 4).var_mı());
-    her (i, s) içinde sayılar.yinele().numaralandır() {
+    her (i, s) için sayılar.yinele().numaralandır() {
         eğer i == 0 {
             yazdır!("ilk: {s}");
         }
     }
-    yap değişken yaşlar: HashMap<Metin, u32> = HashMap::yeni();
+    tanımla değişken yaşlar: HashMap<Metin, u32> = HashMap::yeni();
     yaşlar.yerleştir("Ali".metne_çevir(), 10);
     yazdır!("{} {:?}", yaşlar.anahtar_var_mı("Ali"), yaşlar.sil("Ali"));
-    yap kelimeler: Liste<&str> = "elma armut muz".böl(" ").biriktir();
+    tanımla kelimeler: Liste<&str> = "elma armut muz".böl(" ").biriktir();
     yazdır!("{} {}", kelimeler.birleştir(", "), "elma".değiştir("e", "E"));
     yazdır!("{} {}", "Pas".ile_başlar_mı("P"), "a\nb".satırlar().count() + "çiğ".karakterler().count());
     yazdır!("{} {} {}", (-3i32).mutlak(), 2i32.kuvvet(3), 2.25f64.karekök().yuvarla());
