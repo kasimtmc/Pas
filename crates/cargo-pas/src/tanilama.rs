@@ -446,6 +446,21 @@ impl Gosterici {
 
     /// Bir yardım mesajındaki kod önerisini Pas satırına uygular.
     fn oneri(&mut self, alt_tani: &Tani) -> Option<(usize, String)> {
+        // Yeni bir satır ekleme önerisi: `kullan std::collections::Sözlük;`
+        if let [aralik] = alt_tani.araliklar.as_slice()
+            && let Some(yerine) = &aralik.onerilen
+            && yerine.ends_with('\n')
+            && let satir = yerine.trim_end_matches('\n')
+            && !satir.is_empty()
+            && !satir.contains('\n')
+            && aralik.bayt_baslangici == aralik.bayt_bitisi
+        {
+            // Ekleme yeri destek kodunun başı olabilir; yine de Pas'taki karşılığı bulunur.
+            let dosya = self.kaynaklar.al(&aralik.dosya_adi)?;
+            let (ofset, _) = dosya.gosterilene(aralik.bayt_baslangici, aralik.bayt_bitisi);
+            let dizin = SatirDizini::yeni(&dosya.metin);
+            return Some((dizin.satir_sutun(ofset).0, pasa_cevir(satir)));
+        }
         let mut degisiklikler = Vec::new();
         for aralik in &alt_tani.araliklar {
             let yerine = aralik.onerilen.as_ref()?;

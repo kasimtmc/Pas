@@ -27,12 +27,19 @@ const DERLEYICI: &[(&str, &str)] = &[
     ("a local variable with a similar name exists", "benzer adlı bir yerel değişken var"),
     ("a function with a similar name exists", "benzer adlı bir işlev var"),
     ("a macro with a similar name exists", "benzer adlı bir makro var"),
-    ("consider importing this {}", "bunu `kullan` ile kullanıma almayı düşün ({0})"),
+    ("consider importing this {}", "bunu `kullan` ile kullanıma almayı düşün"),
+    ("consider importing one of these {}", "bunlardan birini `kullan` ile kullanıma almayı düşün"),
+    ("use of undeclared type `{}`", "`{0}` türü tanımlanmamış"),
     ("`main` function not found in crate `{}`", "`{0}` sandığında `ana` işlevi bulunamadı"),
     ("consider adding a `main` function to `{}`", "`{0}` dosyasına bir `işlev ana() {{ … }}` eklemelisin"),
     ("trying to load file for module `{}` with non-ascii identifier name", "`{0}` modülünün dosyası bulunamadı"),
     // Türler
     ("mismatched types", "türler uyuşmuyor"),
+    // `süz(|not| not > 50)`: `süz` elemanları iki kez ödünç verir.
+    (
+        "expected `&&_`, found integer",
+        "burada ödünç alınmış bir değer (`&&`) var; sayıyla karşılaştırmak için değişkenin başına `**` koy (örneğin `**x > 50`)",
+    ),
     ("expected `{}`, found `{}`", "`{0}` bekleniyordu ama `{1}` bulundu"),
     ("expected `{}` because of return type", "dönüş türü yüzünden `{0}` bekleniyor"),
     ("expected due to this", "bu yüzden bekleniyor"),
@@ -77,7 +84,78 @@ const DERLEYICI: &[(&str, &str)] = &[
     ("consider annotating `{}` with `{}`", "`{0}` tanımının üstüne `{1}` ekle"),
     ("`{}` cannot be formatted with the default formatter", "`{0}` doğrudan `{{}}` ile yazdırılamaz"),
     ("unsatisfied trait bound", "bu tür istenen niteliği karşılamıyor"),
+    ("`{}` doesn't satisfy the trait bound", "`{0}` istenen niteliği karşılamıyor"),
+    ("`{}` implements trait `{}`", "`{0}` türü `{1}` niteliğini uyguluyor"),
+    ("the type must implement `{}`", "türün `{0}` niteliğini uygulaması gerekiyor"),
+    ("required for the cast from `{}` to `{}`", "`{0}` değerini `{1}` olarak kullanabilmek için gerekli"),
+    (
+        "this trait has no implementations, consider adding one",
+        "bu niteliği uygulayan hiçbir tür yok; `uygula … her …` ile bir türe uygula",
+    ),
+    (
+        "the trait bound `{}: RastgeleSayi` is not satisfied",
+        "`rastgele!` yalnızca sayılarla çalışır; `{0}` bir sayı değil",
+    ),
     ("expected {} `{}`\n   found {} `{}`", "beklenen: `{1}`, bulunan: `{3}`"),
+    ("expected {} `{}`\n{}found {} `{}`", "beklenen: `{1}`, bulunan: `{4}`"),
+    ("expected because of this", "bu yüzden bekleniyor"),
+    ("consider borrowing here", "burada ödünç almayı (`&`) düşün"),
+    // Tekli işlemler ve dizinleme
+    ("cannot apply unary operator `{}` to type `{}`", "`{1}` türüne `{0}` işlemi uygulanamaz"),
+    ("cannot apply unary operator `{}`", "`{0}` işlemi uygulanamaz"),
+    (
+        "unsigned values cannot be negated",
+        "işaretsiz (`u` ile başlayan) türler eksi olamaz; eksi sayılar için `i32` gibi bir tür kullan",
+    ),
+    (
+        "the type `{}` cannot be indexed by `{}`",
+        "`{0}` türünde köşeli parantezle (`[…]`) `{1}` sırasındaki elemana ulaşılamaz",
+    ),
+    (
+        "string indices are ranges of `usize`",
+        "metinlerde köşeli parantez içine tek bir sayı değil, bir aralık yazılır: `ad[0..2]`",
+    ),
+    ("you can use `{}` or `{}`\n{}", "bunun yerine `{0}` ya da `{1}` kullanabilirsin"),
+    // Nitelikler
+    ("not all trait items implemented, missing: {}", "niteliğin bütün yöntemleri yazılmamış; eksik: {0}"),
+    ("missing `{}` in implementation", "`{0}` burada eksik"),
+    ("`{}` from trait", "nitelikteki `{0}`"),
+    ("implement the missing item: `{}`", "eksik yöntemi ekle: `{0}`"),
+    ("implement the missing items: `{}`", "eksik yöntemleri ekle: `{0}`"),
+    // Çeşitler
+    (
+        "no variant, associated function, or constant named `{}` found for enum `{}` in the current scope",
+        "`{1}` çeşidinde `{0}` adında bir seçenek yok",
+    ),
+    ("variant, associated function, or constant not found in `{}`", "`{0}` içinde bulunamadı"),
+    (
+        "variant, associated function, or constant `{}` not found for this enum",
+        "bu çeşitte `{0}` adında bir seçenek yok",
+    ),
+    (
+        "no function or associated item named `{}` found for {} `{}` in the current scope",
+        "`{2}` türünde `{0}` adında bir işlev yok",
+    ),
+    ("function or associated item not found in `{}`", "`{0}` içinde böyle bir işlev yok"),
+    // `?` işareti
+    (
+        "the `?` operator can only be used in a function that returns `{}` or `{}` (or another type that implements `{}`)",
+        "`?` işareti yalnızca `{0}` ya da `{1}` döndüren bir işlevin içinde kullanılabilir",
+    ),
+    ("cannot use the `?` operator in a function that returns `{}`", "`{0}` döndüren bir işlevde `?` kullanılamaz"),
+    (
+        "this function should return `{}` or `{}` to accept `?`",
+        "`?` kullanabilmek için bu işlev `{0}` ya da `{1}` döndürmeli",
+    ),
+    (
+        "consider adding return type",
+        "işleve bir dönüş türü eklemeyi düşün; `ana` içindeysen `?` yerine `eşle` ya da `.sarmalaç()` kullan",
+    ),
+    (
+        "this `{}` may be an `{}` variant, which should be handled",
+        "bu `{0}` bir `{1}` olabilir; bu durumu (örneğin `eşle` ile) ele almalısın",
+    ),
+    ("use `let _ = ...` to ignore the resulting value", "sonucu bilerek yok saymak için `yap _ = ...` yaz"),
     ("the trait bound `{}: {}` is not satisfied", "`{0}` türü `{1}` niteliğini karşılamıyor"),
     ("the trait `{}` is not implemented for `{}`", "`{1}` türü `{0}` niteliğini uygulamıyor"),
     // Değiştirilebilirlik ve sahiplik
@@ -144,6 +222,19 @@ const DERLEYICI: &[(&str, &str)] = &[
     ("used binding `{}` isn't initialized", "`{0}` değişkenine henüz bir değer verilmemiş"),
     ("binding declared here but left uninitialized", "değişken burada tanımlandı ama değer verilmedi"),
     ("missing lifetime specifier", "yaşam süresi belirtilmemiş"),
+    ("expected named lifetime parameter", "burada bir yaşam süresi adı bekleniyordu"),
+    (
+        "this function's return type contains a borrowed value, but there is no value for it to be borrowed from",
+        "bu işlev ödünç alınmış bir değer (`&`) döndürüyor ama ödünç alınabilecek bir girdisi yok",
+    ),
+    (
+        "consider using the `{}` lifetime, but this is uncommon unless you're returning a borrowed value from a `{}` or a `{}`",
+        "`{0}` yaşam süresini kullanabilirsin ama bu yalnızca `{1}` ya da `{2}` bir değeri döndürürken işe yarar",
+    ),
+    (
+        "instead, you are more likely to want to return an owned value",
+        "büyük ihtimalle ödünç yerine değerin kendisini döndürmek istiyorsun (örneğin `&str` yerine `Metin`)",
+    ),
     // Desenler
     ("non-exhaustive patterns: {} not covered", "`eşle` tüm durumları kapsamıyor: {0} eksik"),
     ("pattern {} not covered", "{0} deseni eksik"),
@@ -351,8 +442,20 @@ const ACIKLAMALAR: &[(&str, &str)] = &[
         "`eşle` ifadesi olabilecek bütün durumları kapsamalı. Eksik durumları ekle ya da en sona her şeyi yakalayan `_ => …` kolunu koy.",
     ),
     (
+        "E0046",
+        "Bir niteliği bir türe uygularken niteliğin gövdesiz bütün yöntemlerini yazmalısın. Eksik yöntemi `uygula … her …` bloğunun içine ekle.",
+    ),
+    (
         "E0061",
         "İşleve verdiğin argüman sayısı, işlevin beklediği sayıdan farklı. İşlevin tanımına bakıp her parametre için bir değer ver.",
+    ),
+    (
+        "E0282",
+        "Pas bu değerin türünü kendi başına çıkaramadı. Değişkenin yanına türünü yaz: `yap sayılar: Liste<i32> = …`",
+    ),
+    (
+        "E0283",
+        "Pas bu değerin türünü kendi başına çıkaramadı. Değişkenin yanına türünü yaz: `yap sayılar: Liste<i32> = …`",
     ),
     (
         "E0106",
@@ -360,7 +463,7 @@ const ACIKLAMALAR: &[(&str, &str)] = &[
     ),
     (
         "E0277",
-        "Bu tür, istenen yeteneğe (niteliğe) sahip değil. Örneğin kendi yapını `{}` ile yazdırmak istiyorsan yapının üstüne `#[derive(Debug)]` ekleyip `{:?}` ile yazdırmayı dene.",
+        "Bu tür, burada istenen yeteneğe (niteliğe) sahip değil. Mesajda hangi türün hangi niteliği karşılamadığı yazıyor: başka bir tür kullanmayı ya da o niteliği türüne uygulamayı dene.",
     ),
     (
         "E0308",
@@ -397,7 +500,11 @@ const ACIKLAMALAR: &[(&str, &str)] = &[
         "E0597",
         "Ödünç aldığın değer, sen onu kullanmayı bitirmeden yok oluyor. Değeri daha dış bir blokta tanımlamayı dene.",
     ),
-    ("E0599", "Bu türün böyle bir yöntemi yok. Yöntemin adını ve hangi türe ait olduğunu kontrol et."),
+    ("E0599", "Bu türün böyle bir yöntemi, seçeneği ya da işlevi yok. Adını ve hangi türe ait olduğunu kontrol et."),
+    (
+        "E0600",
+        "Bu işlem bu türle yapılamaz. Örneğin `u32` gibi işaretsiz türler eksi olamaz; eksi sayılar için `i32` kullan.",
+    ),
     ("E0601", "Her Pas programının başladığı bir `ana` işlevi olmalı: `işlev ana() { … }`"),
     ("E0609", "Bu yapının böyle bir alanı yok. Alanın adını kontrol et."),
     ("E0614", "Bu değer bir referans değil; başına `*` koyamazsın."),

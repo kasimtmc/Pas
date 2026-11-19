@@ -55,6 +55,8 @@ pub struct Not {
     /// Önerilen değişiklik: satır numarası ve satırın önerilen yeni hali
     /// (sekmeler dört boşluk olarak).
     pub oneri: Option<(usize, String)>,
+    /// Öneri var olan bir satırı değiştirmiyor, o satırın önüne yeni bir satır ekliyor.
+    pub yeni_satir: bool,
 }
 
 /// Derleyicinin çıktısındaki tanılamaları ayrıştırır. `rust`, derlenen
@@ -68,6 +70,7 @@ pub fn ayristir(metin: &str, rust: &str) -> Vec<Tani> {
         ana_dosyada: false,
         kod_satiri: None,
         yeni_satirlar: Vec::new(),
+        eski_satirlar: Vec::new(),
         oneri_var: false,
         not_devam_ediyor: false,
     };
@@ -89,7 +92,10 @@ struct Ayristirici<'r> {
     ana_dosyada: bool,
     kod_satiri: Option<KodSatiri>,
     /// Alt tanılamadaki kod satırları; öneri varsa önerilen yeni satırlardır.
-    yeni_satirlar: Vec<(usize, String)>,
+    /// Üçüncü alan: satır `N + …` biçiminde mi gösterildi?
+    yeni_satirlar: Vec<(usize, String, bool)>,
+    /// Alt tanılamada `N - …` biçiminde gösterilen (silinen ya da değişen) satırlar
+    eski_satirlar: Vec<usize>,
     oneri_var: bool,
     /// Son satır bir nottu; girintili devam satırları ona eklenir.
     not_devam_ediyor: bool,
@@ -112,7 +118,12 @@ impl Ayristirici<'_> {
         if let Some((seviye, mesaj)) = alt_baslik(satir) {
             self.alt_bitir();
             let tani = self.tani.as_mut().expect("tanılama var");
-            tani.notlar.push(Not { seviye: seviye.to_owned(), mesaj: mesaj.to_owned(), oneri: None });
+            tani.notlar.push(Not {
+                seviye: seviye.to_owned(),
+                mesaj: mesaj.to_owned(),
+                oneri: None,
+                yeni_satir: false,
+            });
             self.alt = Some(tani.notlar.len() - 1);
             // Kendi `-->` satırı yoksa alt tanılama ana dosyayı gösterir.
             self.ana_dosyada = true;
@@ -128,7 +139,7 @@ impl Ayristirici<'_> {
             Some((Some(no), '|', icerik)) => {
                 self.kod_satiri = self.ana_dosyada.then(|| KodSatiri::yeni(no, icerik, self.rust.satir(no)));
                 if self.alt.is_some() && self.ana_dosyada {
-                    self.yeni_satirlar.push((no, icerik.to_owned()));
+                    self.yeni_satirlar.push((no, icerik.to_owned(), false));
                 }
                 self.not_devam_ediyor = false;
             }
@@ -146,14 +157,27 @@ impl Ayristirici<'_> {
             Some((None, '=', icerik)) => {
                 let (seviye, mesaj) = icerik.split_once(": ").unwrap_or(("note", icerik));
                 let tani = self.tani.as_mut().expect("tanılama var");
-                tani.notlar.push(Not { seviye: seviye.to_owned(), mesaj: mesaj.to_owned(), oneri: None });
+                tani.notlar.push(Not {
+                    seviye: seviye.to_owned(),
+                    mesaj: mesaj.to_owned(),
+                    oneri: None,
+                    yeni_satir: false,
+                });
                 self.not_devam_ediyor = true;
             }
-            Some((Some(no), '+' | '~', icerik)) => {
-                if self.alt.is_some() && self.ana_dosyada {
-                    self.yeni_satirlar.push((no, icerik.to_owned()));
+            Some((Some(no), isaret @ ('+' | '~'), icerik)) => {
+                // Boş eklenen satırlar (bir `kullan` satırından sonraki boşluk) önemsizdir.
+                if self.alt.is_some() && self.ana_dosyada && !(isaret == '+' && icerik.is_empty()) {
+                    self.yeni_satirlar.push((no, icerik.to_owned(), isaret == '+'));
+                    if isaret == '~' {
+                        self.eski_satirlar.push(no);
+                    }
                     self.oneri_var = true;
                 }
+                self.not_devam_ediyor = false;
+            }
+            Some((Some(no), '-', _)) => {
+                self.eski_satirlar.push(no);
                 self.not_devam_ediyor = false;
             }
             Some(_) => self.not_devam_ediyor = false,
@@ -230,7 +254,12 @@ impl Ayristirici<'_> {
                     });
                     // Kısa öneriler etiket olarak yazılır: `help: remove this `mut``
                     if let Some(oneri) = mesaj.strip_prefix("help: ") {
-                        tani.notlar.push(Not { seviye: "help".into(), mesaj: oneri.to_owned(), oneri: None });
+                        tani.notlar.push(Not {
+                            seviye: "help".into(),
+                            mesaj: oneri.to_owned(),
+                            oneri: None,
+                            yeni_satir: false,
+                        });
                     } else if let Some(dizin) = hedef {
                         tani.etiketler[dizin].mesaj = Some(mesaj);
                     }
@@ -244,12 +273,16 @@ impl Ayristirici<'_> {
     fn alt_bitir(&mut self) {
         if let (Some(dizin), Some(tani)) = (self.alt.take(), self.tani.as_mut())
             && self.oneri_var
-            && let [(no, satir)] = self.yeni_satirlar.as_slice()
+            && let [(no, satir, arti)] = self.yeni_satirlar.as_slice()
             && !satir.starts_with("...")
         {
-            tani.notlar[dizin].oneri = Some((*no, satir.clone()));
+            let not = &mut tani.notlar[dizin];
+            not.oneri = Some((*no, satir.clone()));
+            // `N - …` karşılığı olmadan `N + …` ile gösterilen satır yeni eklenen bir satırdır.
+            not.yeni_satir = *arti && !self.eski_satirlar.contains(no);
         }
         self.yeni_satirlar.clear();
+        self.eski_satirlar.clear();
         self.oneri_var = false;
         self.kod_satiri = None;
         self.ana_dosyada = false;
@@ -552,9 +585,30 @@ help: consider borrowing here
                 seviye: "help".into(),
                 mesaj: "a local variable with a similar name exists".into(),
                 oneri: Some((3, "    println!(\"{}\", v);".into())),
+                yeni_satir: false,
             }]
         );
         assert_eq!(tanilar[1].notlar[0].oneri, Some((2, "    let v = &1;".into())));
+        assert!(!tanilar[1].notlar[0].yeni_satir);
+    }
+
+    #[test]
+    fn satir_ekleme_onerisi() {
+        let rust = "fn main() {\n    let m = HashMap::new();\n}\n";
+        let cikti = "error[E0433]: cannot find type `HashMap` in this scope
+ --> src/main.rs:2:13
+  |
+2 |     let m = HashMap::new();
+  |             ^^^^^^^ use of undeclared type `HashMap`
+  |
+help: consider importing this struct
+  |
+1 + use std::collections::HashMap;
+  |
+";
+        let not = &ayristir(cikti, rust)[0].notlar[0];
+        assert_eq!(not.oneri, Some((1, "use std::collections::HashMap;".into())));
+        assert!(not.yeni_satir);
     }
 
     #[test]
