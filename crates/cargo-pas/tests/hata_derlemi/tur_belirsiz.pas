@@ -1,3 +1,3 @@
 işlev ana() {
-    yap l = Liste::new();
+    yap l = Liste::yeni();
 }

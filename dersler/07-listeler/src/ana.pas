@@ -15,7 +15,7 @@ işlev ana() {
     }
 
     // Boş bir listeyle başlayıp kullanıcının yazdıklarını ekleyelim.
-    yap değişken notlar: Liste<u32> = Liste::new();
+    yap değişken notlar: Liste<u32> = Liste::yeni();
     her sıra içinde 1..=3 {
         yap not = oku!(biçimle!("{sıra}. sınav notun: "), u32);
         notlar.ekle(not);

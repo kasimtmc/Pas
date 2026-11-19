@@ -74,7 +74,7 @@ işlev ana() {
     }
 
     // Belki ve Sonuç
-    yap ilk_çift: Belki<&i32> = sayılar.yinele().find(|s| *s % 2 == 0);
+    yap ilk_çift: Belki<&i32> = sayılar.yinele().bul(|s| *s % 2 == 0);
     eşle ilk_çift {
         Var(s) => yazdır!("İlk çift sayı: {s}"),
         Yok => yazdır!("Çift sayı yok"),

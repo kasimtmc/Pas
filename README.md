@@ -174,7 +174,12 @@ Bu sayede Pas öğrenen biri ileride gerçek Rust'a kolayca geçebilir.
   `doğru`/`yanlış` (true/false) …
 - **Sık kullanılanlar:** `yazdır!` (println!), `yaz!` (print!), `liste!` (vec!),
   `Metin` (String), `Liste` (Vec), `Belki`/`Var`/`Yok` (Option/Some/None),
-  `Sonuç`/`Tamam`/`Hata` (Result/Ok/Err), `.uzunluk()` (len), `.ekle()` (push) …
+  `Sonuç`/`Tamam`/`Hata` (Result/Ok/Err), `Liste::yeni()` (new), `.uzunluk()` (len),
+  `.ekle()` (push), `.al()` (get), `.yoksa()` (unwrap_or), `.sırala()` (sort),
+  `.toplam()` (sum), `.süz()` (filter), `.dönüştür()` (map) …
+
+Pas programları değerleri de Türkçe yazdırır: `yazdır!("{:?}", Var(doğru))`
+ekrana `Var(doğru)` yazar, `Some(true)` değil.
 
 ### Klavyeden okuma
 

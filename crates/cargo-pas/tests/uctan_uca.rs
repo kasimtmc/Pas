@@ -185,3 +185,42 @@ fn girdi_bitince_oku_turkce_panik_verir() {
     // Çökme, destek kodunu değil `oku!` satırını göstermeli.
     assert!(hata_ciktisi.contains("--> src/ana.pas:2:"), "{hata_ciktisi}");
 }
+
+#[test]
+fn yeni_sozluk_sozcukleri_calisir() {
+    let ana = r#"kullan std::collections::HashMap;
+
+işlev ana() {
+    yap değişken sayılar: Liste<i32> = Liste::yeni();
+    her s içinde [5, 3, 8, 1] {
+        sayılar.ekle(s);
+    }
+    sayılar.sırala();
+    yazdır!("{:?} {:?}", sayılar, sayılar.al(10).yoksa(&0));
+    sayılar.ters_çevir();
+    yap toplam: i32 = sayılar.yinele().toplam();
+    yazdır!("{toplam} {:?} {:?}", sayılar.yinele().en_büyük(), sayılar.yinele().en_küçük());
+    yap çiftler: Liste<i32> = sayılar.yinele().süz(|s| *s % 2 == 0).dönüştür(|s| s * 10).biriktir();
+    yazdır!("{:?} {}", çiftler, sayılar.yinele().bul(|s| **s > 4).var_mı());
+    her (i, s) içinde sayılar.yinele().numaralandır() {
+        eğer i == 0 {
+            yazdır!("ilk: {s}");
+        }
+    }
+    yap değişken yaşlar: HashMap<Metin, u32> = HashMap::yeni();
+    yaşlar.yerleştir("Ali".metne_çevir(), 10);
+    yazdır!("{} {:?}", yaşlar.anahtar_var_mı("Ali"), yaşlar.sil("Ali"));
+    yap kelimeler: Liste<&str> = "elma armut muz".böl(" ").biriktir();
+    yazdır!("{} {}", kelimeler.birleştir(", "), "elma".değiştir("e", "E"));
+    yazdır!("{} {}", "Pas".ile_başlar_mı("P"), "a\nb".satırlar().count() + "çiğ".karakterler().count());
+    yazdır!("{} {} {}", (-3i32).mutlak(), 2i32.kuvvet(3), 2.25f64.karekök().yuvarla());
+}
+"#;
+    let dizin = proje("sozcukler", &[("src/ana.pas", ana)]);
+    let cikti = cargo_pas(&dizin, &["çalıştır"]);
+    assert!(cikti.status.success(), "{}", metin(&cikti.stderr));
+    assert_eq!(
+        metin(&cikti.stdout),
+        "[1, 3, 5, 8] 0\n17 Var(8) Var(1)\n[80] doğru\nilk: 8\ndoğru Var(10)\nelma, armut, muz Elma\ndoğru 5\n3 8 2\n"
+    );
+}
