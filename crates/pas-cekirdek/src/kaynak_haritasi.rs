@@ -94,6 +94,14 @@ impl KaynakHaritasi {
 
     /// Rust kodundaki bir aralığı Pas kaynağındaki karşılığına çevirir.
     pub fn rust_araligini_pasa(&self, baslangic: usize, bitis: usize) -> (usize, usize) {
+        // Eklenen bir metinle başlayan aralığın içinde bir yönlendirme varsa
+        // (`yazdır!("{a}")` için eklenen `a = …(&(a))…` gibi) onun karşılığı alınır.
+        if self.eklenen_metinde_mi(baslangic)
+            && let Some(y) =
+                self.yonlendirmeler.iter().find(|y| y.rust_baslangic >= baslangic && y.rust_baslangic < bitis)
+        {
+            return (y.pas_baslangic, y.pas_baslangic + y.pas_uzunluk);
+        }
         let baslangic = self.rusttan_pasa(baslangic, Yon::Baslangic);
         (baslangic, self.rusttan_pasa(bitis, Yon::Bitis).max(baslangic))
     }

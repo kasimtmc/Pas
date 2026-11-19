@@ -10,39 +10,70 @@ mod pas_destek {
     use std::io::{BufRead, Write};
 
     pub fn satir_oku(soru: &str) -> String {
-        let mut girdi = std::io::stdin().lock();
-        satir_oku_kaynaktan(soru, &mut girdi, &mut std::io::stdout()).unwrap_or_default()
+        girdi_ile(|girdi, yanki| satir_oku_kaynaktan(soru, girdi, &mut std::io::stdout(), yanki)).unwrap_or_default()
     }
 
     #[track_caller]
     pub fn deger_oku<T: std::str::FromStr>(soru: &str) -> T {
-        let mut girdi = std::io::stdin().lock();
-        match deger_oku_kaynaktan(soru, &mut girdi, &mut std::io::stdout()) {
+        match girdi_ile(|girdi, yanki| deger_oku_kaynaktan(soru, girdi, &mut std::io::stdout(), yanki)) {
             Some(deger) => deger,
             None => panic!("girdi bitti; okunacak değer kalmadı"),
         }
     }
 
-    /// Girdi bittiyse `None` döner.
-    pub fn satir_oku_kaynaktan(soru: &str, girdi: &mut impl BufRead, cikti: &mut impl Write) -> Option<String> {
+    /// Programın girdisi önceden biliniyorsa (oyun alanında olduğu gibi)
+    /// klavye yerine buradan okunur. `cargo pas` bunu hep boş bırakır.
+    const HAZIR_GIRDI: Option<&str> = None;
+
+    /// Girdiyi klavyeden ya da hazır girdiden okur. Hazır girdide okunan
+    /// satırlar ekrana da yazılır (yankı); böylece çıktı, klavyeyle yazılmış
+    /// gibi görünür. Hazır girdi biterse program durur ve bunu hata çıktısına
+    /// yazar; oyun alanı kullanıcıdan yeni bir satır ister.
+    fn girdi_ile<T>(islem: impl FnOnce(&mut dyn BufRead, bool) -> Option<T>) -> Option<T> {
+        let Some(metin) = HAZIR_GIRDI else { return islem(&mut std::io::stdin().lock(), false) };
+        static OKUNAN: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let mut kalan = &metin.as_bytes()[OKUNAN.load(std::sync::atomic::Ordering::Relaxed)..];
+        let sonuc = islem(&mut kalan, true);
+        OKUNAN.store(metin.len() - kalan.len(), std::sync::atomic::Ordering::Relaxed);
+        if sonuc.is_none() {
+            let _ = std::io::stdout().flush();
+            eprintln!("[pas: girdi bitti]");
+            std::process::exit(0);
+        }
+        sonuc
+    }
+
+    /// Girdi bittiyse `None` döner. `yanki` açıksa okunan satır `cikti`ya da yazılır.
+    pub fn satir_oku_kaynaktan(
+        soru: &str,
+        girdi: &mut (impl BufRead + ?Sized),
+        cikti: &mut impl Write,
+        yanki: bool,
+    ) -> Option<String> {
         let _ = write!(cikti, "{soru}");
         let _ = cikti.flush();
         let mut satir = String::new();
         match girdi.read_line(&mut satir) {
             Ok(0) | Err(_) => None,
-            Ok(_) => Some(satir.trim().to_owned()),
+            Ok(_) => {
+                if yanki {
+                    let _ = writeln!(cikti, "{}", satir.trim_end_matches(['\n', '\r']));
+                }
+                Some(satir.trim().to_owned())
+            }
         }
     }
 
     /// Geçerli bir değer yazılana kadar sorar; girdi bittiyse `None` döner.
     pub fn deger_oku_kaynaktan<T: std::str::FromStr>(
         soru: &str,
-        girdi: &mut impl BufRead,
+        girdi: &mut (impl BufRead + ?Sized),
         cikti: &mut impl Write,
+        yanki: bool,
     ) -> Option<T> {
         let tur = std::any::type_name::<T>();
         loop {
-            let satir = satir_oku_kaynaktan(soru, girdi, cikti)?;
+            let satir = satir_oku_kaynaktan(soru, girdi, cikti, yanki)?;
             if let Ok(deger) = turkce_yaziyi_duzelt(&satir, tur).parse() {
                 return Some(deger);
             }

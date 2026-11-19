@@ -143,8 +143,12 @@ impl Proje {
     /// biçimde Rust'a çevirir (modül yolları ve destek kodu dahil).
     pub fn cevir(&self, goreli: &Path, pas_kaynagi: &str) -> Ceviri {
         let modul_yolu = |ad: &str| self.modul_yolu(goreli, ad);
-        let secenekler =
-            Secenekler { modul_yolu: Some(&modul_yolu), destek_ekle: sandik_koku(goreli), turkce_cikti: true };
+        let secenekler = Secenekler {
+            modul_yolu: Some(&modul_yolu),
+            destek_ekle: sandik_koku(goreli),
+            turkce_cikti: true,
+            hazir_girdi: None,
+        };
         pas_cekirdek::rusta_cevir_secenekle(pas_kaynagi, &secenekler)
     }
 

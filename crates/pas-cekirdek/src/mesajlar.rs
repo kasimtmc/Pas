@@ -436,6 +436,24 @@ pub fn gereksiz_mi(mesaj: &str) -> bool {
         || mesaj.contains("`satir_oku`")
 }
 
+/// `oku!` makrosunun sık yapılan yanlış kullanımları için ipucu. `satir`,
+/// hatanın gösterdiği Pas satırı; `etiket`, Türkçeleştirilmiş birincil etiket.
+pub fn oku_ipucu(kod: &str, satir: &str, etiket: &str) -> Option<&'static str> {
+    if !satir.contains("oku!(") {
+        return None;
+    }
+    match kod {
+        "E0308" if etiket.contains("`Metin` bulundu") => {
+            Some("`oku!` metin okur; sayı okumak için türünü de yaz: `oku!(\"Sayı: \", u32)`")
+        }
+        "E0308" if etiket.contains("`&str` bekleniyordu") => {
+            Some("`oku!` içine soruyu tırnak içinde yaz: `oku!(\"Adın ne? \")`")
+        }
+        "E0277" => Some("`oku!` yalnızca sayı, `Metin`, `mantıksal` ve `karakter` gibi türleri okuyabilir"),
+        _ => None,
+    }
+}
+
 fn cevir(kaliplar: &[(&str, &str)], mesaj: &str) -> String {
     for (kalip, sablon) in kaliplar {
         if let Some(yakalananlar) = kalipla_esle(kalip, mesaj) {

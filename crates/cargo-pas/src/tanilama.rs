@@ -6,7 +6,7 @@ use std::fs;
 use std::path::Path;
 use std::rc::Rc;
 
-use pas_cekirdek::mesajlar::{aciklama, derleyici_mesajini_cevir, gereksiz_mi};
+use pas_cekirdek::mesajlar::{self, aciklama, derleyici_mesajini_cevir, gereksiz_mi};
 use pas_cekirdek::{KaynakHaritasi, SatirDizini, pasa_cevir};
 use serde::Deserialize;
 
@@ -479,20 +479,7 @@ impl Gosterici {
 fn oku_ipucu(kod: Option<&str>, birincil: &Vurgu) -> Option<&'static str> {
     let dizin = SatirDizini::yeni(&birincil.dosya.metin);
     let satir = dizin.satir(dizin.satir_sutun(birincil.baslangic).0)?;
-    if !satir.contains("oku!(") {
-        return None;
-    }
-    let etiket = birincil.etiket.as_deref().unwrap_or("");
-    match kod? {
-        "E0308" if etiket.contains("`Metin` bulundu") => {
-            Some("`oku!` metin okur; sayı okumak için türünü de yaz: `oku!(\"Sayı: \", u32)`")
-        }
-        "E0308" if etiket.contains("`&str` bekleniyordu") => {
-            Some("`oku!` içine soruyu tırnak içinde yaz: `oku!(\"Adın ne? \")`")
-        }
-        "E0277" => Some("`oku!` yalnızca sayı, `Metin`, `mantıksal` ve `karakter` gibi türleri okuyabilir"),
-        _ => None,
-    }
+    mesajlar::oku_ipucu(kod?, satir, birincil.etiket.as_deref().unwrap_or(""))
 }
 
 fn seviye_sozcugu(seviye: &str) -> &str {

@@ -4,21 +4,33 @@ use crate::pas_destek::{deger_oku_kaynaktan, satir_oku_kaynaktan};
 
 fn oku<T: std::str::FromStr>(girdi: &str) -> (Option<T>, String) {
     let mut cikti = Vec::new();
-    let deger = deger_oku_kaynaktan("Sayı: ", &mut girdi.as_bytes(), &mut cikti);
+    let deger = deger_oku_kaynaktan("Sayı: ", &mut girdi.as_bytes(), &mut cikti, false);
     (deger, String::from_utf8(cikti).unwrap())
 }
 
 #[test]
 fn satir_okur_ve_bosluklari_atar() {
     let mut cikti = Vec::new();
-    let satir = satir_oku_kaynaktan("Adın ne? ", &mut "  Ayşe  \r\nfazlası".as_bytes(), &mut cikti);
+    let satir = satir_oku_kaynaktan("Adın ne? ", &mut "  Ayşe  \r\nfazlası".as_bytes(), &mut cikti, false);
     assert_eq!(satir.as_deref(), Some("Ayşe"));
     assert_eq!(String::from_utf8(cikti).unwrap(), "Adın ne? ");
 }
 
 #[test]
+fn hazir_girdide_okunan_satir_yazilir() {
+    let mut cikti = Vec::new();
+    let mut girdi = "abc\n42".as_bytes();
+    let deger: Option<u32> = deger_oku_kaynaktan("Sayı: ", &mut girdi, &mut cikti, true);
+    assert_eq!(deger, Some(42));
+    assert_eq!(
+        String::from_utf8(cikti).unwrap(),
+        "Sayı: abc\n`abc` geçerli bir tam sayı değil, tekrar dene.\nSayı: 42\n"
+    );
+}
+
+#[test]
 fn girdi_bitince_none_doner() {
-    assert_eq!(satir_oku_kaynaktan("", &mut "".as_bytes(), &mut Vec::new()), None);
+    assert_eq!(satir_oku_kaynaktan("", &mut "".as_bytes(), &mut Vec::new(), false), None);
     assert_eq!(oku::<u32>("abc\n").0, None);
 }
 

@@ -37,6 +37,9 @@ pub struct Secenekler<'a> {
     /// destek kodundaki sarmalayıcıya alır (`doğru`, `Var(…)`, `Yok`). Derlenen
     /// projelerin her dosyasında açıktır; `cargo pas çevir` sade çeviriyi gösterir.
     pub turkce_cikti: bool,
+    /// Programın okuyacağı girdi önceden biliniyorsa (oyun alanı), `oku!`
+    /// klavye yerine bu metinden okur. Yalnızca `destek_ekle` ile anlamlıdır.
+    pub hazir_girdi: Option<&'a str>,
 }
 
 /// Pas kaynağını Rust'a çevirir.
@@ -89,6 +92,19 @@ fn destek_satiri() -> &'static str {
             .collect::<Vec<_>>()
             .join(" ")
     })
+}
+
+/// Destek kodu; hazır girdi verildiyse `oku!` onu okur.
+fn destek_metni(hazir_girdi: Option<&str>) -> String {
+    let satir = destek_satiri();
+    match hazir_girdi {
+        None => satir.to_owned(),
+        Some(girdi) => {
+            let bos = "const HAZIR_GIRDI: Option<&str> = None;";
+            debug_assert!(satir.contains(bos));
+            satir.replace(bos, &format!("const HAZIR_GIRDI: Option<&str> = Some({girdi:?});"))
+        }
+    }
 }
 
 /// Pas çıktı makroları; argümanları Türkçe yazdırılsın diye sarmalanır
@@ -184,7 +200,11 @@ impl<'a> Cevirmen<'a> {
         }
         let mut destek_eklenecek = self.hedef == Hedef::Rust && secenekler.destek_ekle;
         if destek_eklenecek && let Some(k) = self.ilk_oge() {
-            onune_ekle(&mut oncesine, self.anlamlilar[k], Ekleme::yeni(format!("{} ", destek_satiri())));
+            onune_ekle(
+                &mut oncesine,
+                self.anlamlilar[k],
+                Ekleme::yeni(format!("{} ", destek_metni(secenekler.hazir_girdi))),
+            );
             destek_eklenecek = false;
         }
 
@@ -215,7 +235,7 @@ impl<'a> Cevirmen<'a> {
         }
         if destek_eklenecek {
             // Dosyada hiç öğe yok; destek kodu sona eklenir.
-            self.degistir(self.kaynak.len()..self.kaynak.len(), destek_satiri());
+            self.degistir(self.kaynak.len()..self.kaynak.len(), &destek_metni(secenekler.hazir_girdi));
         }
         self.kopyala(self.kaynak.len());
         (self.cikti, self.harita)
@@ -809,6 +829,10 @@ mod testler {
         let (bas, son) = ceviri.harita.rust_araligini_pasa(eklenen, eklenen + 4);
         assert_eq!(&kaynak[bas..son], "sayi");
         assert_eq!(bas, kaynak.find("sayi").unwrap());
+        // Sarmalayıcıyla başlayan bir aralık da (`&(sayi)`) aynı yeri gösterir.
+        let sarmalanan = ceviri.rust.find("&(sayi)").unwrap();
+        let (bas, son) = ceviri.harita.rust_araligini_pasa(sarmalanan, sarmalanan + "&(sayi)".len());
+        assert_eq!(&kaynak[bas..son], "sayi");
     }
 
     #[test]
