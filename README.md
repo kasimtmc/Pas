@@ -264,6 +264,9 @@ betikler/surum.sh 0.2.0 "Yenilikler / What's new"
 Betik sürüm numarasını her yerde günceller, testleri çalıştırır ve
 `v0.2.0` etiketini oluşturur. Etiket gönderilince (`git push origin main v0.2.0`)
 yayın iş akışı hazır dosyaları ve eklentileri GitHub Releases'a koyar.
+Depo ayarlarında `VSCE_PAT` ve `OVSX_PAT` gizli değişkenleri tanımlıysa VS Code
+eklentisi [VS Code Marketplace](https://marketplace.visualstudio.com/vscode)
+ve [Open VSX](https://open-vsx.org)'e de gönderilir.
 
 `crates/cargo-pas/tests/hata_derlemi/` dizini, çocukların sık yapacağı
 hataları içeren küçük Pas programlarından oluşur. Testler bunların hepsini
