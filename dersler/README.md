@@ -42,6 +42,9 @@ Code kullanıyorsan Pas eklentisini de kur; renkli kod, kod tamamlama ve
 14. [Nitelikler](14-nitelikler/README.md)
 15. [Kaplumbağa ile çizim](15-kaplumbaga/README.md)
 
+Öğretmenseniz [öğretmen rehberine](ogretmen-rehberi.md) göz atın: Pas'ı
+sınıfta kurulumsuz kullanma, ders planı ve sık yapılan hatalar.
+
 ## Kendi projeni başlat
 
 Dersleri bitirince kendi programını yazmak için:
