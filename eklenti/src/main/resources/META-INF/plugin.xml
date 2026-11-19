@@ -51,6 +51,7 @@ işlev ana() {
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>0.3.0: Program output in Turkish, Turkish documentation on hover and 31 new words / Türkçe program çıktısı, Türkçe belgeler ve 31 yeni sözcük</p>
     <p>0.2.0: Go to definition and completion are more reliable while the project loads / Proje yüklenirken tanıma gitme ve tamamlama daha güvenilir</p>
     <p>0.1.1: Installs cargo-pas from the IDE if it is missing / cargo-pas eksikse IDE'den kurulabilir.</p>
     <p>0.1.0: First release / İlk sürüm.</p>
