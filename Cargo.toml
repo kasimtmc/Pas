@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/pas-cekirdek", "crates/cargo-pas"]
+members = ["crates/pas-cekirdek", "crates/cargo-pas", "crates/pas-web"]
 # Örnekler ve testlerin `target/` altında oluşturduğu projeler kendi başına
 # birer Pas projesidir; bu çalışma alanına ait değildir.
 exclude = ["ornekler", "target"]
@@ -19,3 +19,7 @@ pas-cekirdek = { path = "crates/pas-cekirdek" }
 # Dağıtılan dosyalar küçük olsun.
 strip = true
 lto = "thin"
+
+# Tarayıcıya indirilen WebAssembly dosyası küçük olsun.
+[profile.release.package.pas-web]
+opt-level = "s"

@@ -1,0 +1,16 @@
+[package]
+name = "pas-web"
+description = "Pas oyun alanının tarayıcıda (WebAssembly) çalışan parçası"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pas-cekirdek.workspace = true
+serde_json = "1"

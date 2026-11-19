@@ -23,6 +23,10 @@ işlev ana() {
 }
 ```
 
+Hiçbir şey kurmadan denemek için [**Pas Oyun Alanı**](https://kasimtmc.github.io/Pas/)nı
+aç: kodunu tarayıcıda yazıp çalıştırabilir, dersleri oradan açabilir ve
+programının bağlantısını paylaşabilirsin.
+
 Programlamaya yeni başlıyorsan [**dersler**](dersler/README.md) dizinindeki
 adım adım derslerle başlayabilirsin: yazdırmaktan başlayıp bir taş, kâğıt,
 makas oyunu yazmaya kadar on ders.
@@ -221,6 +225,8 @@ crates/
   pas-cekirdek/   Çevirici: sözcük çözümleyici, sözlük, Pas ⇄ Rust çevirisi,
                   kaynak eşlemesi, Türkçe derleyici ve panik mesajları
   cargo-pas/      `cargo pas` komutu
+  pas-web/        Oyun alanının tarayıcıda (WebAssembly) çalışan parçası
+oyun-alani/       Oyun alanı sayfası (HTML, CSS, JavaScript)
 eklenti/          RustRover eklentisi (Kotlin)
 vscode/           VS Code eklentisi (TypeScript)
 dersler/          Yeni başlayanlar için adım adım dersler
@@ -264,6 +270,17 @@ derleyip mesajların Türkçeye çevrildiğini denetler. Çevirisi olmayan yeni
 bir hata gördüğünde buraya bir örnek ekleyip
 [`mesajlar.rs`](crates/pas-cekirdek/src/mesajlar.rs) dosyasına çevirisini yaz.
 
+Oyun alanı, çeviriyi tarayıcıda WebAssembly ile yapar; derleyip çalıştırmak
+için çevrilen Rust kodunu [Rust oyun alanına](https://play.rust-lang.org)
+gönderir. Gelen derleyici çıktısı yine tarayıcıda Pas'a eşlenip
+Türkçeleştirilir. Yerelde denemek için:
+
+```bash
+betikler/oyun-alani.sh && python3 -m http.server -d target/oyun-alani 8000
+```
+
+`main` dalına gönderilen değişiklikler oyun alanına kendiliğinden yansır.
+
 Örnek projeyi çalıştırmak için:
 
 ```bash
@@ -282,6 +299,7 @@ cd ornekler/tanitim && cargo run --manifest-path ../../Cargo.toml -p cargo-pas -
       gitme, kullanımlar, hover, akıllı tamamlama)
 - [x] VS Code eklentisi (aynı dil sunucusunu kullanır)
 - [x] Klavyeden kolay girdi okumak için `oku!` makrosu
+- [x] Kurulum gerektirmeyen, tarayıcıda çalışan oyun alanı
 - [ ] Daha fazla Türkçe hata mesajı ve açıklama
 
 ## Lisans

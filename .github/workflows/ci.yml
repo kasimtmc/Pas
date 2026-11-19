@@ -32,6 +32,11 @@ jobs:
         run: cargo clippy --all-targets -- -D warnings
       - name: Testler
         run: cargo test --all
+      - name: Oyun alanı (WebAssembly)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          rustup target add wasm32-unknown-unknown
+          cargo build -p pas-web --target wasm32-unknown-unknown
 
   eklenti:
     name: RustRover eklentisi

@@ -1,0 +1,55 @@
+name: Oyun alanı
+
+# Tarayıcıda çalışan Pas oyun alanını GitHub Pages'e koyar:
+# https://kasimtmc.github.io/Pas/
+on:
+  push:
+    branches: [main]
+    paths:
+      - "oyun-alani/**"
+      - "crates/pas-web/**"
+      - "crates/pas-cekirdek/**"
+      - "dersler/**"
+      - "ornekler/**"
+      - "betikler/oyun-alani.sh"
+      - ".github/workflows/oyun-alani.yml"
+      - "Cargo.lock"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: oyun-alani
+  cancel-in-progress: true
+
+jobs:
+  derle:
+    name: Derle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Rust araç zinciri
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+          rustup target add wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Oyun alanını derle
+        run: betikler/oyun-alani.sh _site
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  yayinla:
+    name: Yayınla
+    needs: derle
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.yayin.outputs.page_url }}
+    steps:
+      - id: yayin
+        uses: actions/deploy-pages@v4

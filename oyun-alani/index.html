@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pas Oyun Alanı</title>
+<meta name="description" content="Türkçe Rust (Pas) programlarını kurulum yapmadan tarayıcıda yaz ve çalıştır.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23b7410e'/><text x='16' y='23' font-family='sans-serif' font-size='19' font-weight='700' text-anchor='middle' fill='white'>P</text></svg>">
+<link rel="stylesheet" href="stil.css?s=__SURUM__">
+<script type="module" src="oyun-alani.js?s=__SURUM__"></script>
+</head>
+<body>
+<header class="ust">
+  <a class="logo" href="https://github.com/kasimtmc/Pas" title="Pas'ın GitHub sayfası">
+    <span class="logo-simge">P</span><span>Pas <small>Oyun Alanı</small></span>
+  </a>
+  <div class="araclar">
+    <button id="calistir" class="birincil" title="Çalıştır (Ctrl+Enter)" disabled>
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" fill="currentColor"/></svg>
+      Çalıştır
+    </button>
+    <label class="secim">
+      <span class="gizli">Örnek seç</span>
+      <select id="ornekler"><option value="">Örnekler…</option></select>
+    </label>
+    <button id="paylas" title="Bu programın bağlantısını kopyala">Paylaş</button>
+    <button id="rust-dugmesi" aria-pressed="false" title="Pas kodunun Rust karşılığını göster">Rust'a bak</button>
+    <button id="sozluk-dugmesi" aria-pressed="false" title="Pas sözcüklerinin listesi">Sözlük</button>
+  </div>
+</header>
+
+<main class="alanlar">
+  <section class="bolum duzenleyici-bolumu" aria-label="Kod">
+    <div class="bolum-basligi">
+      <span>ana.pas</span>
+      <a id="ders-baglantisi" hidden target="_blank" rel="noopener">Dersi oku ↗</a>
+    </div>
+    <div class="duzenleyici" id="duzenleyici">
+      <div class="satir-numaralari" id="satir-numaralari" aria-hidden="true"></div>
+      <div class="yazi-alani">
+        <pre class="renkli" id="renkli" aria-hidden="true"></pre>
+        <pre class="isaretler" id="isaretler" aria-hidden="true"></pre>
+        <textarea id="kod" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Pas kodu"></textarea>
+      </div>
+    </div>
+    <details class="girdi-kutusu">
+      <summary>Hazır girdi <span class="ipucu">programın <code>oku!</code> ile okuyacağı satırlar</span></summary>
+      <textarea id="girdi" rows="3" spellcheck="false" placeholder="Her satıra bir cevap yaz. Boş bırakırsan program sorduğunda çıktının altına yazabilirsin."></textarea>
+    </details>
+  </section>
+
+  <section class="bolum cikti-bolumu" aria-label="Çıktı">
+    <div class="bolum-basligi">
+      <span>Çıktı</span>
+      <span id="durum" class="durum" role="status"></span>
+    </div>
+    <div class="cikti" id="cikti" tabindex="-1">
+      <p class="karsilama">Kodunu yaz ve <b>▶ Çalıştır</b>'a bas.<br>
+      Hata yaparsan Pas sana ne olduğunu Türkçe anlatır.</p>
+    </div>
+  </section>
+
+  <aside class="yan-panel" id="rust-paneli" hidden aria-label="Rust karşılığı">
+    <div class="bolum-basligi"><span>Rust karşılığı</span><button class="kapat" data-kapat="rust-paneli" aria-label="Kapat">×</button></div>
+    <p class="aciklama-metni">Pas kodun derlenmeden önce bu Rust koduna çevrilir. İngilizce öğrendikçe karşılaştırabilirsin.</p>
+    <pre id="rust-kodu" class="rust-kodu"></pre>
+  </aside>
+
+  <aside class="yan-panel" id="sozluk-paneli" hidden aria-label="Sözlük">
+    <div class="bolum-basligi"><span>Sözlük</span><button class="kapat" data-kapat="sozluk-paneli" aria-label="Kapat">×</button></div>
+    <input id="sozluk-ara" type="search" placeholder="Ara: döngü, liste, yazdır…" aria-label="Sözlükte ara">
+    <div id="sozluk-listesi" class="sozluk-listesi"></div>
+  </aside>
+</main>
+
+<footer class="alt">
+  Çalıştır'a bastığında kodun derlenmesi için
+  <a href="https://play.rust-lang.org" target="_blank" rel="noopener">Rust oyun alanına</a> (play.rust-lang.org) gönderilir.
+  Bilgisayarına kurmak için: <a href="https://github.com/kasimtmc/Pas#kurulum" target="_blank" rel="noopener">Pas kurulumu</a>.
+</footer>
+<div id="bildirim" class="bildirim" role="status" hidden></div>
+</body>
+</html>
