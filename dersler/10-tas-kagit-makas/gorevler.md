@@ -15,7 +15,7 @@ Bu görevleri [Pas Oyun Alanı](https://kasimtmc.github.io/Pas/)nda yapıp **Den
     Makas,
 }
 
-işlev sonuç(senin: &Hamle, benim: &Hamle) -> &'durağan str {
+işlev sonuç(senin: &Hamle, benim: &Hamle) -> &'kalıcı str {
     // Burayı `eşle` ile değiştir.
     ""
 }
@@ -42,7 +42,7 @@ Sen kazandın!
     Makas,
 }
 
-işlev sonuç(senin: &Hamle, benim: &Hamle) -> &'durağan str {
+işlev sonuç(senin: &Hamle, benim: &Hamle) -> &'kalıcı str {
     eşle (senin, benim) {
         (Hamle::Taş, Hamle::Makas) | (Hamle::Makas, Hamle::Kağıt) | (Hamle::Kağıt, Hamle::Taş) => "Sen kazandın!",
         (Hamle::Taş, Hamle::Taş) | (Hamle::Kağıt, Hamle::Kağıt) | (Hamle::Makas, Hamle::Makas) => "Berabere!",

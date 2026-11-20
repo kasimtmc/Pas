@@ -67,8 +67,8 @@ class PasLexerTest {
     @Test
     fun karakterVeYasamSuresi() {
         assertEquals(
-            listOf(PasSozcukler.KARAKTER to "'ş'", PasSozcukler.ISLEC to "&", PasSozcukler.YASAM_SURESI to "'durağan"),
-            sozcukler("'ş' &'durağan"),
+            listOf(PasSozcukler.KARAKTER to "'ş'", PasSozcukler.ISLEC to "&", PasSozcukler.YASAM_SURESI to "'kalıcı"),
+            sozcukler("'ş' &'kalıcı"),
         )
     }
 

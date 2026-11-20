@@ -23,7 +23,7 @@ gerektiğini yazarız. Gövdesi olan yöntemleri her tür hazır olarak alır:
 ```
 nitelik Hayvan {
     işlev ad(&kendi) -> Metin;
-    işlev ses(&kendi) -> &'durağan str;
+    işlev ses(&kendi) -> &'kalıcı str;
 
     işlev tanıt(&kendi) {
         yazdır!("Ben {}, \"{}\" diye seslenirim!", kendi.ad(), kendi.ses());
@@ -31,13 +31,13 @@ nitelik Hayvan {
 }
 ```
 
-**Niteliği bir türe uygulamak**: Bu satırı "Hayvan niteliğini her Kedi'ye
+**Niteliği bir türe uygulamak**: Bu satırı "Kedi için Hayvan niteliğini
 uygula" diye okuyabilirsin:
 
 ```
-uygula Hayvan her Kedi {
+uygula Hayvan için Kedi {
     işlev ad(&kendi) -> Metin { kendi.ad.kopyala() }
-    işlev ses(&kendi) -> &'durağan str { "miyav" }
+    işlev ses(&kendi) -> &'kalıcı str { "miyav" }
 }
 ```
 

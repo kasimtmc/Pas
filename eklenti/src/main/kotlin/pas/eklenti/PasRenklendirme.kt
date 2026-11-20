@@ -82,7 +82,7 @@ class PasRenkAyarlari : ColorSettingsPage {
         }
 
         işlev en_iyisi<'a>(oyuncular: &'a [Oyuncu]) -> Belki<&'a Oyuncu> {
-            oyuncular.yinele().max_by_key(|o| o.puan)
+            oyuncular.elemanlar().max_by_key(|o| o.puan)
         }
 
         işlev ana() {

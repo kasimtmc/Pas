@@ -8,7 +8,7 @@
 }
 
 uygula Hamle {
-    işlev ad(&kendi) -> &'durağan str {
+    işlev ad(&kendi) -> &'kalıcı str {
         eşle kendi {
             Hamle::Taş => "taş",
             Hamle::Kağıt => "kâğıt",

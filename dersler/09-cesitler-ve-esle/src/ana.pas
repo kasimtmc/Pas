@@ -6,7 +6,7 @@
 }
 
 // `eşle` bir değeri seçeneklerle karşılaştırır. Her seçeneği düşünmek zorundayız!
-işlev öneri(hava: &Hava) -> &'durağan str {
+işlev öneri(hava: &Hava) -> &'kalıcı str {
     eşle hava {
         Hava::Güneşli => "Şapkanı al!",
         Hava::Yağmurlu => "Şemsiyeni unutma!",

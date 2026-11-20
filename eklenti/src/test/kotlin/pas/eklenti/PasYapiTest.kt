@@ -63,8 +63,8 @@ class PasYapiTest : BasePlatformTestCase() {
     }
 
     fun testUygulaBasligi() {
-        val dosya = myFixture.configureByText("ana.pas", "uygula<T> Görüntüle her Kutu<T> {}")
-        assertEquals("<T> Görüntüle her Kutu<T>", PsiTreeUtil.findChildOfType(dosya, PasOge::class.java)!!.ad)
+        val dosya = myFixture.configureByText("ana.pas", "uygula<T> Görüntüle için Kutu<T> {}")
+        assertEquals("<T> Görüntüle için Kutu<T>", PsiTreeUtil.findChildOfType(dosya, PasOge::class.java)!!.ad)
     }
 
     fun testYarimKodCokmez() {

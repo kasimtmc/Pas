@@ -210,6 +210,8 @@ impl<'a> Cevirmen<'a> {
         }
 
         let mut bicim = BicimIzleyici::default();
+        // `uygula Nitelik için Tür {`: başlıktaki `için` Rust'ta `for` olur.
+        let mut uygula_basliginda = false;
         for k in 0..self.anlamlilar.len() {
             let ti = self.anlamlilar[k];
             let sozcuk = self.sozcukler[ti];
@@ -218,9 +220,22 @@ impl<'a> Cevirmen<'a> {
             }
             match sozcuk.tur {
                 SozcukTuru::Isim => {
-                    if let Some(kelime) = self.kelimeyi_cevir(sozcuk.metin(self.kaynak)) {
+                    let metin = sozcuk.metin(self.kaynak);
+                    let kelime = match (uygula_basliginda, self.hedef) {
+                        (true, Hedef::Rust) if nfc(metin) == "için" => Some("for".to_owned()),
+                        (true, Hedef::Pas) if metin == "for" => Some("için".to_owned()),
+                        _ => self.kelimeyi_cevir(metin),
+                    };
+                    if self.rust_adi(metin) == "impl" {
+                        uygula_basliginda = true;
+                    }
+                    if let Some(kelime) = kelime {
                         self.degistir(sozcuk.baslangic..sozcuk.bitis, &kelime);
                     }
+                }
+                SozcukTuru::Isaret if matches!(sozcuk.metin(self.kaynak), "{" | ";") => {
+                    uygula_basliginda = false;
+                    bicim.isareti_isle(&self, k);
                 }
                 SozcukTuru::YasamSuresi => self.yasam_suresini_cevir(sozcuk),
                 SozcukTuru::Dizgi | SozcukTuru::HamDizgi if bicim.dizgi_bekliyor_mu() => {
@@ -729,7 +744,7 @@ mod testler {
 
     #[test]
     fn yasam_sureleri() {
-        assert_eq!(rusta("&'durağan str"), "&'static str");
+        assert_eq!(rusta("&'kalıcı str"), "&'static str");
         assert_eq!(rusta("<'a>"), "<'a>");
     }
 
@@ -845,6 +860,24 @@ mod testler {
     }
 
     #[test]
+    fn uygula_basligindaki_icin() {
+        assert_eq!(
+            rusta("uygula Hayvan için Kedi { işlev f() { her x için 0..3 {} } }"),
+            "impl Hayvan for Kedi { fn f() { for x in 0..3 {} } }"
+        );
+        // Eski yazım da geçerli.
+        assert_eq!(rusta("uygula Hayvan her Kedi {}"), "impl Hayvan for Kedi {}");
+        assert_eq!(
+            rusta("işlev f(h: &uygula Hayvan) { her x için 0..3 {} }"),
+            "fn f(h: &impl Hayvan) { for x in 0..3 {} }"
+        );
+        assert_eq!(
+            pasa_cevir("impl<T> Hayvan for Kutu<T> { fn f() { for x in y {} } }"),
+            "uygula<T> Hayvan için Kutu<T> { işlev f() { her x için y {} } }"
+        );
+    }
+
+    #[test]
     fn ters_ceviri() {
         assert_eq!(
             pasa_cevir("fn main() { let mut v: Vec<String> = vec![]; println!(\"{}\", v.len()); }"),
@@ -852,7 +885,7 @@ mod testler {
         );
         assert_eq!(pasa_cevir("let her = 1;"), "tanımla r#her = 1;");
         assert_eq!(pasa_cevir("`Option<i32>`"), "`Belki<i32>`");
-        assert_eq!(pasa_cevir("&'static str"), "&'durağan str");
+        assert_eq!(pasa_cevir("&'static str"), "&'kalıcı str");
         assert_eq!(pasa_cevir("pas_oku!()"), "oku!()");
     }
 

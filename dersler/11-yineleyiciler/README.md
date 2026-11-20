@@ -25,7 +25,7 @@ tanımla iki_katı = |sayı: i32| sayı * 2;
 yazdır!("{}", iki_katı(21)); // 42
 ```
 
-**`yinele()`** listenin elemanlarını sırayla verir. Arkasına şunları
+**`elemanlar()`** listenin elemanlarını sırayla verir. Arkasına şunları
 ekleyebilirsin:
 
 | Yöntem | Ne yapar? |
@@ -42,10 +42,10 @@ Bunları art arda yazabilirsin:
 
 ```
 tanımla kalanlar: Liste<i32> =
-    notlar.yinele().dönüştür(|not| *not).süz(|not| *not < 50).dönüştür(|not| not + 10).biriktir();
+    notlar.elemanlar().dönüştür(|not| *not).süz(|not| *not < 50).dönüştür(|not| not + 10).biriktir();
 ```
 
-**`*` işareti**: `yinele()` elemanları ödünç verir; `72` yerine `&72` gelir.
+**`*` işareti**: `elemanlar()` elemanları ödünç verir; `72` yerine `&72` gelir.
 `*not` ödünç alınan değerin kendisidir. Unutursan Pas sana hatırlatır.
 
 **Sıralamak**: `sırala()` listeyi küçükten büyüğe, `ters_çevir()` tersine

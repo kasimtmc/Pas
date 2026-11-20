@@ -164,7 +164,7 @@ const DERLEYICI: &[(&str, &str)] = &[
     ("required for the cast from `{}` to `{}`", "`{0}` değerini `{1}` olarak kullanabilmek için gerekli"),
     (
         "this trait has no implementations, consider adding one",
-        "bu niteliği uygulayan hiçbir tür yok; `uygula … her …` ile bir türe uygula",
+        "bu niteliği uygulayan hiçbir tür yok; `uygula … için …` ile bir türe uygula",
     ),
     (
         "the trait bound `{}: RastgeleSayi` is not satisfied",
@@ -520,7 +520,7 @@ const ACIKLAMALAR: &[(&str, &str)] = &[
     ),
     (
         "E0046",
-        "Bir niteliği bir türe uygularken niteliğin gövdesiz bütün yöntemlerini yazmalısın. Eksik yöntemi `uygula … her …` bloğunun içine ekle.",
+        "Bir niteliği bir türe uygularken niteliğin gövdesiz bütün yöntemlerini yazmalısın. Eksik yöntemi `uygula … için …` bloğunun içine ekle.",
     ),
     ("E0063", "Bir yapı oluştururken bütün alanlarına değer vermelisin. Eksik alanı da yaz: `Kedi { ad: …, yaş: 1 }`"),
     (
@@ -654,7 +654,8 @@ pub fn gereksiz_mi(mesaj: &str) -> bool {
 }
 
 /// Pas'ın eski sürümlerinde kullanılan anahtar sözcükler ve yenileri.
-const ESKI_SOZCUKLER: &[(&str, &str)] = &[("yap", "tanımla"), ("içinde", "için"), ("olsun", "tanımla")];
+const ESKI_SOZCUKLER: &[(&str, &str)] =
+    &[("yap", "tanımla"), ("içinde", "için"), ("olsun", "tanımla"), ("yinele", "elemanlar"), ("durağan", "kalıcı")];
 
 /// Satırda Türkçe harfleri olmadan yazılmış Pas sözcükleri varsa doğrularını
 /// önerir: "`eger` yerine `eğer` mi demek istedin?"
@@ -663,16 +664,21 @@ pub fn yazim_onerileri(satir: &str) -> Vec<String> {
     let anlamlilar: Vec<_> = sozcukler.iter().filter(|s| !s.anlamsiz_mi()).collect();
     let mut oneriler: Vec<String> = Vec::new();
     for (i, sozcuk) in anlamlilar.iter().enumerate() {
-        if sozcuk.tur != SozcukTuru::Isim {
-            continue;
-        }
-        let kelime = sozcuk.metin(satir);
-        // Pas'ın eski sürümlerindeki anahtar sözcükler
+        let kelime = match sozcuk.tur {
+            SozcukTuru::Isim => sozcuk.metin(satir),
+            // `'kalıcı` gibi eski yaşam süreleri
+            SozcukTuru::YasamSuresi => &sozcuk.metin(satir)[1..],
+            _ => continue,
+        };
+        // Pas'ın eski sürümlerindeki sözcükler
         if let Some((_, yeni)) = ESKI_SOZCUKLER.iter().find(|(eski, _)| *eski == kelime) {
             let oneri = format!("`{kelime}` yerine artık `{yeni}` yazılıyor");
             if !oneriler.contains(&oneri) {
                 oneriler.push(oneri);
             }
+            continue;
+        }
+        if sozcuk.tur == SozcukTuru::YasamSuresi {
             continue;
         }
         let makro = anlamlilar.get(i + 1).is_some_and(|s| s.metin(satir) == "!");
@@ -859,6 +865,10 @@ mod testler {
         assert_eq!(
             yazim_onerileri("    her i içinde 0..3 { yap x = i; }"),
             vec!["`içinde` yerine artık `için` yazılıyor", "`yap` yerine artık `tanımla` yazılıyor"]
+        );
+        assert_eq!(
+            yazim_onerileri("işlev f() -> &'durağan str { l.yinele() }"),
+            vec!["`durağan` yerine artık `kalıcı` yazılıyor", "`yinele` yerine artık `elemanlar` yazılıyor"]
         );
     }
 

@@ -2,7 +2,7 @@
 // Her hayvanın bir adı ve bir sesi vardır.
 nitelik Hayvan {
     işlev ad(&kendi) -> Metin;
-    işlev ses(&kendi) -> &'durağan str;
+    işlev ses(&kendi) -> &'kalıcı str;
 
     // Gövdesi olan yöntemleri her hayvan hazır olarak alır.
     işlev tanıt(&kendi) {
@@ -21,23 +21,23 @@ yapı Köpek {
 
 yapı İnek;
 
-// "Hayvan niteliğini her Kedi'ye uygula"
-uygula Hayvan her Kedi {
+// "Kedi için Hayvan niteliğini uygula"
+uygula Hayvan için Kedi {
     işlev ad(&kendi) -> Metin {
         kendi.ad.kopyala()
     }
 
-    işlev ses(&kendi) -> &'durağan str {
+    işlev ses(&kendi) -> &'kalıcı str {
         "miyav"
     }
 }
 
-uygula Hayvan her Köpek {
+uygula Hayvan için Köpek {
     işlev ad(&kendi) -> Metin {
         biçimle!("{} ({} yaşında)", kendi.ad, kendi.yaş)
     }
 
-    işlev ses(&kendi) -> &'durağan str {
+    işlev ses(&kendi) -> &'kalıcı str {
         "hav hav"
     }
 
@@ -47,12 +47,12 @@ uygula Hayvan her Köpek {
     }
 }
 
-uygula Hayvan her İnek {
+uygula Hayvan için İnek {
     işlev ad(&kendi) -> Metin {
         "Sarıkız".metne_çevir()
     }
 
-    işlev ses(&kendi) -> &'durağan str {
+    işlev ses(&kendi) -> &'kalıcı str {
         "möö"
     }
 }

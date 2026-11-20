@@ -13,7 +13,7 @@ Bu görevleri [Pas Oyun Alanı](https://kasimtmc.github.io/Pas/)nda yapıp **Den
     Yeşil,
 }
 
-işlev ne_yapmalı(ışık: &Işık) -> &'durağan str {
+işlev ne_yapmalı(ışık: &Işık) -> &'kalıcı str {
     // Burayı `eşle` ile değiştir.
     ""
 }
@@ -39,7 +39,7 @@ Geç
     Yeşil,
 }
 
-işlev ne_yapmalı(ışık: &Işık) -> &'durağan str {
+işlev ne_yapmalı(ışık: &Işık) -> &'kalıcı str {
     eşle ışık {
         Işık::Kırmızı => "Dur",
         Işık::Sarı => "Hazırlan",
@@ -62,7 +62,7 @@ Ay numarasından mevsimi bulan `mevsim` işlevini yaz: 12, 1, 2 `Kış`; 3, 4, 5
 İpucu: `eşle` içinde `|` "veya" demektir, `3..=5` 3'ten 5'e kadar demektir, `_` geri kalan her şeyi yakalar.
 
 ```pas başlangıç
-işlev mevsim(ay: u32) -> &'durağan str {
+işlev mevsim(ay: u32) -> &'kalıcı str {
     // Burayı değiştir.
     ""
 }
@@ -83,7 +83,7 @@ işlev ana() {
 ```
 
 ```pas çözüm
-işlev mevsim(ay: u32) -> &'durağan str {
+işlev mevsim(ay: u32) -> &'kalıcı str {
     eşle ay {
         12 | 1 | 2 => "Kış",
         3..=5 => "İlkbahar",

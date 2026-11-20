@@ -26,7 +26,7 @@ uygula Oyuncu {
     }
 }
 
-işlev ses(hayvan: &Hayvan) -> &'durağan str {
+işlev ses(hayvan: &Hayvan) -> &'kalıcı str {
     eşle hayvan {
         Hayvan::Kedi => "miyav",
         Hayvan::Köpek => "hav hav",
@@ -55,7 +55,7 @@ işlev ana() {
     tanımla değişken sayılar = liste![3, 1, 4, 1, 5];
     sayılar.ekle(9);
     tanımla değişken toplam = 0;
-    her sayı için sayılar.yinele() {
+    her sayı için sayılar.elemanlar() {
         toplam += sayı;
     }
     yazdır!("{} sayının toplamı: {toplam}", sayılar.uzunluk());
@@ -74,7 +74,7 @@ işlev ana() {
     }
 
     // Belki ve Sonuç
-    tanımla ilk_çift: Belki<&i32> = sayılar.yinele().bul(|s| *s % 2 == 0);
+    tanımla ilk_çift: Belki<&i32> = sayılar.elemanlar().bul(|s| *s % 2 == 0);
     eşle ilk_çift {
         Var(s) => yazdır!("İlk çift sayı: {s}"),
         Yok => yazdır!("Çift sayı yok"),

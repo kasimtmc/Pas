@@ -78,7 +78,7 @@ geçebilir.
 | 11. Listelerle sihir | `#ders=11-yineleyiciler` | kapanışlar, `dönüştür`, `süz`, `biriktir` | 2 | 2 |
 | 12. Sözlükler | `#ders=12-sozlukler` | `Sözlük`, `yerleştir`, `al`, sayaçlar | 2 | 1–2 |
 | 13. Hatalarla başa çıkmak | `#ders=13-sonuc-ve-hatalar` | `Sonuç`, `Tamam`/`Hata`, `?` | 2 | 2 |
-| 14. Nitelikler | `#ders=14-nitelikler` | `nitelik`, `uygula … her …`, `dinamik` | 1 | 2 |
+| 14. Nitelikler | `#ders=14-nitelikler` | `nitelik`, `uygula … için …`, `dinamik` | 1 | 2 |
 | 15. Kaplumbağa ile çizim | `#ders=15-kaplumbaga` | `Kaplumbağa`, döngülerle şekiller | 2 | 1–2 |
 
 Kaplumbağa dersi (15) yalnızca döngüleri ve işlevleri gerektirir. Görsel

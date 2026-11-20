@@ -43,7 +43,7 @@ object PasDugumler {
         "nitelik" to NITELIK, "trait" to NITELIK,
         "uygula" to UYGULA, "impl" to UYGULA,
         "modül" to MODUL, "mod" to MODUL,
-        "sabit" to SABIT, "const" to SABIT, "durağan" to SABIT, "static" to SABIT,
+        "sabit" to SABIT, "const" to SABIT, "kalıcı" to SABIT, "static" to SABIT,
         "tür" to TUR_ADI, "type" to TUR_ADI,
     )
 
@@ -169,7 +169,7 @@ class PasOge(dugum: ASTNode) : ASTWrapperPsiElement(dugum) {
                 val metin = containingFile.text.substring(baslik.first().startOffset, baslik.last().textRange.endOffset)
                 return metin.replace(Regex("\\s+"), " ")
             }
-            // `durağan değişken SAYAC` gibi durumlarda `değişken` atlanır.
+            // `kalıcı değişken SAYAC` gibi durumlarda `değişken` atlanır.
             return sonrasi.firstOrNull { it.elementType == PasSozcukler.ISIM }?.text
         }
 

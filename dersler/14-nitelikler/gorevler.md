@@ -26,14 +26,14 @@ yapı Daire {
     yarıçap: f64,
 }
 
-uygula Şekil her Kare {
+uygula Şekil için Kare {
     işlev alan(&kendi) -> f64 {
         // Burayı değiştir.
         0.0
     }
 }
 
-uygula Şekil her Daire {
+uygula Şekil için Daire {
     işlev alan(&kendi) -> f64 {
         // Burayı değiştir.
         0.0
@@ -66,13 +66,13 @@ yapı Daire {
     yarıçap: f64,
 }
 
-uygula Şekil her Kare {
+uygula Şekil için Kare {
     işlev alan(&kendi) -> f64 {
         kendi.kenar * kendi.kenar
     }
 }
 
-uygula Şekil her Daire {
+uygula Şekil için Daire {
     işlev alan(&kendi) -> f64 {
         std::f64::consts::PI * kendi.yarıçap * kendi.yarıçap
     }

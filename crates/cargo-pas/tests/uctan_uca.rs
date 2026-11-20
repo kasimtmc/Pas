@@ -200,11 +200,11 @@ işlev ana() {
     sayılar.sırala();
     yazdır!("{:?} {:?}", sayılar, sayılar.al(10).yoksa(&0));
     sayılar.ters_çevir();
-    tanımla toplam: i32 = sayılar.yinele().toplam();
-    yazdır!("{toplam} {:?} {:?}", sayılar.yinele().en_büyük(), sayılar.yinele().en_küçük());
-    tanımla çiftler: Liste<i32> = sayılar.yinele().süz(|s| *s % 2 == 0).dönüştür(|s| s * 10).biriktir();
-    yazdır!("{:?} {}", çiftler, sayılar.yinele().bul(|s| **s > 4).var_mı());
-    her (i, s) için sayılar.yinele().numaralandır() {
+    tanımla toplam: i32 = sayılar.elemanlar().toplam();
+    yazdır!("{toplam} {:?} {:?}", sayılar.elemanlar().en_büyük(), sayılar.elemanlar().en_küçük());
+    tanımla çiftler: Liste<i32> = sayılar.elemanlar().süz(|s| *s % 2 == 0).dönüştür(|s| s * 10).biriktir();
+    yazdır!("{:?} {}", çiftler, sayılar.elemanlar().bul(|s| **s > 4).var_mı());
+    her (i, s) için sayılar.elemanlar().numaralandır() {
         eğer i == 0 {
             yazdır!("ilk: {s}");
         }

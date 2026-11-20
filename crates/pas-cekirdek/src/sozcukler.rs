@@ -293,7 +293,7 @@ mod testler {
     fn karakterler_ve_yasam_sureleri() {
         assert_eq!(turler("'ş'"), [(Karakter, "'ş'")]);
         assert_eq!(turler(r"'\''"), [(Karakter, r"'\''")]);
-        assert_eq!(turler("&'durağan"), [(Isaret, "&"), (YasamSuresi, "'durağan")]);
+        assert_eq!(turler("&'kalıcı"), [(Isaret, "&"), (YasamSuresi, "'kalıcı")]);
         assert_eq!(turler("b'a'"), [(Karakter, "b'a'")]);
     }
 

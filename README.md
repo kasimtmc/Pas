@@ -13,7 +13,7 @@ işlev ana() {
     tanımla değişken sayılar = liste![3, 1, 4];
     sayılar.ekle(1);
 
-    her sayı için sayılar.yinele() {
+    her sayı için sayılar.elemanlar() {
         eğer sayı % 2 == 0 {
             yazdır!("{sayı} çift");
         } değilse {
@@ -140,9 +140,11 @@ Türkçe hatalar ve hızlı düzeltmeler (Ctrl+.), `işlev ana()` üstünde
 **▶ Çalıştır**, tanıma gitme (F12), belge gösterme ve tamamlama.
 `cargo-pas` bulunamazsa onu kuran komutu terminalde çalıştırmayı önerir.
 
-Hazır paket (`pas-vscode-*.vsix`) [son yayında](https://github.com/kasimtmc/Pas/releases/latest);
-VS Code'da **Uzantılar → ⋯ → VSIX'ten yükle** (Install from VSIX) ile
-kurulur. Kendin derlemek için:
+VSCodium, Cursor gibi [Open VSX](https://open-vsx.org/extension/plyground/pas-turkce-rust)
+kullanan editörlerde Uzantılar bölümünde **Pas (Turkce Rust)** diye aratıp
+kurabilirsin. Hazır paket (`pas-vscode-*.vsix`) de
+[son yayında](https://github.com/kasimtmc/Pas/releases/latest); VS Code'da
+**Uzantılar → ⋯ → VSIX'ten yükle** (Install from VSIX) ile kurulur. Kendin derlemek için:
 
 ```bash
 cd vscode && npm ci && npm run paketle
