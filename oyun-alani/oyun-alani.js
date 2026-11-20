@@ -7,6 +7,7 @@ const DEPO = "https://github.com/kasimtmc/Pas";
 const KAYIT_ANAHTARI = "pas-oyun-alani-kod";
 const DERS_ANAHTARI = "pas-oyun-alani-ders";
 const GOREV_ANAHTARI = "pas-oyun-alani-gorevler";
+const PROGRAM_ANAHTARI = "pas-oyun-alani-programlar";
 
 const $ = (kimlik) => document.getElementById(kimlik);
 const kod = $("kod");
@@ -392,7 +393,143 @@ function kaydet() {
   } catch {
     // Tarayıcı kayda izin vermiyorsa sorun değil.
   }
+  // Açık bir program varsa değişiklikler ona da kaydedilir.
+  const program = acikProgram();
+  if (program && program.kod !== kod.value) {
+    program.kod = kod.value;
+    program.guncelleme = Date.now();
+    programlariYaz();
+  }
 }
+
+// ---- Programlarım ----
+
+/** Kaydedilen programlar: [{ kimlik, ad, kod, guncelleme }]; yalnızca bu tarayıcıda. */
+let programlar = [];
+let acikProgramKimligi = null;
+try {
+  const kayit = JSON.parse(localStorage.getItem(PROGRAM_ANAHTARI) ?? "null");
+  if (Array.isArray(kayit?.programlar)) programlar = kayit.programlar;
+  if (programlar.some((p) => p.kimlik === kayit?.acik)) acikProgramKimligi = kayit.acik;
+} catch {
+  programlar = [];
+}
+
+const acikProgram = () => programlar.find((p) => p.kimlik === acikProgramKimligi) ?? null;
+
+function programlariYaz() {
+  try {
+    localStorage.setItem(PROGRAM_ANAHTARI, JSON.stringify({ programlar, acik: acikProgramKimligi }));
+  } catch {
+    bildir("Programın kaydedilemedi; tarayıcı kayda izin vermiyor olabilir.");
+  }
+}
+
+/** Düzenleyicinin başlığı: açık programın adı ya da `ana.pas`. */
+function dosyaAdiniGoster() {
+  const program = acikProgram();
+  $("dosya-adi").textContent = program ? `📄 ${program.ad}` : "ana.pas";
+  $("dosya-adi").title = program ? "Bu program kendiliğinden kaydediliyor" : "";
+}
+
+/** Ders, örnek ya da görev açılınca program kapanır; onların kodu programın üzerine yazılmaz. */
+function programiKapat() {
+  if (acikProgramKimligi === null) return;
+  acikProgramKimligi = null;
+  programlariYaz();
+  dosyaAdiniGoster();
+  programlariGoster();
+}
+
+function programAdiSor(oneri) {
+  const ad = prompt("Programına bir ad ver:", oneri)?.trim();
+  return ad ? ad.slice(0, 60) : null;
+}
+
+function programOlustur(ad, icerik) {
+  const program = { kimlik: `p${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, ad, kod: icerik, guncelleme: Date.now() };
+  programlar.unshift(program);
+  programAc(program.kimlik, { sor: false });
+}
+
+function programAc(kimlik, { sor = true } = {}) {
+  const program = programlar.find((p) => p.kimlik === kimlik);
+  if (!program) return;
+  const degismis = !acikProgram() && kod.value.trim() && kod.value !== kodBasi;
+  if (sor && degismis && !confirm("Yazdığın kod bir programa kaydedilmedi. Yine de bu programı açalım mı?")) return;
+  gorevdenCik();
+  acikProgramKimligi = kimlik;
+  kod.value = program.kod;
+  kodBasi = program.kod;
+  girdi.value = "";
+  girdiKonsoldan = false;
+  history.replaceState(null, "", location.pathname);
+  programlariYaz();
+  degisti();
+  dosyaAdiniGoster();
+  programlariGoster();
+  cikti.innerHTML = "";
+  cikti.append(eleman("p", "karsilama", `<b>${kacis(program.ad)}</b> açıldı. Değişikliklerin kendiliğinden kaydedilir.`));
+  durumuYaz("");
+}
+
+function programlariGoster() {
+  const liste = $("program-listesi");
+  if (!programlar.length) {
+    liste.innerHTML = '<li class="bos">Henüz kaydettiğin bir program yok. <b>+ Yeni program</b> ile başla ya da yazdığın kodu kaydet.</li>';
+    return;
+  }
+  const tarih = (zaman) => new Date(zaman).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" });
+  liste.innerHTML = [...programlar]
+    .sort((a, b) => b.guncelleme - a.guncelleme)
+    .map(
+      (p) => `<li${p.kimlik === acikProgramKimligi ? ' aria-current="true"' : ""}>
+        <button class="program-ac" data-ac="${p.kimlik}"><b>${kacis(p.ad)}</b><small>${tarih(p.guncelleme)}</small></button>
+        <button class="kucuk" data-adlandir="${p.kimlik}" title="Yeniden adlandır" aria-label="${kacis(p.ad)} programını yeniden adlandır">✎</button>
+        <button class="kucuk" data-sil="${p.kimlik}" title="Sil" aria-label="${kacis(p.ad)} programını sil">🗑</button>
+      </li>`,
+    )
+    .join("");
+}
+
+$("program-listesi").addEventListener("click", (olay) => {
+  const dugme = olay.target.closest("button");
+  if (!dugme) return;
+  const { ac, adlandir, sil } = dugme.dataset;
+  if (ac) {
+    programAc(ac);
+  } else if (adlandir) {
+    const program = programlar.find((p) => p.kimlik === adlandir);
+    const ad = program && programAdiSor(program.ad);
+    if (!ad) return;
+    program.ad = ad;
+    programlariYaz();
+    programlariGoster();
+    dosyaAdiniGoster();
+  } else if (sil) {
+    const program = programlar.find((p) => p.kimlik === sil);
+    if (!program || !confirm(`"${program.ad}" programı silinsin mi? Bu geri alınamaz.`)) return;
+    programlar = programlar.filter((p) => p.kimlik !== sil);
+    if (acikProgramKimligi === sil) acikProgramKimligi = null;
+    programlariYaz();
+    programlariGoster();
+    dosyaAdiniGoster();
+  }
+});
+
+$("yeni-program").addEventListener("click", () => {
+  const degismis = !acikProgram() && kod.value.trim() && kod.value !== kodBasi;
+  if (degismis && !confirm("Yazdığın kod bir programa kaydedilmedi. Yine de yeni bir program açalım mı?")) return;
+  const ad = programAdiSor(`Programım ${programlar.length + 1}`);
+  if (ad) programOlustur(ad, "işlev ana() {\n    \n}\n");
+});
+
+$("kodu-kaydet").addEventListener("click", () => {
+  const ad = programAdiSor(acikDers && !acikProgram() ? `${acikDers.ad.replace(/^Ders \d+: /, "")} (benim)` : `Programım ${programlar.length + 1}`);
+  if (!ad) return;
+  programOlustur(ad, kod.value);
+  bildir(`"${ad}" kaydedildi.`);
+});
 
 function kodaGit(aralik) {
   if (!aralik) return;
@@ -725,9 +862,11 @@ let kodBasi = "";
 
 /** Örneğin (ya da dersin) kodunu düzenleyiciye yükler; ders ise anlatımını da açar. */
 function ornegiAc(ornek, { sor = true } = {}) {
-  const degismis = kod.value.trim() && kod.value !== kodBasi;
+  // Açık bir programın değişiklikleri zaten kaydedilmiştir.
+  const degismis = !acikProgram() && kod.value.trim() && kod.value !== kodBasi;
   if (sor && degismis && !confirm("Yazdığın kodun yerine örnek yüklensin mi?")) return;
   gorevdenCik();
+  programiKapat();
   kod.value = ornek.kaynak;
   kodBasi = ornek.kaynak;
   girdi.value = "";
@@ -861,6 +1000,7 @@ function goreveBasla(ornek, sira) {
   if (!gorev) return;
   const degismis = kod.value.trim() && kod.value !== kodBasi;
   if (degismis && !confirm("Yazdığın kodun yerine görevin başlangıç kodu yüklensin mi?")) return;
+  programiKapat();
   acikGorev = { ornek, sira, gorev };
   kod.value = gorev.baslangic + "\n";
   kodBasi = kod.value;
@@ -1185,21 +1325,35 @@ function paneliAc(panel, dugme, acik) {
   $(dugme).setAttribute("aria-pressed", String(acik));
 }
 
+const PANEL_DUGMELERI = {
+  "rust-paneli": "rust-dugmesi",
+  "sozluk-paneli": "sozluk-dugmesi",
+  "programlar-paneli": "programlar-dugmesi",
+  "ders-paneli": "dersler-dugmesi",
+};
+
+/** Sağdaki çekmecelerden yalnızca biri açık olur. */
+function cekmeceyiDegistir(panel) {
+  const acik = $(panel).hidden;
+  for (const [diger, dugme] of Object.entries(PANEL_DUGMELERI)) {
+    if (diger !== "ders-paneli") paneliAc(diger, dugme, false);
+  }
+  paneliAc(panel, PANEL_DUGMELERI[panel], acik);
+  return acik;
+}
+
 $("rust-dugmesi").addEventListener("click", () => {
-  const acik = $("rust-paneli").hidden;
-  paneliAc("sozluk-paneli", "sozluk-dugmesi", false);
-  paneliAc("rust-paneli", "rust-dugmesi", acik);
+  cekmeceyiDegistir("rust-paneli");
   rustuGuncelle();
 });
 
 $("sozluk-dugmesi").addEventListener("click", () => {
-  const acik = $("sozluk-paneli").hidden;
-  paneliAc("rust-paneli", "rust-dugmesi", false);
-  paneliAc("sozluk-paneli", "sozluk-dugmesi", acik);
-  if (acik) $("sozluk-ara").focus();
+  if (cekmeceyiDegistir("sozluk-paneli")) $("sozluk-ara").focus();
 });
 
-const PANEL_DUGMELERI = { "rust-paneli": "rust-dugmesi", "sozluk-paneli": "sozluk-dugmesi", "ders-paneli": "dersler-dugmesi" };
+$("programlar-dugmesi").addEventListener("click", () => {
+  if (cekmeceyiDegistir("programlar-paneli")) programlariGoster();
+});
 for (const dugme of document.querySelectorAll("[data-kapat]")) {
   dugme.addEventListener("click", () => {
     const panel = dugme.dataset.kapat;
@@ -1243,6 +1397,11 @@ function sozluguGoster() {
 
 $("sozluk-ara").addEventListener("input", sozluguGoster);
 
+// Çekmeceler araç çubuğunun altından başlar.
+new ResizeObserver(([girdi]) => {
+  document.documentElement.style.setProperty("--ust-yukseklik", `${girdi.target.offsetHeight}px`);
+}).observe(document.querySelector(".ust"));
+
 // ---- Başlangıç ----
 
 async function basla() {
@@ -1250,6 +1409,8 @@ async function basla() {
   let baslangic = null;
   const bagliDers = location.hash.match(/^#ders=([\w-]+)$/)?.[1];
   if (location.hash.startsWith("#kod=")) {
+    // Paylaşılan kod açık programın üzerine yazılmasın.
+    acikProgramKimligi = null;
     try {
       baslangic = await ac(location.hash.slice(5));
     } catch {
@@ -1282,7 +1443,15 @@ async function basla() {
   sozlukIndeksi = new Map(sozluk.map((g) => [g.pas.replace(/!$/, ""), g]));
   sozluguGoster();
   await ornekleriYukle();
-  if (bagliDers && dersBul(bagliDers)) {
+  programlariGoster();
+  if (acikProgram() && !bagliDers && !location.hash.startsWith("#kod=")) {
+    // En son açık olan program kaldığı yerden açılır.
+    kod.value = acikProgram().kod;
+    kodBasi = kod.value;
+    dosyaAdiniGoster();
+    if (kayitliDers && dersBul(kayitliDers)) dersiGoster(dersBul(kayitliDers));
+    renklendir();
+  } else if (bagliDers && dersBul(bagliDers)) {
     // Bir dersin bağlantısı (`#ders=03-soru-sor`) o dersi kodu ile açar.
     ornegiAc(dersBul(bagliDers), { sor: false });
   } else if (baslangic === null && ornekler.length) {

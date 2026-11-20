@@ -21,6 +21,7 @@
     </button>
     <button id="denetle" class="denetle" hidden title="Görevi denetle">✓ Denetle</button>
     <button id="dersler-dugmesi" aria-pressed="false" title="Adım adım dersler">Dersler</button>
+    <button id="programlar-dugmesi" aria-pressed="false" title="Kaydettiğin programlar">Programlarım</button>
     <label class="secim">
       <span class="gizli">Örnek seç</span>
       <select id="ornekler"><option value="">Örnekler…</option></select>
@@ -44,7 +45,7 @@
 
   <section class="bolum duzenleyici-bolumu" aria-label="Kod">
     <div class="bolum-basligi">
-      <span>ana.pas</span>
+      <span id="dosya-adi">ana.pas</span>
       <span id="gorev-etiketi" class="gorev-etiketi" hidden>
         <span id="gorev-adi"></span>
         <button id="gorevi-birak" class="kapat" aria-label="Görevi bırak" title="Görevi bırak">×</button>
@@ -77,6 +78,16 @@
       Hata yaparsan Pas sana ne olduğunu Türkçe anlatır.</p>
     </div>
   </section>
+
+  <aside class="yan-panel cekmece" id="programlar-paneli" hidden aria-label="Programlarım">
+    <div class="bolum-basligi"><span>Programlarım</span><button class="kapat" data-kapat="programlar-paneli" aria-label="Kapat">×</button></div>
+    <div class="program-dugmeleri">
+      <button id="yeni-program">+ Yeni program</button>
+      <button id="kodu-kaydet">Şu anki kodu kaydet</button>
+    </div>
+    <p class="aciklama-metni">Programların yalnızca bu tarayıcıda saklanır. Bir programı başkasına göstermek için onu açıp <b>Paylaş</b>'a bas.</p>
+    <ul id="program-listesi" class="program-listesi"></ul>
+  </aside>
 
   <aside class="yan-panel cekmece" id="rust-paneli" hidden aria-label="Rust karşılığı">
     <div class="bolum-basligi"><span>Rust karşılığı</span><button class="kapat" data-kapat="rust-paneli" aria-label="Kapat">×</button></div>

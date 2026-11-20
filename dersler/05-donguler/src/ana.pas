@@ -1,5 +1,5 @@
 işlev ana() {
-    // `her … içinde` bir aralıktaki her sayı için bir kez çalışır.
+    // `her … için` bir aralıktaki her sayı için bir kez çalışır.
     // 1..=5 demek 1, 2, 3, 4, 5 demektir.
     her tur için 1..=5 {
         yazdır!("{tur}. tur");

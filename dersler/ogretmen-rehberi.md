@@ -46,6 +46,13 @@ bölümü vardır. Öğrencilerden önce kendileri denemelerini, ipucuna bakmala
   bağlantıyla size gönderebilir; bağlantıyı açtığınızda kodlarını görür ve
   çalıştırabilirsiniz.
 
+### Programlarım
+
+Öğrenciler yazdıkları programları **Programlarım** düğmesiyle adlandırıp
+kaydedebilir; açık bir programdaki her değişiklik kendiliğinden kaydedilir.
+Ders ya da görev açılınca program kapanır, böylece dersin kodu öğrencinin
+programının üzerine yazılmaz. Programlar da yalnızca o tarayıcıda saklanır.
+
 ### İlerleme ve gizlilik
 
 - Tamamlanan görevler ve son açılan ders yalnızca **o tarayıcıda** saklanır.

@@ -608,7 +608,8 @@ button.denetle:disabled { opacity: .6; cursor: progress; }
 /* Rust ve Sözlük panelleri sağdan açılan çekmecelerdir. */
 .cekmece {
   position: fixed;
-  top: 64px;
+  /* Araç çubuğu dar ekranda birkaç satıra inebilir; yüksekliğini betik yazar. */
+  top: calc(var(--ust-yukseklik, 56px) + 8px);
   right: 16px;
   bottom: 16px;
   z-index: 10;
@@ -627,6 +628,30 @@ button.denetle:disabled { opacity: .6; cursor: progress; }
   font-size: 13px;
   line-height: 1.5;
 }
+
+/* ---- Programlarım ---- */
+.program-dugmeleri { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px 0; }
+.program-listesi { flex: 1; overflow: auto; list-style: none; margin: 8px 0 0; padding: 0 12px 12px; }
+.program-listesi li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--cizgi);
+}
+.program-listesi li[aria-current="true"] { background: var(--sec); border-radius: 6px; }
+.program-ac {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 2px 4px;
+}
+.program-ac b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.program-ac small { color: var(--yazi-soluk); font-size: 12px; }
+.program-listesi .kucuk { padding: 3px 7px; font-size: 12.5px; }
+.program-listesi .bos { color: var(--yazi-soluk); border: none; font-size: 14px; }
 
 #sozluk-ara {
   margin: 10px 12px;

@@ -1,5 +1,5 @@
 işlev ana() {
-    // `yap` ile bir değere isim veririz. Bu isimlere değişken denir.
+    // `tanımla` ile bir değere isim veririz. Bu isimlere değişken denir.
     tanımla ad = "Elif";
     tanımla yaş = 11;
     yazdır!("{ad} {yaş} yaşında.");
