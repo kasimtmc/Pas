@@ -51,6 +51,7 @@ işlev ana() {
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>0.8.0: Keywords: impl … for is now uygula … için, iter is now elemanlar, 'static is now 'kalıcı; My Programs in the playground / Anahtar sözcükler: uygula … için …, yinele yerine elemanlar, durağan yerine kalıcı; oyun alanında Programlarım</p>
     <p>0.7.0: Keywords changed: let is now tanımla, for … in is now her … için; hints for words typed without Turkish letters / Anahtar sözcükler değişti: yap yerine tanımla, her … içinde yerine her … için; Türkçe harfsiz yazılan sözcükler için öneri</p>
     <p>0.6.0: Self-checking exercises, smart editor in the playground, teacher guide and more Turkish error messages / Kendini denetleyen görevler, oyun alanında akıllı düzenleyici, öğretmen rehberi ve daha fazla Türkçe hata mesajı</p>
     <p>0.5.0: Lessons inside the playground, turtle graphics and lesson 15, feedback form / Dersler oyun alanının içinde, kaplumbağa ile çizim ve 15. ders, geri bildirim formu</p>
