@@ -51,6 +51,7 @@ işlev ana() {
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>0.9.0: Teachers can create and share their own exercises; four project lessons (hangman, quiz, calculator, pattern drawer) / Öğretmenler kendi görevlerini hazırlayıp paylaşabilir; dört proje dersi (adam asmaca, bilgi yarışması, hesap makinesi, desen çizici)</p>
     <p>0.8.0: Keywords: impl … for is now uygula … için, iter is now elemanlar, 'static is now 'kalıcı; My Programs in the playground / Anahtar sözcükler: uygula … için …, yinele yerine elemanlar, durağan yerine kalıcı; oyun alanında Programlarım</p>
     <p>0.7.0: Keywords changed: let is now tanımla, for … in is now her … için; hints for words typed without Turkish letters / Anahtar sözcükler değişti: yap yerine tanımla, her … içinde yerine her … için; Türkçe harfsiz yazılan sözcükler için öneri</p>
     <p>0.6.0: Self-checking exercises, smart editor in the playground, teacher guide and more Turkish error messages / Kendini denetleyen görevler, oyun alanında akıllı düzenleyici, öğretmen rehberi ve daha fazla Türkçe hata mesajı</p>
