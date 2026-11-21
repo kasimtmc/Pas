@@ -46,6 +46,29 @@ bölümü vardır. Öğrencilerden önce kendileri denemelerini, ipucuna bakmala
   bağlantıyla size gönderebilir; bağlantıyı açtığınızda kodlarını görür ve
   çalıştırabilirsiniz.
 
+### Kendi görevini hazırlamak
+
+Derslerdeki görevlerin dışında kendi görevlerinizi de hazırlayabilirsiniz.
+Oyun alanının altındaki **görev hazırla** bağlantısına (ya da
+`https://kasimtmc.github.io/Pas/#gorev-hazirla` adresine) gidin:
+
+1. Başlığı, açıklamayı ve isterseniz bir ipucunu yazın.
+2. Öğrencinin başlayacağı kodu ve görevin bir çözümünü yazın; düzenleyicide
+   yazdığınız kodu düğmeyle alabilirsiniz.
+3. Görev bir şey yazdırıyorsa örnekler ekleyin: her örnekte programın
+   okuyacağı girdi (isteğe bağlı) ve beklenen çıktı vardır.
+   **Beklenen çıktıları çözümden üret** düğmesi çözümü çalıştırıp çıktıları
+   sizin yerinize doldurur. Kaplumbağa görevlerinde "çizimi denetle"yi
+   seçin; öğrencinin çizimi çözümünkiyle karşılaştırılır.
+4. **Önizle** ile görevi deneyin, **Bağlantı oluştur** ile bağlantıyı alıp
+   öğrencilere gönderin.
+
+Görev, bağlantının içinde saklanır; hiçbir sunucuya kaydedilmez. Çözümün
+öğrencilere görünmesini istemiyorsanız ilgili kutuyu boş bırakın; ama
+çözüm bağlantının içinde durduğu için meraklı bir öğrencinin onu bulabileceğini
+unutmayın. Görevi sonradan değiştirmek için bağlantıyı açıp
+**Bu görevi düzenle**'ye basın ve yeni bir bağlantı oluşturun.
+
 ### Programlarım
 
 Öğrenciler yazdıkları programları **Programlarım** düğmesiyle adlandırıp

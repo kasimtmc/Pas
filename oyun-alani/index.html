@@ -79,6 +79,42 @@
     </div>
   </section>
 
+  <aside class="yan-panel cekmece genis" id="hazirla-paneli" hidden aria-label="Görev hazırla">
+    <div class="bolum-basligi"><span>Görev hazırla</span><button class="kapat" data-kapat="hazirla-paneli" aria-label="Kapat">×</button></div>
+    <form id="hazirla-formu" class="hazirla-formu">
+      <p class="aciklama-metni">Öğrencilerin için bir görev hazırla. Görev, oluşturacağın bağlantının içinde saklanır; bağlantıyı açan öğrenci görevi yapıp <b>✓ Denetle</b> ile denetleyebilir.</p>
+      <label>Başlık <input name="baslik" required maxlength="80" placeholder="Örneğin: Yıldızlı satırlar"></label>
+      <label>Açıklama <textarea name="aciklama" rows="4" required placeholder="Öğrenci ne yapmalı? `kod` için ters tırnak, **kalın** için iki yıldız kullanabilirsin."></textarea></label>
+      <label>İpucu (isteğe bağlı) <input name="ipucu" maxlength="300"></label>
+      <label>Başlangıç kodu
+        <textarea name="baslangic" rows="5" spellcheck="false" class="kod-alani"></textarea>
+      </label>
+      <button type="button" data-al="baslangic">Düzenleyicideki kodu başlangıç kodu yap</button>
+      <label>Çözüm
+        <textarea name="cozum" rows="6" spellcheck="false" class="kod-alani" placeholder="Görevin doğru bir çözümü"></textarea>
+      </label>
+      <div class="satir-dugmeler">
+        <button type="button" data-al="cozum">Düzenleyicideki kodu çözüm yap</button>
+        <label class="onay"><input type="checkbox" name="cozumu_goster" checked> Çözümü öğrencilere göster</label>
+      </div>
+      <fieldset>
+        <legend>Denetim</legend>
+        <label class="onay"><input type="radio" name="denetim" value="cikti" checked> Çıktı beklenenle aynı olmalı</label>
+        <label class="onay"><input type="radio" name="denetim" value="cizim"> Kaplumbağanın çizimi çözümünkiyle aynı olmalı</label>
+      </fieldset>
+      <div id="ornek-alanlari" class="ornek-alanlari"></div>
+      <div class="satir-dugmeler" id="ornek-dugmeleri">
+        <button type="button" id="ornek-ekle">+ Örnek ekle</button>
+        <button type="button" id="cikti-uret">Beklenen çıktıları çözümden üret</button>
+      </div>
+      <p id="hazirla-durumu" class="aciklama-metni" role="status"></p>
+      <div class="satir-dugmeler">
+        <button type="button" id="gorev-onizle">Önizle</button>
+        <button type="submit" class="birincil">Bağlantı oluştur</button>
+      </div>
+    </form>
+  </aside>
+
   <aside class="yan-panel cekmece" id="programlar-paneli" hidden aria-label="Programlarım">
     <div class="bolum-basligi"><span>Programlarım</span><button class="kapat" data-kapat="programlar-paneli" aria-label="Kapat">×</button></div>
     <div class="program-dugmeleri">
@@ -106,7 +142,8 @@
   Çalıştır'a bastığında kodun derlenmesi için
   <a href="https://play.rust-lang.org" target="_blank" rel="noopener">Rust oyun alanına</a> (play.rust-lang.org) gönderilir.
   Bilgisayarına kurmak için: <a href="https://github.com/kasimtmc/Pas#kurulum" target="_blank" rel="noopener">Pas kurulumu</a>.
-  <a href="https://github.com/kasimtmc/Pas/blob/main/dersler/ogretmen-rehberi.md" target="_blank" rel="noopener">Öğretmenler için</a>.
+  <a href="https://github.com/kasimtmc/Pas/blob/main/dersler/ogretmen-rehberi.md" target="_blank" rel="noopener">Öğretmenler için</a>:
+  <a href="#gorev-hazirla" id="hazirla-baglantisi">görev hazırla</a>.
   Takıldığın bir yer mi var? <a id="geri-bildirim" href="https://github.com/kasimtmc/Pas/issues/new?template=geri-bildirim.yml" target="_blank" rel="noopener" title="GitHub hesabı gerekir">Geri bildirim gönder</a>.
 </footer>
 <div id="bildirim" class="bildirim" role="status" hidden></div>

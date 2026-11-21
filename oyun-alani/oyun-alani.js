@@ -898,13 +898,15 @@ function dersiGoster(ornek) {
   acikDers = ornek;
   const liste = dersler();
   const sira = liste.indexOf(ornek);
-  $("ders-listesi-dugmesi").textContent = `Ders ${sira + 1} / ${liste.length}`;
-  $("onceki-ders").disabled = sira <= 0;
-  $("sonraki-ders").disabled = sira >= liste.length - 1;
-  $("ders-metni").innerHTML = dersHtml(ornek.ders.metin, ornek.ders.yol) + gorevlerHtml(ornek);
+  $("ders-listesi-dugmesi").textContent = ornek.ozel ? "Öğretmenin görevi" : `Ders ${sira + 1} / ${liste.length}`;
+  $("onceki-ders").disabled = ornek.ozel || sira <= 0;
+  $("sonraki-ders").disabled = ornek.ozel || sira >= liste.length - 1;
+  const duzenle = ornek.ozel ? '<p><button class="gorevi-duzenle" data-gorevi-duzenle>Bu görevi düzenle</button></p>' : "";
+  $("ders-metni").innerHTML = dersHtml(ornek.ders.metin, ornek.ders.yol) + gorevlerHtml(ornek) + duzenle;
   $("ders-metni").scrollTop = 0;
   paneliAc("ders-paneli", "dersler-dugmesi", true);
-  dersiKaydet(ornek.ders.kimlik);
+  // Öğretmenin görevi bağlantıdadır; ders olarak hatırlanmaz.
+  if (!ornek.ozel) dersiKaydet(ornek.ders.kimlik);
 }
 
 function dersListesiniGoster() {
@@ -924,7 +926,8 @@ function dersListesiniGoster() {
   $("ders-metni").innerHTML =
     "<h2>Dersler</h2><p>Programlamayı adım adım öğren. Her derste önce kodu çalıştır, sonra anlatımı oku " +
     "ve en sondaki <b>Kendin dene</b> alıştırmalarını yap.</p>" +
-    `<ol class="ders-listesi">${ogeler}</ol>`;
+    `<ol class="ders-listesi">${ogeler}</ol>` +
+    '<p class="aciklama-metni">Öğretmen misin? Öğrencilerin için <a href="#gorev-hazirla" data-hazirla>kendi görevini hazırla</a>.</p>';
   $("ders-metni").scrollTop = 0;
   paneliAc("ders-paneli", "dersler-dugmesi", true);
 }
@@ -949,6 +952,11 @@ $("dersler-dugmesi").addEventListener("click", () => {
   }
 });
 $("ders-metni").addEventListener("click", (olay) => {
+  if (olay.target.closest("[data-hazirla]")) {
+    olay.preventDefault();
+    return hazirlamayiAc();
+  }
+  if (olay.target.closest("[data-gorevi-duzenle]") && acikDers?.ozel) return hazirlamayiAc(acikDers.veri);
   const basla = olay.target.closest("[data-gorev-basla]");
   if (basla) {
     goreveBasla(acikDers, Number(basla.dataset.gorevBasla));
@@ -959,6 +967,183 @@ $("ders-metni").addEventListener("click", (olay) => {
   olay.preventDefault();
   const ders = dersBul(baglanti.dataset.ders);
   if (ders) ornegiAc(ders);
+});
+
+// ---- Öğretmenin görevi ----
+
+/** Görevin bağlantıya konan hali: kısa alan adları bağlantıyı kısa tutar. */
+function gorevVerisiniOku(veri) {
+  const metin = (deger, sinir) => String(deger ?? "").slice(0, sinir);
+  const ornekler = Array.isArray(veri?.o) ? veri.o.slice(0, 20).map(([g, c]) => ({ girdi: metin(g, 5000), cikti: metin(c, 20000) })) : [];
+  return {
+    baslik: metin(veri?.b, 80) || "Öğretmenin görevi",
+    aciklama: metin(veri?.a, 5000),
+    ipucu: metin(veri?.i, 300) || null,
+    baslangic: metin(veri?.s, 20000),
+    cozum: metin(veri?.c, 20000),
+    cozumGizli: !veri?.g,
+    ornekler: veri?.z ? [] : ornekler,
+  };
+}
+
+/** Basit bir özet; aynı görevin ilerlemesi hatırlansın diye. */
+function ozet(metin) {
+  let h = 5381;
+  for (let i = 0; i < metin.length; i++) h = ((h << 5) + h + metin.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+
+function ogretmenGoreviniAc(veri) {
+  const gorev = gorevVerisiniOku(veri);
+  const ornek = {
+    ad: gorev.baslik,
+    kaynak: gorev.baslangic,
+    ozel: true,
+    veri,
+    ders: {
+      kimlik: `ogretmen-${ozet(JSON.stringify(veri))}`,
+      yol: "dersler/README.md",
+      metin: `# ${gorev.baslik}\n\nBu görevi öğretmenin hazırladı. Görevi oku, kodunu yaz ve **✓ Denetle**'ye bas.`,
+      gorevler: [gorev],
+    },
+  };
+  programiKapat();
+  dersiGoster(ornek);
+  goreveBasla(ornek, 0, { sor: false });
+}
+
+function ornekAlaniEkle(girdiMetni = "", ciktiMetni = "") {
+  const alan = eleman("div", "ornek-alani");
+  alan.innerHTML = `<span class="baslik">Örnek</span>
+    <button type="button" class="kapat" aria-label="Örneği sil">×</button>
+    <label>Girdi (isteğe bağlı)<textarea rows="3" class="kod-alani" data-alan="girdi" placeholder="Her satıra bir cevap"></textarea></label>
+    <label>Beklenen çıktı<textarea rows="3" class="kod-alani" data-alan="cikti"></textarea></label>`;
+  alan.querySelector('[data-alan="girdi"]').value = girdiMetni;
+  alan.querySelector('[data-alan="cikti"]').value = ciktiMetni;
+  alan.querySelector(".kapat").addEventListener("click", () => alan.remove());
+  $("ornek-alanlari").append(alan);
+}
+
+function denetimTurunuGoster() {
+  const cizim = $("hazirla-formu").elements.denetim.value === "cizim";
+  $("ornek-alanlari").hidden = cizim;
+  $("ornek-dugmeleri").hidden = cizim;
+}
+
+function hazirlamayiAc(veri = null) {
+  const form = $("hazirla-formu");
+  form.reset();
+  $("ornek-alanlari").innerHTML = "";
+  $("hazirla-durumu").textContent = "";
+  if (veri) {
+    const gorev = gorevVerisiniOku(veri);
+    form.elements.baslik.value = gorev.baslik;
+    form.elements.aciklama.value = gorev.aciklama;
+    form.elements.ipucu.value = gorev.ipucu ?? "";
+    form.elements.baslangic.value = gorev.baslangic;
+    form.elements.cozum.value = gorev.cozum;
+    form.elements.cozumu_goster.checked = !gorev.cozumGizli;
+    form.elements.denetim.value = veri.z ? "cizim" : "cikti";
+    for (const { girdi: g, cikti: c } of gorev.ornekler) ornekAlaniEkle(g, c);
+  } else {
+    form.elements.baslangic.value = "işlev ana() {\n    \n}";
+  }
+  if (!$("ornek-alanlari").childElementCount) ornekAlaniEkle();
+  denetimTurunuGoster();
+  for (const [panel, dugme] of Object.entries(PANEL_DUGMELERI)) {
+    if (panel !== "ders-paneli") paneliAc(panel, dugme, false);
+  }
+  paneliAc("hazirla-paneli", null, true);
+  form.elements.baslik.focus();
+}
+
+/** Formdaki görev; eksik bir şey varsa açıklamasıyla birlikte `null`. */
+function formdakiGorev() {
+  const form = $("hazirla-formu");
+  const e = form.elements;
+  const cizim = e.denetim.value === "cizim";
+  const ornekler = [...$("ornek-alanlari").children].map((alan) => [
+    alan.querySelector('[data-alan="girdi"]').value.replace(/\n+$/, ""),
+    alan.querySelector('[data-alan="cikti"]').value.replace(/\s+$/, ""),
+  ]);
+  const veri = {
+    b: e.baslik.value.trim(),
+    a: e.aciklama.value.trim(),
+    i: e.ipucu.value.trim() || undefined,
+    s: e.baslangic.value,
+    c: e.cozum.value.trim() ? e.cozum.value : undefined,
+    g: e.cozumu_goster.checked || undefined,
+    o: cizim ? undefined : ornekler.filter(([, c]) => c),
+    z: cizim || undefined,
+  };
+  if (!veri.b || !veri.a) return [null, "Başlığı ve açıklamayı yaz."];
+  if (cizim && !veri.c) return [null, "Çizim denetimi için çözümü yazman gerekiyor; öğrencinin çizimi onunkiyle karşılaştırılır."];
+  if (!cizim && !veri.o.length) return [null, "En az bir örneğin beklenen çıktısını yaz (ya da çözümden üret)."];
+  return [veri, null];
+}
+
+for (const dugme of document.querySelectorAll("[data-al]")) {
+  dugme.addEventListener("click", () => ($("hazirla-formu").elements[dugme.dataset.al].value = kod.value));
+}
+$("hazirla-formu").addEventListener("change", denetimTurunuGoster);
+$("ornek-ekle").addEventListener("click", () => ornekAlaniEkle());
+
+$("cikti-uret").addEventListener("click", async () => {
+  const cozum = $("hazirla-formu").elements.cozum.value;
+  const durumAlani = $("hazirla-durumu");
+  if (!cozum.trim()) return (durumAlani.textContent = "Önce çözümü yaz.");
+  if (!pas || calisiyor) return;
+  await mesgulken("Çözüm çalışıyor…", async () => {
+    for (const alan of $("ornek-alanlari").children) {
+      const ornekGirdi = alan.querySelector('[data-alan="girdi"]').value.replace(/\n+$/, "");
+      const hazirGirdi = ornekGirdi ? `${ornekGirdi}\n` : "";
+      const sonuc = await oyunAlanindaCalistir(cozum, hazirGirdi, 1);
+      const cozumSonucu = pas.coz(cozum, hazirGirdi, 1, sonuc.stderr ?? "");
+      if (!cozumSonucu.derlendi || cozumSonucu.panik || cozumSonucu.girdi_bitti) {
+        sonucuGoster(cozum, hazirGirdi, 1, sonuc);
+        durumAlani.textContent = cozumSonucu.girdi_bitti
+          ? "Çözüm, örneğin girdisinden daha fazlasını okumak istiyor; girdiyi tamamla."
+          : "Çözüm hatasız çalışmadı; ayrıntılar çıktı bölümünde.";
+        return;
+      }
+      alan.querySelector('[data-alan="cikti"]').value = (sonuc.stdout ?? "").replace(/\s+$/, "");
+    }
+    durumAlani.textContent = "Beklenen çıktılar çözümden üretildi. Göz atmayı unutma.";
+    durumuYaz("");
+  });
+});
+
+$("gorev-onizle").addEventListener("click", () => {
+  const [veri, eksik] = formdakiGorev();
+  if (!veri) return ($("hazirla-durumu").textContent = eksik);
+  paneliAc("hazirla-paneli", null, false);
+  ogretmenGoreviniAc(veri);
+});
+
+$("hazirla-formu").addEventListener("submit", async (olay) => {
+  olay.preventDefault();
+  const [veri, eksik] = formdakiGorev();
+  const durumAlani = $("hazirla-durumu");
+  if (!veri) return (durumAlani.textContent = eksik);
+  const adres = `${location.origin}${location.pathname}#gorev=${await sikistir(JSON.stringify(veri))}`;
+  durumAlani.innerHTML = "";
+  const kutu = document.createElement("input");
+  kutu.readOnly = true;
+  kutu.value = adres;
+  kutu.className = "baglanti-kutusu";
+  kutu.addEventListener("focus", () => kutu.select());
+  durumAlani.append("Bağlantı hazır; öğrencilerine gönder:", kutu);
+  try {
+    await navigator.clipboard.writeText(adres);
+    bildir("Görevin bağlantısı kopyalandı.");
+  } catch {
+    kutu.focus();
+  }
+});
+
+$("hazirla-baglantisi").addEventListener("click", (olay) => {
+  olay.preventDefault();
+  hazirlamayiAc();
 });
 
 // ---- Görevler ----
@@ -989,17 +1174,17 @@ function gorevlerHtml(ornek) {
     return `<div class="gorev${tamam ? " tamam" : ""}${acik ? " acik" : ""}">
       <h4><span class="gorev-durumu">${durum}</span>${kacis(gorev.baslik)}</h4>
       ${dersHtml(gorev.aciklama, ornek.ders.yol)}${ipucu}${dugme}
-      <details class="cozum"><summary>Çözümü göster</summary>${kodBlogu(gorev.cozum, "pas")}</details>
+      ${gorev.cozum && !gorev.cozumGizli ? `<details class="cozum"><summary>Çözümü göster</summary>${kodBlogu(gorev.cozum, "pas")}</details>` : ""}
     </div>`;
   });
   return `<h3 class="gorevler-basligi">Görevler</h3>${kartlar.join("")}`;
 }
 
-function goreveBasla(ornek, sira) {
+function goreveBasla(ornek, sira, { sor = true } = {}) {
   const gorev = ornek?.ders.gorevler?.[sira];
   if (!gorev) return;
-  const degismis = kod.value.trim() && kod.value !== kodBasi;
-  if (degismis && !confirm("Yazdığın kodun yerine görevin başlangıç kodu yüklensin mi?")) return;
+  const degismis = !acikProgram() && kod.value.trim() && kod.value !== kodBasi;
+  if (sor && degismis && !confirm("Yazdığın kodun yerine görevin başlangıç kodu yüklensin mi?")) return;
   programiKapat();
   acikGorev = { ornek, sira, gorev };
   kod.value = gorev.baslangic + "\n";
@@ -1091,7 +1276,7 @@ function gorevSonucu(basarili, aciklama = "") {
     kutu.innerHTML = "<b>🎉 Görev tamamlandı!</b> Harika iş çıkardın.";
     const sonraki = ornek.ders.gorevler[sira + 1];
     const liste = dersler();
-    const sonrakiDers = liste[liste.indexOf(ornek) + 1];
+    const sonrakiDers = ornek.ozel ? null : liste[liste.indexOf(ornek) + 1];
     if (sonraki) {
       const dugme = eleman("button", "", `Sonraki görev: ${kacis(sonraki.baslik)} →`);
       dugme.addEventListener("click", () => goreveBasla(ornek, sira + 1));
@@ -1322,13 +1507,14 @@ function bildir(metin) {
 
 function paneliAc(panel, dugme, acik) {
   $(panel).hidden = !acik;
-  $(dugme).setAttribute("aria-pressed", String(acik));
+  if (dugme) $(dugme).setAttribute("aria-pressed", String(acik));
 }
 
 const PANEL_DUGMELERI = {
   "rust-paneli": "rust-dugmesi",
   "sozluk-paneli": "sozluk-dugmesi",
   "programlar-paneli": "programlar-dugmesi",
+  "hazirla-paneli": null,
   "ders-paneli": "dersler-dugmesi",
 };
 
@@ -1408,6 +1594,17 @@ async function basla() {
   // Önce kayıtlı ya da paylaşılan kod; örnekler sonra gelir.
   let baslangic = null;
   const bagliDers = location.hash.match(/^#ders=([\w-]+)$/)?.[1];
+  // Ders açılırken adres değişebilir; açılıştaki adres saklanır.
+  const ilkAdres = location.hash;
+  let ogretmenGorevi = null;
+  if (location.hash.startsWith("#gorev=")) {
+    acikProgramKimligi = null;
+    try {
+      ogretmenGorevi = JSON.parse(await ac(location.hash.slice(7)));
+    } catch {
+      bildir("Bu bağlantıdaki görev açılamadı.");
+    }
+  }
   if (location.hash.startsWith("#kod=")) {
     // Paylaşılan kod açık programın üzerine yazılmasın.
     acikProgramKimligi = null;
@@ -1444,7 +1641,9 @@ async function basla() {
   sozluguGoster();
   await ornekleriYukle();
   programlariGoster();
-  if (acikProgram() && !bagliDers && !location.hash.startsWith("#kod=")) {
+  if (ogretmenGorevi) {
+    ogretmenGoreviniAc(ogretmenGorevi);
+  } else if (acikProgram() && !bagliDers && !location.hash.startsWith("#kod=")) {
     // En son açık olan program kaldığı yerden açılır.
     kod.value = acikProgram().kod;
     kodBasi = kod.value;
@@ -1466,10 +1665,19 @@ async function basla() {
   calistirDugmesi.disabled = false;
   window.addEventListener("resize", boyutlandir);
   // Sayfa açıkken bir ders bağlantısına gidilirse o ders açılır.
-  window.addEventListener("hashchange", () => {
+  window.addEventListener("hashchange", async () => {
+    if (location.hash === "#gorev-hazirla") return hazirlamayiAc();
+    if (location.hash.startsWith("#gorev=")) {
+      try {
+        return ogretmenGoreviniAc(JSON.parse(await ac(location.hash.slice(7))));
+      } catch {
+        return bildir("Bu bağlantıdaki görev açılamadı.");
+      }
+    }
     const ders = dersBul(location.hash.match(/^#ders=([\w-]+)$/)?.[1]);
     if (ders && ders !== acikDers) ornegiAc(ders);
   });
+  if (ilkAdres === "#gorev-hazirla") hazirlamayiAc();
 }
 
 basla();

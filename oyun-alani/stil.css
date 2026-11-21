@@ -629,6 +629,41 @@ button.denetle:disabled { opacity: .6; cursor: progress; }
   line-height: 1.5;
 }
 
+.cekmece.genis { width: min(560px, calc(100vw - 32px)); }
+
+/* ---- Görev hazırla ---- */
+.hazirla-formu {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 14px 16px;
+  font-size: 14px;
+}
+.hazirla-formu label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; color: var(--yazi-soluk); }
+.hazirla-formu label.onay { flex-direction: row; align-items: center; gap: 6px; font-weight: 400; color: var(--yazi); }
+.hazirla-formu input:not([type]), .hazirla-formu input[type="text"], .hazirla-formu textarea {
+  font: inherit;
+  font-weight: 400;
+  color: var(--yazi);
+  background: var(--zemin);
+  border: 1px solid var(--cizgi);
+  border-radius: 6px;
+  padding: 7px 9px;
+  resize: vertical;
+}
+.hazirla-formu .kod-alani { font-family: var(--kod-yazi); font-size: 13px; white-space: pre; }
+.hazirla-formu fieldset { border: 1px solid var(--cizgi); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; }
+.hazirla-formu legend { font-weight: 600; color: var(--yazi-soluk); padding: 0 4px; }
+.satir-dugmeler { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ornek-alanlari { display: flex; flex-direction: column; gap: 10px; }
+.ornek-alani { border: 1px solid var(--cizgi); border-radius: 8px; padding: 8px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; position: relative; }
+.ornek-alani .kapat { position: absolute; top: 2px; right: 4px; }
+.baglanti-kutusu { display: block; width: 100%; margin-top: 6px; font: inherit; font-size: 12.5px; padding: 6px 8px; color: var(--yazi); background: var(--zemin); border: 1px solid var(--cizgi); border-radius: 6px; }
+.gorevi-duzenle { font-size: 13px; }
+.ornek-alani .baslik { grid-column: 1 / -1; font-weight: 600; color: var(--yazi-soluk); }
+
 /* ---- Programlarım ---- */
 .program-dugmeleri { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px 0; }
 .program-listesi { flex: 1; overflow: auto; list-style: none; margin: 8px 0 0; padding: 0 12px 12px; }
