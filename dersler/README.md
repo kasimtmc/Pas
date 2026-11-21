@@ -42,6 +42,13 @@ Code kullanıyorsan Pas eklentisini de kur; renkli kod, kod tamamlama ve
 14. [Nitelikler](14-nitelikler/README.md)
 15. [Kaplumbağa ile çizim](15-kaplumbaga/README.md)
 
+Projeler: öğrendiklerini birleştirip daha büyük programlar yaz.
+
+16. [Proje: Adam asmaca](16-adam-asmaca/README.md)
+17. [Proje: Bilgi yarışması](17-bilgi-yarismasi/README.md)
+18. [Proje: Hesap makinesi](18-hesap-makinesi/README.md)
+19. [Proje: Desen çizici](19-desen-cizici/README.md)
+
 Öğretmenseniz [öğretmen rehberine](ogretmen-rehberi.md) göz atın: Pas'ı
 sınıfta kurulumsuz kullanma, ders planı ve sık yapılan hatalar.
 

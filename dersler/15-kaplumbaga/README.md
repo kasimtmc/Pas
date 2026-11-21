@@ -76,5 +76,4 @@ kare(&değişken k, 80);
 
 ---
 
-Tebrikler, bütün dersleri bitirdin! Şimdi kendi projeni başlatma zamanı:
-[dersler sayfasına](../README.md#kendi-projeni-başlat) dön.
+Sonraki ders: [Proje: Adam asmaca](../16-adam-asmaca/README.md)

@@ -6,7 +6,7 @@ Bu görevleri [Pas Oyun Alanı](https://kasimtmc.github.io/Pas/)nda yapıp **Den
 
 Listedeki sayıların toplamını ve ortalamasını yazdır:
 
-```
+```text
 Toplam: 108
 Ortalama: 18
 ```
@@ -40,7 +40,7 @@ işlev ana() {
 
 Listeye `süt` ve `peynir` ekle, sonra her ürünü numarasıyla yazdır:
 
-```
+```text
 1. ekmek
 2. yumurta
 3. süt

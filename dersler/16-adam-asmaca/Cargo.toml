@@ -1,0 +1,11 @@
+[package]
+name = "ders-16-adam-asmaca"
+version = "0.1.0"
+edition = "2024"
+
+# `cargo pas` bu dosyayı `src/ana.pas` dosyasından üretir.
+[[bin]]
+name = "ders-16-adam-asmaca"
+path = "target/pas/src/main.rs"
+
+[dependencies]

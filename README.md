@@ -30,7 +30,8 @@ programının bağlantısını paylaşabilirsin.
 Programlamaya yeni başlıyorsan [**dersler**](dersler/README.md) dizinindeki
 adım adım derslerle başlayabilirsin: yazdırmaktan başlayıp bir taş, kâğıt,
 makas oyunu yazmaya, oradan da sözlükler, nitelikler ve kaplumbağa ile
-çizime uzanan on beş ders. Pas'ı sınıfta kullanmak isteyen öğretmenler için bir
+çizime uzanan on beş ders ve dört proje (adam asmaca, bilgi yarışması, hesap
+makinesi, desen çizici). Pas'ı sınıfta kullanmak isteyen öğretmenler için bir
 [öğretmen rehberi](dersler/ogretmen-rehberi.md) de var.
 
 ## Kurulum

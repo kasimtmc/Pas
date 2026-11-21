@@ -44,7 +44,7 @@ işlev ana() {
 
 `elma armut` metnindeki her harfin kaç kez geçtiğini say ve harfleri alfabe sırasıyla yazdır. Boşluğu sayma.
 
-```
+```text
 a: 2
 e: 1
 l: 1

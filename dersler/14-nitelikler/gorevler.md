@@ -6,7 +6,7 @@ Bu görevleri [Pas Oyun Alanı](https://kasimtmc.github.io/Pas/)nda yapıp **Den
 
 `Kare` ve `Daire` için `alan` yöntemlerini tamamla. Alanları virgülden sonra iki basamakla yazdırılıyor:
 
-```
+```text
 Kare: 16.00
 Daire: 12.57
 ```

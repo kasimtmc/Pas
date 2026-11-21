@@ -6,7 +6,7 @@ Bu görevleri [Pas Oyun Alanı](https://kasimtmc.github.io/Pas/)nda yapıp **Den
 
 Eni 7, boyu 5 olan bir dikdörtgenin alanını ve çevresini hesaplayıp şöyle yazdır:
 
-```
+```text
 Alan: 35
 Çevre: 24
 ```
@@ -39,7 +39,7 @@ işlev ana() {
 
 Kumbarada 20 lira var. Önce 15 lira at, sonra 8 lira harca. Her adımdan sonra kumbarada kaç lira olduğunu yazdır:
 
-```
+```text
 Kumbara: 20 lira
 Kumbara: 35 lira
 Kumbara: 27 lira

@@ -52,7 +52,7 @@ işlev ana() {
 
 Her yazıyı sayıya çevirmeyi dene. Sayıysa iki katını, değilse `sayı değil` yazdır:
 
-```
+```text
 12 → 24
 on → sayı değil
 7 → 14

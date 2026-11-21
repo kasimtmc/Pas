@@ -36,7 +36,7 @@ işlev ana() {
 
 `Hangi sayı? ` diye bir sayı sor ve onun çarpım tablosunu yazdır:
 
-```
+```text
 3 x 1 = 3
 3 x 2 = 6
 …

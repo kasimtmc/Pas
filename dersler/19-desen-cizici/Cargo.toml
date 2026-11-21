@@ -1,0 +1,11 @@
+[package]
+name = "ders-19-desen-cizici"
+version = "0.1.0"
+edition = "2024"
+
+# `cargo pas` bu dosyayı `src/ana.pas` dosyasından üretir.
+[[bin]]
+name = "ders-19-desen-cizici"
+path = "target/pas/src/main.rs"
+
+[dependencies]

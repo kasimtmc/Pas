@@ -110,6 +110,13 @@ geçebilir.
 | 13. Hatalarla başa çıkmak | `#ders=13-sonuc-ve-hatalar` | `Sonuç`, `Tamam`/`Hata`, `?` | 2 | 2 |
 | 14. Nitelikler | `#ders=14-nitelikler` | `nitelik`, `uygula … için …`, `dinamik` | 1 | 2 |
 | 15. Kaplumbağa ile çizim | `#ders=15-kaplumbaga` | `Kaplumbağa`, döngülerle şekiller | 2 | 1–2 |
+| 16. Proje: Adam asmaca | `#ders=16-adam-asmaca` | karakterler, listeler, `sürece`, işlevler | 3 | 2 |
+| 17. Proje: Bilgi yarışması | `#ders=17-bilgi-yarismasi` | yapılar, `numaralandır`, `eşle` | 2 | 2 |
+| 18. Proje: Hesap makinesi | `#ders=18-hesap-makinesi` | `Sonuç`, `eşle`, ondalıklı sayılar, `döngü` | 2 | 2 |
+| 19. Proje: Desen çizici | `#ders=19-desen-cizici` | kaplumbağa, işlevler, iç içe döngüler | 2 | 1–2 |
+
+16–19 arası dersler, önceki dersleri birleştiren projelerdir; her biri bir
+ya da iki ders saatinde, isteyen öğrenciler için evde de tamamlanabilir.
 
 Kaplumbağa dersi (15) yalnızca döngüleri ve işlevleri gerektirir. Görsel
 sonuç veren çalışmaları seven sınıflarda 6. dersten hemen sonra da işlenebilir.
