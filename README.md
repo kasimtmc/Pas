@@ -93,6 +93,7 @@ cargo pas çalıştır
 | `cargo pas çevir dosya.pas` | Rust karşılığını gösterir (`--ters`: Rust → Pas) |
 | `cargo pas sözlük` | Bütün Türkçe sözcükleri listeler (`--json` da var) |
 | `cargo pas lsp` | Editörler için dil sunucusu (LSP); rust-analyzer gerekir |
+| `cargo pas kate` | Kate düzenleyicisini Pas için hazırlar (renklendirme, dil sunucusu) |
 
 Komutların İngilizce (`run`, `build`, …) ve ASCII (`calistir`, `cevir`, …)
 adları da çalışır.
@@ -152,6 +153,25 @@ kurabilirsin. Hazır paket (`pas-vscode-*.vsix`) de
 ```bash
 cd vscode && npm ci && npm run paketle
 ```
+
+## Kate
+
+KDE'nin düzenleyicisi Kate'te eklenti mağazası yoktur; tek komut Kate'i
+Pas için hazırlar:
+
+```bash
+cargo pas kate
+```
+
+Bu komut Pas renklendirmesini kurar ve dil sunucusunu Kate'e tanıtır:
+Türkçe hatalar ve hızlı düzeltmeler, tanıma gitme, belge gösterme ve
+tamamlama çalışır. Bir Pas projesinin içinde çalıştırılırsa projeye
+`.kateproject` dosyasını da ekler (`cargo pas yeni` bunu kendisi ekler).
+Programı çalıştırmak için Kate'te **Derleme** panelinde `Çalıştır` hedefini
+seçip **Derle ve Çalıştır**'a bas; program alttaki uçbirimde çalışır ve
+`oku!` ile girdi alabilir. Kate'i komuttan sonra yeniden başlatman gerekir.
+Derleme paneli görünmüyorsa **Ayarlar → Kate'i Yapılandır → Eklentiler**
+bölümünden *Derleme ve Çalıştırma* eklentisini aç.
 
 ## Hata mesajları
 
@@ -341,6 +361,7 @@ cd ornekler/tanitim && cargo run --manifest-path ../../Cargo.toml -p cargo-pas -
 - [x] `cargo pas lsp`: rust-analyzer üzerine kurulu dil sunucusu (tanıma
       gitme, kullanımlar, hover, akıllı tamamlama)
 - [x] VS Code eklentisi (aynı dil sunucusunu kullanır)
+- [x] Kate desteği (`cargo pas kate`)
 - [x] Klavyeden kolay girdi okumak için `oku!` makrosu
 - [x] Kurulum gerektirmeyen, tarayıcıda çalışan oyun alanı
 - [ ] Daha fazla Türkçe hata mesajı ve açıklama

@@ -3,6 +3,7 @@
 mod cargo;
 mod dil_sunucusu;
 mod gorunum;
+mod kate;
 mod program;
 mod proje;
 mod tanilama;
@@ -33,6 +34,7 @@ Komutlar:
     sözlük           Türkçe sözcükleri ve Rust karşılıklarını listeler
                      (--json: makinenin okuyacağı biçimde)
     lsp              Editörler için dil sunucusu (rust-analyzer gerekir)
+    kate             Kate düzenleyicisini Pas için hazırlar
     yardım           Bu yardımı gösterir
     sürüm            Pas sürümünü gösterir
 
@@ -75,6 +77,7 @@ fn komutu_isle(argumanlar: &[String], gorunum: Gorunum) -> Result<ExitCode, Stri
         "çevir" | "cevir" | "translate" => cevir(kalan),
         "sözlük" | "sozluk" | "dictionary" => sozlugu_yazdir(kalan),
         "lsp" => dil_sunucusu::calistir(),
+        "kate" => kate::kur(kalan, gorunum),
         "yardım" | "yardim" | "help" | "-h" | "--help" => {
             println!("{YARDIM}");
             Ok(ExitCode::SUCCESS)
@@ -231,6 +234,8 @@ fn yeni_proje(argumanlar: &[String], gorunum: Gorunum) -> Result<ExitCode, Strin
     yaz(&dizin.join("Cargo.toml"), &bildirim)?;
     yaz(&dizin.join("src/ana.pas"), ana_dosya)?;
     yaz(&dizin.join(".gitignore"), "/target\n")?;
+    // Kate'in Derleme eklentisi Çalıştır hedefini buradan okur.
+    yaz(&dizin.join(".kateproject"), &kate::proje_dosyasi(&paket))?;
 
     gorunum.durum("Oluşturuldu", &format!("`{ad}` projesi"));
     eprintln!("\nBaşlamak için:\n    cd {ad}\n    cargo pas çalıştır");
