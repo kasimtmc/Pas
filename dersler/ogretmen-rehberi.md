@@ -21,6 +21,9 @@ Hiçbir şey kurmak, hesap açmak ya da ad vermek gerekmez.
   oyun alanına (play.rust-lang.org) gönderilir.
 - **İlk açılış:** Oyun alanını ilk kez açan öğrenci doğrudan 1. derse başlar.
   Sol tarafta dersin anlatımı, ortada kod, sağda çıktı vardır.
+- **Türkçe olmayan klavyeler:** Düzenleyicinin üstündeki `ç ğ ı İ ö ş ü`
+  düğmeleri harfi imlecin olduğu yere ekler (Shift ile büyük harf). Ayrıca
+  `eger` gibi Türkçe harfsiz yazılan sözcüklerde Pas doğrusunu önerir.
 
 ### Öğrenci ne yapar?
 

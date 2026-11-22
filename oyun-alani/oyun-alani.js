@@ -198,6 +198,30 @@ kod.addEventListener("keydown", (olay) => {
   }
 });
 
+// ---- Türkçe harf düğmeleri ----
+// Türkçe olmayan klavyeler ve tabletler için. Harf, odaktaki yazı alanına
+// (kod, hazır girdi, programa cevap, görev formu) eklenir; odak kaybolmaz.
+
+const BUYUK_HARF = { ç: "Ç", ğ: "Ğ", ı: "I", ö: "Ö", ş: "Ş", ü: "Ü" };
+
+for (const dugme of document.querySelectorAll("[data-harf]")) {
+  // Düğmeye basılınca odak yazı alanından ayrılmasın.
+  dugme.addEventListener("mousedown", (olay) => olay.preventDefault());
+  dugme.addEventListener("click", (olay) => {
+    const harf = olay.shiftKey ? (BUYUK_HARF[dugme.dataset.harf] ?? dugme.dataset.harf) : dugme.dataset.harf;
+    const alan = document.activeElement;
+    const yaziAlani = alan instanceof HTMLTextAreaElement || (alan instanceof HTMLInputElement && alan.type !== "checkbox" && alan.type !== "radio");
+    if (!yaziAlani) kod.focus();
+    if (document.activeElement === kod) return yaz(harf);
+    // Diğer alanlarda da geri alma (Ctrl+Z) çalışsın diye tarayıcının ekleme komutu kullanılır.
+    if (!document.execCommand("insertText", false, harf)) {
+      const hedef = document.activeElement;
+      hedef.setRangeText(harf, hedef.selectionStart, hedef.selectionEnd, "end");
+      hedef.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
+}
+
 // ---- Öneriler ve açıklama balonu ----
 
 /** Sözlük, Pas adıyla (makrolarda `!` olmadan). */

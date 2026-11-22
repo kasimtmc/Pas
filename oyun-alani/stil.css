@@ -567,6 +567,18 @@ button.denetle { background: var(--basari); border-color: var(--basari); color: 
 button.denetle:hover { filter: brightness(1.1); border-color: var(--basari); }
 button.denetle:disabled { opacity: .6; cursor: progress; }
 
+.turkce-harfler { display: inline-flex; gap: 2px; margin-left: auto; }
+/* Görev açıkken başlıkta görev adı da olur; dar ekranda alt satıra geçer. */
+.duzenleyici-bolumu .bolum-basligi { flex-wrap: wrap; row-gap: 4px; }
+.turkce-harfler button {
+  min-width: 26px;
+  padding: 1px 6px;
+  font-family: var(--kod-yazi);
+  font-size: 13.5px;
+  line-height: 1.5;
+  border-radius: 5px;
+}
+
 .gorev-etiketi {
   display: inline-flex;
   align-items: center;
