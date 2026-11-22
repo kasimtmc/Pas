@@ -43,6 +43,27 @@ class PasEklentiTest : BasePlatformTestCase() {
         assertTrue(myFixture.editor.document.text.contains("    sayılar\n"))
     }
 
+    fun testYazilanYarimIsimOnerilmez() {
+        myFixture.configureByText("ana.pas", "işlev ana() {\n    tanımla çiftlik = 1;\n    tanımla çiftlikler = 2;\n    çiftli<caret>\n}")
+        val oneriler = myFixture.completeBasic()?.map { it.lookupString }.orEmpty()
+        assertContainsElements(oneriler, "çiftlik", "çiftlikler")
+        assertDoesntContain(oneriler, "çiftli")
+    }
+
+    fun testNoktadanSonraYontemleriOnerir() {
+        myFixture.configureByText("ana.pas", "işlev ana() {\n    tanımla Sayılar = liste![1];\n    tanımla adı = 1;\n    Sayılar.<caret>\n}")
+        val oneriler = myFixture.completeBasic()?.map { it.lookupString }.orEmpty()
+        assertContainsElements(oneriler, "elemanlar", "uzunluk", "adı")
+        assertDoesntContain(oneriler, "tanımla", "eğer", "yazdır!", "Liste", "Sayılar")
+    }
+
+    fun testIkiNoktadanSonraIslevleriOnerir() {
+        myFixture.configureByText("ana.pas", "işlev ana() {\n    tanımla m = Metin::<caret>\n}")
+        val oneriler = myFixture.completeBasic()?.map { it.lookupString }.orEmpty()
+        assertContainsElements(oneriler, "yeni")
+        assertDoesntContain(oneriler, "tanımla", "elemanlar")
+    }
+
     fun testMakroParantezEkler() {
         myFixture.configureByText("ana.pas", "işlev ana() {\n    yazdı<caret>\n}")
         tamamla("yazdır!")

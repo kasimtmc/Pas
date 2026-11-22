@@ -174,6 +174,7 @@ const DERLEYICI: &[(&str, &str)] = &[
     ("expected {} `{}`\n{}found {} `{}`", "beklenen: `{1}`, bulunan: `{4}`"),
     ("expected because of this", "bu yüzden bekleniyor"),
     ("consider borrowing here", "burada ödünç almayı (`&`) düşün"),
+    ("try using a conversion method", "bir dönüştürme yöntemi kullanmayı dene"),
     // Tekli işlemler ve dizinleme
     ("cannot apply unary operator `{}` to type `{}`", "`{1}` türüne `{0}` işlemi uygulanamaz"),
     ("cannot apply unary operator `{}`", "`{0}` işlemi uygulanamaz"),

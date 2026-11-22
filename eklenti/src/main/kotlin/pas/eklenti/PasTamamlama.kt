@@ -27,11 +27,33 @@ class PasTamamlayici : CompletionContributor() {
             val tur = parameters.position.node.elementType
             if (tur in PasSozcukler.YORUMLAR || tur == PasSozcukler.DIZGI || tur == PasSozcukler.KARAKTER) return
 
-            for (girdi in Sozluk.girdiler) result.addElement(oge(girdi))
+            // `.` ardından yalnızca yöntemler, `::` ardından yalnızca işlevler önerilir;
+            // anahtar sözcükler ve türler orada yazılamaz.
+            val once = oncekiIsaret(parameters.originalFile.text, parameters.offset)
+            val uygunlar = when (once) {
+                "." -> Sozluk.girdiler.filter { it.sinif == Sinif.YONTEM }
+                "::" -> Sozluk.girdiler.filter { it.sinif == Sinif.ISLEV }
+                else -> Sozluk.girdiler
+            }
+            for (girdi in uygunlar) result.addElement(oge(girdi))
 
+            // Dosyadaki isimler: noktadan sonra yalnızca alan ve yöntem olabilecek küçük harfliler.
             val onerilenler = Sozluk.girdiler.mapTo(HashSet()) { it.pas }
-            for (isim in dosyadakiIsimler(parameters.originalFile.text)) {
+            // Kopya dosyada imleçteki isme IDE'nin geçici eki yapışıktır; böylece yazılmakta olan yarım isim önerilmez.
+            for (isim in dosyadakiIsimler(parameters.position.containingFile.text)) {
+                if (once == "." && !isim.first().isLowerCase()) continue
                 if (onerilenler.add(isim)) result.addElement(LookupElementBuilder.create(isim))
+            }
+        }
+
+        /** Yazılmakta olan ismin hemen önünde `.` ya da `::` varsa onu döndürür. */
+        private fun oncekiIsaret(metin: CharSequence, ofset: Int): String? {
+            var bas = minOf(ofset, metin.length)
+            while (bas > 0 && (metin[bas - 1].isLetterOrDigit() || metin[bas - 1] == '_')) bas--
+            return when {
+                bas >= 2 && metin[bas - 1] == ':' && metin[bas - 2] == ':' -> "::"
+                bas >= 1 && metin[bas - 1] == '.' && (bas < 2 || metin[bas - 2] != '.') -> "."
+                else -> null
             }
         }
 
