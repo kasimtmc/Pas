@@ -1,6 +1,8 @@
 # Pas: Türkçe Rust
 
 [![CI](https://github.com/kasimtmc/Pas/actions/workflows/ci.yml/badge.svg)](https://github.com/kasimtmc/Pas/actions/workflows/ci.yml)
+[![Open VSX](https://img.shields.io/open-vsx/v/plyground/pas-turkce-rust?label=Open%20VSX)](https://open-vsx.org/extension/plyground/pas-turkce-rust)
+[![JetBrains Marketplace](https://img.shields.io/jetbrains/plugin/v/36280?label=JetBrains%20Marketplace)](https://plugins.jetbrains.com/plugin/36280-pas-turkce-rust-)
 
 Pas, Rust programlama dilini Türkçe anahtar sözcüklerle yazmayı sağlar.
 Programlamaya yeni başlayan, İngilizce terimlere tam hakim olmayan kişiler
