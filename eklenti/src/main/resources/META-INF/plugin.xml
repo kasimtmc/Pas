@@ -51,6 +51,7 @@ işlev ana() {
     ]]></description>
 
     <change-notes><![CDATA[
+    <p>0.11.0: Kate support: cargo pas kate sets up highlighting, the language server and a Run target / Kate desteği: cargo pas kate renklendirmeyi, dil sunucusunu ve Çalıştır hedefini kurar</p>
     <p>0.10.1: Completion after a dot suggests only methods; half-typed names are no longer suggested / Noktadan sonra yalnızca yöntemler önerilir; yarım yazılan isimler artık önerilmez</p>
     <p>0.10.0: Loops are now written için … içinde (for … in); her is no longer a keyword / Döngüler artık için … içinde diye yazılıyor; her artık anahtar sözcük değil</p>
     <p>0.9.0: Teachers can create and share their own exercises; four project lessons (hangman, quiz, calculator, pattern drawer) / Öğretmenler kendi görevlerini hazırlayıp paylaşabilir; dört proje dersi (adam asmaca, bilgi yarışması, hesap makinesi, desen çizici)</p>
