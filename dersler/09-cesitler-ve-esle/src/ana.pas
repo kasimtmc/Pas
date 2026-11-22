@@ -16,7 +16,7 @@ işlev öneri(hava: &Hava) -> &'kalıcı str {
 
 // `Belki`: bir değer olabilir (`Var`) de olmayabilir de (`Yok`).
 işlev ilk_büyük(sayılar: &[i32], sınır: i32) -> Belki<i32> {
-    her sayı için sayılar {
+    için sayı içinde sayılar {
         eğer *sayı > sınır {
             döndür Var(*sayı);
         }
@@ -26,7 +26,7 @@ işlev ilk_büyük(sayılar: &[i32], sınır: i32) -> Belki<i32> {
 
 işlev ana() {
     tanımla havalar = [Hava::Güneşli, Hava::Yağmurlu, Hava::Karlı];
-    her hava için &havalar {
+    için hava içinde &havalar {
         yazdır!("{}", öneri(hava));
     }
 

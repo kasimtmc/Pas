@@ -25,7 +25,7 @@ işlev ana() {
 
     yazdır!("Bilgi yarışmasına hoş geldin! Cevaplarını küçük harfle yaz.");
     tanımla değişken puan = 0;
-    her (sıra, soru) için sorular.elemanlar().numaralandır() {
+    için (sıra, soru) içinde sorular.elemanlar().numaralandır() {
         tanımla cevap = oku!(biçimle!("{}. {} ", sıra + 1, soru.soru));
         eğer cevap == soru.cevap {
             puan += 1;

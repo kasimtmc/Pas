@@ -20,7 +20,7 @@ işlev ne_yapmalı(ışık: &Işık) -> &'kalıcı str {
 
 işlev ana() {
     tanımla ışıklar = [Işık::Kırmızı, Işık::Sarı, Işık::Yeşil];
-    her ışık için &ışıklar {
+    için ışık içinde &ışıklar {
         yazdır!("{}", ne_yapmalı(ışık));
     }
 }
@@ -49,7 +49,7 @@ işlev ne_yapmalı(ışık: &Işık) -> &'kalıcı str {
 
 işlev ana() {
     tanımla ışıklar = [Işık::Kırmızı, Işık::Sarı, Işık::Yeşil];
-    her ışık için &ışıklar {
+    için ışık içinde &ışıklar {
         yazdır!("{}", ne_yapmalı(ışık));
     }
 }
@@ -68,7 +68,7 @@ işlev mevsim(ay: u32) -> &'kalıcı str {
 }
 
 işlev ana() {
-    her ay için [1, 4, 7, 10, 13] {
+    için ay içinde [1, 4, 7, 10, 13] {
         yazdır!("{ay}: {}", mevsim(ay));
     }
 }
@@ -94,7 +94,7 @@ işlev mevsim(ay: u32) -> &'kalıcı str {
 }
 
 işlev ana() {
-    her ay için [1, 4, 7, 10, 13] {
+    için ay içinde [1, 4, 7, 10, 13] {
         yazdır!("{ay}: {}", mevsim(ay));
     }
 }

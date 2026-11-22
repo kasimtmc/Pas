@@ -33,7 +33,7 @@ meyveler.ekle("muz");
 **Listede dolaşmak**:
 
 ```
-her meyve için &meyveler {
+için meyve içinde &meyveler {
     yazdır!("{meyve}");
 }
 ```

@@ -4,7 +4,7 @@
 /// Kelimenin bulunan harflerini gösterir, bulunmayanların yerine `_` koyar: "k _ d _"
 işlev gösterim(kelime: &str, tahminler: &Liste<karakter>) -> Metin {
     tanımla değişken sonuç = Metin::yeni();
-    her harf için kelime.karakterler() {
+    için harf içinde kelime.karakterler() {
         eğer tahminler.içerir(&harf) {
             sonuç.ekle(harf);
         } değilse {
@@ -17,7 +17,7 @@ işlev gösterim(kelime: &str, tahminler: &Liste<karakter>) -> Metin {
 
 /// Kelimenin bütün harfleri tahmin edildi mi?
 işlev bulundu_mu(kelime: &str, tahminler: &Liste<karakter>) -> mantıksal {
-    her harf için kelime.karakterler() {
+    için harf içinde kelime.karakterler() {
         eğer !tahminler.içerir(&harf) {
             döndür yanlış;
         }

@@ -42,7 +42,7 @@ işlev ana() {
     yazdır!("100 / 0 / 2 = {:?}", hesapla(100, 0, 2));
 
     // `ayrıştır` metni sayıya çevirmeyi dener; o da `Sonuç` döndürür.
-    her yazı için ["42", "kırk iki", " 7 "] {
+    için yazı içinde ["42", "kırk iki", " 7 "] {
         eşle yazı.kırp().ayrıştır::<i32>() {
             Tamam(sayı) => yazdır!("`{yazı}` bir sayı: {sayı}"),
             Hata(_) => yazdır!("`{yazı}` bir sayı değil"),

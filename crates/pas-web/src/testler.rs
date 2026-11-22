@@ -116,7 +116,7 @@ fn kullan_onerisi() {
 
 #[test]
 fn kaplumbaga_cizimi() {
-    let kaynak = "işlev ana() {\n    tanımla değişken k = Kaplumbağa::yeni();\n    her _ için 0..4 {\n        k.ileri(100);\n        k.sağa_dön(90);\n    }\n    yazdır!(\"bitti\");\n}\n";
+    let kaynak = "işlev ana() {\n    tanımla değişken k = Kaplumbağa::yeni();\n    için _ içinde 0..4 {\n        k.ileri(100);\n        k.sağa_dön(90);\n    }\n    yazdır!(\"bitti\");\n}\n";
     let (cikti, sonuc) = calistir(kaynak, "");
     assert_eq!(sonuc["tanilamalar"], Value::Array(Vec::new()));
     assert_eq!(cikti, "bitti\n");

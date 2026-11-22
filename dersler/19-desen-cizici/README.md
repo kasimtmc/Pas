@@ -27,7 +27,7 @@ döneriz:
 
 ```
 işlev çokgen(k: &değişken Kaplumbağa, köşe: u32, kenar: f64) {
-    her _ için 0..köşe {
+    için _ içinde 0..köşe {
         k.ileri(kenar);
         k.sağa_dön(360.0 / köşe olarak f64);
     }

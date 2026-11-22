@@ -75,7 +75,7 @@ işlev ana() {
     ];
 
     yazdır!("Çiftlikte {} hayvan var:", çiftlik.uzunluk());
-    her hayvan için &çiftlik {
+    için hayvan içinde &çiftlik {
         hayvan.tanıt();
     }
 }

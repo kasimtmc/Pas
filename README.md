@@ -13,7 +13,7 @@ işlev ana() {
     tanımla değişken sayılar = liste![3, 1, 4];
     sayılar.ekle(1);
 
-    her sayı için sayılar.elemanlar() {
+    için sayı içinde sayılar.elemanlar() {
         eğer sayı % 2 == 0 {
             yazdır!("{sayı} çift");
         } değilse {
@@ -177,7 +177,7 @@ Pas, Rust'ın sözdizimini olduğu gibi kullanır. Değişen tek şey sözcükle
 Bu sayede Pas öğrenen biri ileride gerçek Rust'a kolayca geçebilir.
 
 - **Anahtar sözcükler:** `işlev` (fn), `tanımla` (let), `değişken` (mut),
-  `eğer`/`değilse` (if/else), `her … için` (for … in), `sürece` (while),
+  `eğer`/`değilse` (if/else), `için … içinde` (for … in), `sürece` (while),
   `döngü` (loop), `eşle` (match), `yapı` (struct), `çeşit` (enum),
   `uygula` (impl), `nitelik` (trait), `genel` (pub), `döndür` (return),
   `doğru`/`yanlış` (true/false) …
@@ -223,7 +223,7 @@ dizinine bak.
 
 ```
 tanımla değişken k = Kaplumbağa::yeni();
-her _ için 0..4 {
+için _ içinde 0..4 {
     k.ileri(100);
     k.sağa_dön(90);
 }

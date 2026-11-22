@@ -194,7 +194,7 @@ fn yeni_sozluk_sozcukleri_calisir() {
 
 işlev ana() {
     tanımla değişken sayılar: Liste<i32> = Liste::yeni();
-    her s için [5, 3, 8, 1] {
+    için s içinde [5, 3, 8, 1] {
         sayılar.ekle(s);
     }
     sayılar.sırala();
@@ -204,7 +204,7 @@ işlev ana() {
     yazdır!("{toplam} {:?} {:?}", sayılar.elemanlar().en_büyük(), sayılar.elemanlar().en_küçük());
     tanımla çiftler: Liste<i32> = sayılar.elemanlar().süz(|s| *s % 2 == 0).dönüştür(|s| s * 10).biriktir();
     yazdır!("{:?} {}", çiftler, sayılar.elemanlar().bul(|s| **s > 4).var_mı());
-    her (i, s) için sayılar.elemanlar().numaralandır() {
+    için (i, s) içinde sayılar.elemanlar().numaralandır() {
         eğer i == 0 {
             yazdır!("ilk: {s}");
         }

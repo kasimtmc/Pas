@@ -1,5 +1,5 @@
 işlev ana() {
-    her i için 0..3 {
+    için i içinde 0..3 {
         i = i + 1;
         yazdır!("{i}");
     }

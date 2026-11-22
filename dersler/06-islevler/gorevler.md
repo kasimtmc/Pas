@@ -15,7 +15,7 @@ işlev kare(sayı: i32) -> i32 {
 }
 
 işlev ana() {
-    her i için 1..=5 {
+    için i içinde 1..=5 {
         yazdır!("{}", kare(i));
     }
 }
@@ -35,7 +35,7 @@ işlev kare(sayı: i32) -> i32 {
 }
 
 işlev ana() {
-    her i için 1..=5 {
+    için i içinde 1..=5 {
         yazdır!("{}", kare(i));
     }
 }

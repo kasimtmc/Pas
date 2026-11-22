@@ -31,7 +31,7 @@ b u l u t
 ```pas çözüm
 işlev gösterim(kelime: &str, tahminler: &Liste<karakter>) -> Metin {
     tanımla değişken sonuç = Metin::yeni();
-    her harf için kelime.karakterler() {
+    için harf içinde kelime.karakterler() {
         eğer tahminler.içerir(&harf) {
             sonuç.ekle(harf);
         } değilse {
@@ -76,7 +76,7 @@ doğru
 
 ```pas çözüm
 işlev bulundu_mu(kelime: &str, tahminler: &Liste<karakter>) -> mantıksal {
-    her harf için kelime.karakterler() {
+    için harf içinde kelime.karakterler() {
         eğer !tahminler.içerir(&harf) {
             döndür yanlış;
         }

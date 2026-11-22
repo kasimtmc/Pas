@@ -28,7 +28,7 @@ Ortalama: 18
 işlev ana() {
     tanımla sayılar = liste![4, 8, 15, 16, 23, 42];
     tanımla değişken toplam = 0;
-    her sayı için &sayılar {
+    için sayı içinde &sayılar {
         toplam += sayı;
     }
     yazdır!("Toplam: {toplam}");
@@ -68,7 +68,7 @@ işlev ana() {
     alışveriş.ekle("süt");
     alışveriş.ekle("peynir");
     tanımla değişken sıra = 1;
-    her ürün için &alışveriş {
+    için ürün içinde &alışveriş {
         yazdır!("{sıra}. {ürün}");
         sıra += 1;
     }

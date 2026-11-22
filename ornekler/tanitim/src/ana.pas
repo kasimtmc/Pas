@@ -55,7 +55,7 @@ işlev ana() {
     tanımla değişken sayılar = liste![3, 1, 4, 1, 5];
     sayılar.ekle(9);
     tanımla değişken toplam = 0;
-    her sayı için sayılar.elemanlar() {
+    için sayı içinde sayılar.elemanlar() {
         toplam += sayı;
     }
     yazdır!("{} sayının toplamı: {toplam}", sayılar.uzunluk());
@@ -69,7 +69,7 @@ işlev ana() {
 
     // Eşleme
     tanımla hayvanlar = [Hayvan::Kedi, Hayvan::Köpek, Hayvan::Kuş { kanat_açıklığı: 0.3 }];
-    her h için &hayvanlar {
+    için h içinde &hayvanlar {
         yazdır!("{}", ses(h));
     }
 
@@ -85,7 +85,7 @@ işlev ana() {
     }
 
     // Modüller
-    her şekil için [Şekil::Kare(4.0), Şekil::Daire(1.0)] {
+    için şekil içinde [Şekil::Kare(4.0), Şekil::Daire(1.0)] {
         yazdır!("Alan: {:.2}", alan(&şekil));
     }
 }

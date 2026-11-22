@@ -37,7 +37,7 @@ işlev ana() {
 
     // `numaralandır` her elemanı sırasıyla birlikte verir: (0, 100), (1, 90)…
     yazdır!("Sıralama:");
-    her (sıra, not) için sıralı.elemanlar().numaralandır() {
+    için (sıra, not) içinde sıralı.elemanlar().numaralandır() {
         yazdır!("{}. {}", sıra + 1, not);
     }
 

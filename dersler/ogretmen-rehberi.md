@@ -99,7 +99,7 @@ geçebilir.
 | 2. Değişkenler | `#ders=02-degiskenler` | `tanımla`, `değişken`, sayılar, dört işlem | 2 | 1 |
 | 3. Soru sormak | `#ders=03-soru-sor` | `oku!`, sayı ve metin okuma | 2 | 1 |
 | 4. Kararlar | `#ders=04-kararlar` | `eğer`, `değilse`, karşılaştırma, `&&`, `\|\|` | 2 | 1–2 |
-| 5. Döngüler | `#ders=05-donguler` | `her … için`, `sürece`, `döngü`, `kır` | 3 | 2 |
+| 5. Döngüler | `#ders=05-donguler` | `için … içinde`, `sürece`, `döngü`, `kır` | 3 | 2 |
 | 6. İşlevler | `#ders=06-islevler` | işlev yazmak, parametre, değer döndürmek | 2 | 1–2 |
 | 7. Listeler | `#ders=07-listeler` | `liste!`, `ekle`, `uzunluk`, listede dolaşmak | 2 | 1–2 |
 | 8. Yapılar | `#ders=08-yapilar` | `yapı`, `uygula`, yöntemler, `kendi` | 2 | 2 |

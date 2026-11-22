@@ -2,7 +2,7 @@
 
 /// Köşe sayısı ve kenar uzunluğu verilen düzgün bir çokgen çizer.
 işlev çokgen(k: &değişken Kaplumbağa, köşe: u32, kenar: f64) {
-    her _ için 0..köşe {
+    için _ içinde 0..köşe {
         k.ileri(kenar);
         k.sağa_dön(360.0 / köşe olarak f64);
     }
@@ -10,7 +10,7 @@ işlev çokgen(k: &değişken Kaplumbağa, köşe: u32, kenar: f64) {
 
 /// Bir şekli her seferinde biraz döndürerek tekrar tekrar çizer.
 işlev çiçek(k: &değişken Kaplumbağa, köşe: u32, kenar: f64, yaprak: u32) {
-    her _ için 0..yaprak {
+    için _ içinde 0..yaprak {
         çokgen(k, köşe, kenar);
         k.sağa_dön(360.0 / yaprak olarak f64);
     }
@@ -29,7 +29,7 @@ işlev ana() {
 
     // Altıgen çiçek: her yaprak başka renkte
     git(&değişken k, -170.0, 0.0);
-    her i için 0..12 {
+    için i içinde 0..12 {
         k.renk(renkler[i % renkler.uzunluk()]);
         çokgen(&değişken k, 6, 30.0);
         k.sağa_dön(30);
@@ -43,7 +43,7 @@ işlev ana() {
     // Büyüyen spiral
     git(&değişken k, 180.0, 0.0);
     k.renk("turkuaz");
-    her i için 1..=40 {
+    için i içinde 1..=40 {
         k.ileri(i * 3);
         k.sağa_dön(91);
     }

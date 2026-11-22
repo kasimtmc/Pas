@@ -10,7 +10,7 @@ Bu görevleri [Pas Oyun Alanı](https://kasimtmc.github.io/Pas/)nda yapıp **Den
 
 ```pas başlangıç
 işlev çokgen(k: &değişken Kaplumbağa, köşe: u32, kenar: f64) {
-    her _ için 0..köşe {
+    için _ içinde 0..köşe {
         k.ileri(kenar);
         k.sağa_dön(360.0 / köşe olarak f64);
     }
@@ -23,7 +23,7 @@ işlev ana() {
 
 ```pas çözüm
 işlev çokgen(k: &değişken Kaplumbağa, köşe: u32, kenar: f64) {
-    her _ için 0..köşe {
+    için _ içinde 0..köşe {
         k.ileri(kenar);
         k.sağa_dön(360.0 / köşe olarak f64);
     }
@@ -31,7 +31,7 @@ işlev çokgen(k: &değişken Kaplumbağa, köşe: u32, kenar: f64) {
 
 işlev ana() {
     tanımla değişken k = Kaplumbağa::yeni();
-    her _ için 0..12 {
+    için _ içinde 0..12 {
         çokgen(&değişken k, 3, 80.0);
         k.sağa_dön(30);
     }
@@ -42,7 +42,7 @@ işlev ana() {
 
 Her adımda biraz daha uzun yürüyen bir kare spiral çiz: 1'den 20'ye kadar her `i` için `i * 10` adım yürü ve 90 derece **sağa** dön.
 
-İpucu: `her i için 1..=20` 1'den 20'ye kadar döner; `k.ileri(i * 10)` her seferinde daha uzun yürür.
+İpucu: `için i içinde 1..=20` 1'den 20'ye kadar döner; `k.ileri(i * 10)` her seferinde daha uzun yürür.
 
 ```pas başlangıç
 işlev ana() {
@@ -53,7 +53,7 @@ işlev ana() {
 ```pas çözüm
 işlev ana() {
     tanımla değişken k = Kaplumbağa::yeni();
-    her i için 1..=20 {
+    için i içinde 1..=20 {
         k.ileri(i * 10);
         k.sağa_dön(90);
     }

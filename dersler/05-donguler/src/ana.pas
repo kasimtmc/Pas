@@ -1,13 +1,13 @@
 işlev ana() {
-    // `her … için` bir aralıktaki her sayı için bir kez çalışır.
+    // `için … içinde` bir aralıktaki her sayı için bir kez çalışır.
     // 1..=5 demek 1, 2, 3, 4, 5 demektir.
-    her tur için 1..=5 {
+    için tur içinde 1..=5 {
         yazdır!("{tur}. tur");
     }
 
     // Çarpım tablosu
     tanımla sayı = oku!("Hangi sayının çarpım tablosunu görmek istersin? ", u32);
-    her i için 1..=10 {
+    için i içinde 1..=10 {
         yazdır!("{sayı} x {i} = {}", sayı * i);
     }
 

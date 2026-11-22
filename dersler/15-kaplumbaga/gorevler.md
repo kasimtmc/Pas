@@ -17,7 +17,7 @@ işlev ana() {
 ```pas çözüm
 işlev ana() {
     tanımla değişken k = Kaplumbağa::yeni();
-    her _ için 0..3 {
+    için _ içinde 0..3 {
         k.ileri(100);
         k.sağa_dön(120);
     }
@@ -39,7 +39,7 @@ işlev ana() {
 ```pas çözüm
 işlev ana() {
     tanımla değişken k = Kaplumbağa::yeni();
-    her _ için 0..4 {
+    için _ içinde 0..4 {
         k.ileri(30);
         k.sağa_dön(90);
         k.ileri(30);

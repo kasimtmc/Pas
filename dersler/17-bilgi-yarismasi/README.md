@@ -38,7 +38,7 @@ yazdığın metinler böyledir.
 `biçimle!` soruyu numarasıyla birlikte bir metne çevirir:
 
 ```
-her (sıra, soru) için sorular.elemanlar().numaralandır() {
+için (sıra, soru) içinde sorular.elemanlar().numaralandır() {
     tanımla cevap = oku!(biçimle!("{}. {} ", sıra + 1, soru.soru));
     …
 }

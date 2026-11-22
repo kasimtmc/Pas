@@ -52,7 +52,7 @@ işlev ana() {
 
 Listedeki soruları sırayla sor (`1. ` gibi numarasıyla). Cevap doğruysa `Doğru!`, değilse `Yanlış. Doğru cevap: 7` yazdır. Sonunda puanı `Puan: 1/2` biçiminde yazdır.
 
-İpucu: `her (sıra, soru) için sorular.elemanlar().numaralandır()` her soruyu sırasıyla verir; sıra 0'dan başlar. Soruyu `oku!(biçimle!("{}. {} ", sıra + 1, soru.soru))` ile sorabilirsin.
+İpucu: `için (sıra, soru) içinde sorular.elemanlar().numaralandır()` her soruyu sırasıyla verir; sıra 0'dan başlar. Soruyu `oku!(biçimle!("{}. {} ", sıra + 1, soru.soru))` ile sorabilirsin.
 
 ```pas başlangıç
 yapı Soru {
@@ -109,7 +109,7 @@ işlev ana() {
         Soru { soru: "Bir haftada kaç gün var?", cevap: "7" },
     ];
     tanımla değişken puan = 0;
-    her (sıra, soru) için sorular.elemanlar().numaralandır() {
+    için (sıra, soru) içinde sorular.elemanlar().numaralandır() {
         tanımla cevap = oku!(biçimle!("{}. {} ", sıra + 1, soru.soru));
         eğer cevap == soru.cevap {
             puan += 1;

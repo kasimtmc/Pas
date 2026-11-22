@@ -35,7 +35,7 @@ işlev ana() {
     // Bir cümlede her kelimenin kaç kez geçtiğini sayalım.
     tanımla cümle = "bir berber bir berbere gel beraber bir berber dükkanı açalım demiş";
     tanımla değişken sayaç: Sözlük<&str, u32> = Sözlük::yeni();
-    her kelime için cümle.böl(" ") {
+    için kelime içinde cümle.böl(" ") {
         tanımla önceki = *sayaç.al(kelime).yoksa(&0);
         sayaç.yerleştir(kelime, önceki + 1);
     }
@@ -44,7 +44,7 @@ işlev ana() {
     // anahtarları bir listeye alıp sıralarız.
     tanımla değişken kelimeler: Liste<_> = sayaç.anahtarlar().biriktir();
     kelimeler.sırala();
-    her kelime için kelimeler {
+    için kelime içinde kelimeler {
         yazdır!("{kelime}: {}", sayaç[kelime]);
     }
 }

@@ -1,3 +1,3 @@
 işlev ana() {
-    her i için 10 { }
+    için i içinde 10 { }
 }

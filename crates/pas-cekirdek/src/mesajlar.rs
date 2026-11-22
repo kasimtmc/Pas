@@ -525,7 +525,7 @@ const ACIKLAMALAR: &[(&str, &str)] = &[
     ("E0063", "Bir yapı oluştururken bütün alanlarına değer vermelisin. Eksik alanı da yaz: `Kedi { ad: …, yaş: 1 }`"),
     (
         "E0061",
-        "İşleve verdiğin argüman sayısı, işlevin beklediği sayıdan farklı. İşlevin tanımına bakıp her parametre için bir değer ver.",
+        "İşleve verdiğin argüman sayısı, işlevin beklediği sayıdan farklı. İşlevin tanımına bakıp için parametre içinde bir değer ver.",
     ),
     (
         "E0424",
@@ -655,7 +655,7 @@ pub fn gereksiz_mi(mesaj: &str) -> bool {
 
 /// Pas'ın eski sürümlerinde kullanılan anahtar sözcükler ve yenileri.
 const ESKI_SOZCUKLER: &[(&str, &str)] =
-    &[("yap", "tanımla"), ("içinde", "için"), ("olsun", "tanımla"), ("yinele", "elemanlar"), ("durağan", "kalıcı")];
+    &[("yap", "tanımla"), ("olsun", "tanımla"), ("yinele", "elemanlar"), ("durağan", "kalıcı")];
 
 /// Satırda Türkçe harfleri olmadan yazılmış Pas sözcükleri varsa doğrularını
 /// önerir: "`eger` yerine `eğer` mi demek istedin?"
@@ -670,6 +670,14 @@ pub fn yazim_onerileri(satir: &str) -> Vec<String> {
             SozcukTuru::YasamSuresi => &sozcuk.metin(satir)[1..],
             _ => continue,
         };
+        // Eski `için x içinde liste` döngüsü artık `için x içinde liste`
+        if kelime == "her" && sozcuk.tur == SozcukTuru::Isim {
+            let oneri = "döngüler artık `için x içinde liste` diye yazılıyor (`her x için liste` değil)".to_owned();
+            if !oneriler.contains(&oneri) {
+                oneriler.push(oneri);
+            }
+            continue;
+        }
         // Pas'ın eski sürümlerindeki sözcükler
         if let Some((_, yeni)) = ESKI_SOZCUKLER.iter().find(|(eski, _)| *eski == kelime) {
             let oneri = format!("`{kelime}` yerine artık `{yeni}` yazılıyor");
@@ -863,8 +871,11 @@ mod testler {
         );
         assert!(yazim_onerileri("    eğer x > 3 {").is_empty());
         assert_eq!(
-            yazim_onerileri("    her i içinde 0..3 { yap x = i; }"),
-            vec!["`içinde` yerine artık `için` yazılıyor", "`yap` yerine artık `tanımla` yazılıyor"]
+            yazim_onerileri("    her i için 0..3 { yap x = i; }"),
+            vec![
+                "döngüler artık `için x içinde liste` diye yazılıyor (`her x için liste` değil)",
+                "`yap` yerine artık `tanımla` yazılıyor"
+            ]
         );
         assert_eq!(
             yazim_onerileri("işlev f() -> &'durağan str { l.yinele() }"),

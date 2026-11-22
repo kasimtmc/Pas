@@ -19,7 +19,7 @@ işlev hesapla(a: f64, işlem: &str, b: f64) -> Sonuç<f64, Metin> {
 }
 
 işlev ana() {
-    her (a, işlem, b) için [(6.0, "+", 2.0), (5.0, "-", 8.0), (3.0, "*", 4.0), (1.0, "/", 0.0), (9.0, "?", 1.0)] {
+    için (a, işlem, b) içinde [(6.0, "+", 2.0), (5.0, "-", 8.0), (3.0, "*", 4.0), (1.0, "/", 0.0), (9.0, "?", 1.0)] {
         eşle hesapla(a, işlem, b) {
             Tamam(sonuç) => yazdır!("{a} {işlem} {b} = {sonuç}"),
             Hata(neden) => yazdır!("{a} {işlem} {b}: {neden}"),
@@ -54,7 +54,7 @@ işlev hesapla(a: f64, işlem: &str, b: f64) -> Sonuç<f64, Metin> {
 }
 
 işlev ana() {
-    her (a, işlem, b) için [(6.0, "+", 2.0), (5.0, "-", 8.0), (3.0, "*", 4.0), (1.0, "/", 0.0), (9.0, "?", 1.0)] {
+    için (a, işlem, b) içinde [(6.0, "+", 2.0), (5.0, "-", 8.0), (3.0, "*", 4.0), (1.0, "/", 0.0), (9.0, "?", 1.0)] {
         eşle hesapla(a, işlem, b) {
             Tamam(sonuç) => yazdır!("{a} {işlem} {b} = {sonuç}"),
             Hata(neden) => yazdır!("{a} {işlem} {b}: {neden}"),
@@ -87,7 +87,7 @@ işlev hesapla(a: f64, işlem: &str, b: f64) -> Sonuç<f64, Metin> {
 }
 
 işlev ana() {
-    her (a, işlem, b) için [(7.0, "%", 3.0), (10.0, "%", 5.0), (7.0, "%", 0.0)] {
+    için (a, işlem, b) içinde [(7.0, "%", 3.0), (10.0, "%", 5.0), (7.0, "%", 0.0)] {
         eşle hesapla(a, işlem, b) {
             Tamam(sonuç) => yazdır!("{a} {işlem} {b} = {sonuç}"),
             Hata(neden) => yazdır!("{a} {işlem} {b}: {neden}"),
@@ -127,7 +127,7 @@ işlev hesapla(a: f64, işlem: &str, b: f64) -> Sonuç<f64, Metin> {
 }
 
 işlev ana() {
-    her (a, işlem, b) için [(7.0, "%", 3.0), (10.0, "%", 5.0), (7.0, "%", 0.0)] {
+    için (a, işlem, b) içinde [(7.0, "%", 3.0), (10.0, "%", 5.0), (7.0, "%", 0.0)] {
         eşle hesapla(a, işlem, b) {
             Tamam(sonuç) => yazdır!("{a} {işlem} {b} = {sonuç}"),
             Hata(neden) => yazdır!("{a} {işlem} {b}: {neden}"),

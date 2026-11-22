@@ -10,20 +10,20 @@ işlev ana() {
     yazdır!("Son meyve: {}", meyveler[meyveler.uzunluk() - 1]);
 
     // Listedeki her eleman için:
-    her meyve için &meyveler {
+    için meyve içinde &meyveler {
         yazdır!("- {meyve}");
     }
 
     // Boş bir listeyle başlayıp kullanıcının yazdıklarını ekleyelim.
     tanımla değişken notlar: Liste<u32> = Liste::yeni();
-    her sıra için 1..=3 {
+    için sıra içinde 1..=3 {
         tanımla not = oku!(biçimle!("{sıra}. sınav notun: "), u32);
         notlar.ekle(not);
     }
 
     tanımla değişken toplam = 0;
     tanımla değişken en_yüksek = 0;
-    her not için &notlar {
+    için not içinde &notlar {
         toplam += not;
         eğer *not > en_yüksek {
             en_yüksek = *not;

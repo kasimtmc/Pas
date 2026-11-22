@@ -31,7 +31,7 @@ işlev ana() {
     rehber.yerleştir("Ali", "555 11 22");
     rehber.yerleştir("Can", "555 33 44");
     rehber.yerleştir("Elif", "555 55 66");
-    her ad için ["Can", "Zeynep"] {
+    için ad içinde ["Can", "Zeynep"] {
         eşle rehber.al(ad) {
             Var(numara) => yazdır!("{ad}: {numara}"),
             Yok => yazdır!("{ad} rehberde yok"),
@@ -81,7 +81,7 @@ kullan std::collections::Sözlük;
 işlev ana() {
     tanımla metin = "elma armut";
     tanımla değişken sayaç: Sözlük<karakter, u32> = Sözlük::yeni();
-    her harf için metin.karakterler() {
+    için harf içinde metin.karakterler() {
         eğer harf != ' ' {
             tanımla önceki = *sayaç.al(&harf).yoksa(&0);
             sayaç.yerleştir(harf, önceki + 1);
@@ -89,7 +89,7 @@ işlev ana() {
     }
     tanımla değişken harfler: Liste<_> = sayaç.anahtarlar().biriktir();
     harfler.sırala();
-    her harf için harfler {
+    için harf içinde harfler {
         yazdır!("{harf}: {}", sayaç[harf]);
     }
 }

@@ -2,7 +2,7 @@
 
 /// Kenarları `kenar` uzunluğunda bir kare çizer.
 işlev kare(k: &değişken Kaplumbağa, kenar: i32) {
-    her _ için 0..4 {
+    için _ içinde 0..4 {
         k.ileri(kenar);
         k.sağa_dön(90);
     }
@@ -10,7 +10,7 @@ işlev kare(k: &değişken Kaplumbağa, kenar: i32) {
 
 /// Köşe sayısı verilen düzgün bir çokgen çizer: 3 üçgen, 6 altıgen…
 işlev çokgen(k: &değişken Kaplumbağa, köşe: i32, kenar: i32) {
-    her _ için 0..köşe {
+    için _ içinde 0..köşe {
         k.ileri(kenar);
         k.sağa_dön(360 / köşe);
     }
@@ -32,7 +32,7 @@ işlev ana() {
     k.sağa_dön(90);
     k.renk("turuncu");
     k.kalınlık(3);
-    her _ için 0..5 {
+    için _ içinde 0..5 {
         k.ileri(120);
         k.sağa_dön(144);
     }
@@ -43,7 +43,7 @@ işlev ana() {
     k.kalemi_indir();
     k.kalınlık(1);
     tanımla renkler = ["kırmızı", "mor", "mavi"];
-    her i için 0..12 {
+    için i içinde 0..12 {
         k.renk(renkler[i % 3]);
         çokgen(&değişken k, 6, 30);
         k.sağa_dön(30);
